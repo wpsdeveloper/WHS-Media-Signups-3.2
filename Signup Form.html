@@ -1,0 +1,492 @@
+ <!-- HTML for the Signup Form  -->
+<script>
+  if (window.trustedTypes && window.trustedTypes.createPolicy) {
+    window.trustedTypes.createPolicy('default', {
+      createHTML: string => string,
+      createScriptURL: string => string,
+      createScript: string => string,
+    });
+  }
+</script>
+
+<!-- CSS files -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jqueryui@1.11.1/jquery-ui.min.css">
+<?!= include('CSS'); ?>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Main display -->
+<div class="body signup">
+
+  <!-- Header/masthead -->
+  <header class="mb-4">
+    <div class="container-fluid">
+      <div class="row pb-2 pt-2 align-items-center">
+
+        <!-- Logo image -->
+        <div class="logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center">
+          <img src="https://lh3.googleusercontent.com/d/<?!= LOGO_ID ?>">
+          <div class="ms-3 d-none d-lg-inline">
+            <span class="d-inline d-md-block">Walpole </span><span class="public-schools d-inline d-md-block">Public Schools</span>
+          </div>
+        </div>
+
+        <!-- Page title  -->
+        <div class="col text-center page-title">
+          <h1>
+            Intervention & Media Center <span class="d-inline d-md-none"><br></span>Sign Up
+          </h1>
+        </div>
+
+        <!-- Buttons/links to other pages  -->
+        <div class="link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center ">
+          <a id="attendance-link" class="staff-only btn btn-light" href="<?!=SCRIPT_URL?>?page=attendance" target="_top">Attendance</a>
+          <a id="admin-link" class="admin-only btn btn-light ms-1" href="<?!=SCRIPT_URL?>?page=admin" target="_top">Admin</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main body container  -->
+  <div class="container">
+
+    <!-- Main form  -->
+    <div id="form" class="">
+      <div class="row">
+
+        <!-- Left-hand panel  -->
+        <div class="col-12 col-lg-6">
+
+          <!-- Signup type  -->
+          <div class="row mb-4" id="type">
+            <div class="col" >
+              <label class="mb-2 main-label">Signup Type</label>
+              
+              <!-- Interventions  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="signup-type" id="intervention" value="Intervention" onchange="typeChanged()"/>
+                <label class="form-check-label" for="intervention">
+                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For extra help with academic learning" data-bs-placement="right">
+                    Intervention 
+                    <a class="int-link schedule-link d-none" href="https://docs.google.com/spreadsheets/d/<?!= INT_DOC_ID ?>/view" target="_new">(schedule)</a> 
+                  </a>
+                </label>
+              </div>
+
+              <!-- Assessment makeup  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="signup-type" id="assessment" value="Assessment" onchange="typeChanged()"/>
+                <label class="form-check-label" for="assessment">
+                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For a quiet place to makeup a test, quiz, or other work" data-bs-placement="right">
+                    Assessment make-up 
+                  </a>
+                </label>
+              </div>
+
+              <!-- NHS Tutoring  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="signup-type" id="tutoring" value="Tutoring" onchange="typeChanged()"/>
+                <label class="form-check-label" for="tutoring">
+                  <a href="#" data-bs-toggle="tooltip" data-bs-title="During March, get academic help from National Honor Society students" data-bs-placement="right">
+                    NHS tutoring 
+                    <a class="tut-link schedule-link d-none" href="https://docs.google.com/spreadsheets/d/<?!= TUTORING_DOC_ID ?>/view" target="_new">(schedule)</a> 
+                  </a>
+                </label>
+              </div>
+
+              <!-- Non-intervention  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="signup-type" id="non-intervention" value="Non-intervention" onchange="typeChanged()" checked />
+                <label class="form-check-label" for="non-intervention">
+                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For independent study, group work, and using library resources" data-bs-placement="right">
+                    Non-intervention 
+                  </a>
+                </label>
+              </div>
+            </div>
+            <div class="col" >
+              <!-- Label for Staff-only Types  -->
+              <label class="staff-only staff-only-type">
+                Staff-only options  
+                <a href="#" data-bs-toggle="tooltip" data-bs-title="Only staff can see these options" data-bs-placement="right">
+                  <i class="info-icon fa-solid fa-circle-info"></i>
+                </a>
+              </label>
+
+              <!-- Alt Setting (shown to staff only)  -->
+              <div class="form-check staff-only">
+                <input class="form-check-input" type="radio" name="signup-type" id="alt-setting" value="Alt setting" onchange="typeChanged()"/>
+                <label class="form-check-label" for="alt-setting">
+                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For alt setting work" data-bs-placement="right">
+                    Alt setting
+                  </a>
+                </label>
+              </div>
+
+              <!-- Staff Reservation (shown to staff only)  -->
+              <div class="form-check staff-only">
+                <input class="form-check-input" type="radio" name="signup-type" id="staff-reservation" value="Staff reservation" onchange="typeChanged()"/>
+                <label class="form-check-label" for="staff-reservation">
+                  <a href="#" data-bs-toggle="tooltip" data-bs-title="To book media center resources or Glass Rooms" data-bs-placement="right">
+                    Staff reservation
+                  </a>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email address  -->
+          <div class="mb-4 admin-email-div">
+            <label for="email" class="form-label main-label">
+              My email  
+              <a href="#" class="editors-only" data-bs-toggle="tooltip" data-bs-title="Only editors can changes the email address" data-bs-placement="right">
+                <i class="info-icon fa-solid fa-circle-info"></i>
+              </a>
+            </label>
+            <input type="email" class="form-control disabled" id="email" value="<?!= EMAIL ?>" disabled></input>
+          </div>
+
+          <!-- Student name (shown for staff ) -->
+          <div class="col col-12 staff-only ">
+            <div class="mb-4 intervention-only assessment-only tutoring-only non-intervention-only alt-setting-only">
+              <label for="student" class="form-label main-label">
+                Student
+              </label>
+              <input type="text" class="form-control disabled typeahead" id="student"></input>
+            </div>
+          </div>
+
+          <div class="row">
+            <!-- Date requested  -->
+            <div class="mb-4 col-12 col-lg-6">
+              <div class="mb-4">
+                <label for="date" class="form-label main-label required">
+                  Date Requested
+                </label>
+                <input type="text" class="form-control datepicker required" id="date" onchange="dateChanged()"></input>
+              </div>
+            </div>
+
+            <!-- Period requested  -->
+            <div class="mb-4 col-12 col-lg-6">
+              <div class="mb-4">
+                <label for="date" class="form-label main-label required">
+                  Period Requested
+                </label>
+                <select class="form-select required" id="period" onchange="periodChanged()"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right-hand panel  -->
+        <div class="col-12 col-lg-6 d-flex flex-column">
+          
+          <!-- Panel headers  -->
+          <!-- <h3 class="intervention-only">
+            Intervention information
+          </h3>
+          <h3 class="tutoring-only">
+            Tutoring information
+          </h3>
+          <h3 class="assessment-only">
+            Assessment information
+          </h3>
+          <h3 class="alt-setting-only">
+            Alt setting information
+          </h3>
+          <h3 class="non-intervention-only">
+            Non-intervention information
+          </h3>
+          <h3 class="staff-reservation-only">
+            Staff reservation
+          </h3> -->
+
+          <!-- Teacher & Subject for interventions  -->
+          <div class="mb-4 intervention-only">
+            <label for="subject" class="form-label main-label">
+              Teacher & Subject
+            </label>
+            <select id="subject-int-select" class="form-select subject-int" name="subject-int">
+            </select>
+
+            <!-- Fallback input if select box is broken -->
+            <input class="form-control d-none subject-int" id="subject-int-input" name="subject-int"></input> 
+          </div>
+
+          <!-- Subject for other types  -->
+          <div class="mb-4 tutoring-only assessment-only alt-setting-only">
+            <label for="subject" class="form-label main-label">
+              Subject
+            </label>
+            <select id="subject-non-int" class="form-select">
+              <option value="Business">Business</option>
+              <option value="English">English</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Physical Education & Health">Physical Education & Health</option>
+              <option value="Science">Science</option>
+              <option value="Social Studies">Social Studies</option>
+              <option value="Technology">Technology</option>
+              <option value="World Language">World Language</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Topic/comments -->
+          <div class="mb-4 intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only">
+            <label class="main-label intervention-only assessment-only tutoring-only alt-setting-only" for="topic-intervention">
+              Topic for help/name of assessment/reason for assistance
+            </label>
+            <label class="main-label staff-reservation-only" for="topic-intervention">
+              Reason for visit
+            </label>
+            <label class="intervention-only assessment-only tutoring-only alt-setting-only" for="topic-intervention">
+              Please be as specific as possible.
+            </label>
+            <textarea class="form-control intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only" id="topic-intervention"></textarea>
+          </div>
+
+          <!-- Non-intervention purpose  -->
+          <div class="mb-4 non-intervention-only" id="purpose">
+            <label class="mb-2 main-label">Purpose</label>
+
+            <!-- Group project  -->
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="purpose" id="group-project" value="Group project" />
+              <label class="form-check-label" for="purpose">
+                Group project <br><span class="hint">You will need to be working on a legitimate project and may need to produce a note from your teacher.</span>
+              </label>
+            </div>
+            
+            <!-- Individual research  -->
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="purpose" id="research" value="Research"/>
+              <label class="form-check-label" for="purpose">
+                Individual research project/use of library resources
+              </label>
+            </div>
+
+            <!-- Software Use  -->
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="purpose" id="software" value="Software"/>
+              <label class="form-check-label" for="purpose">
+                Software on desktop computers
+              </label>
+            </div>
+
+            <!-- Phys Ed  -->
+            <div class="form-check ">
+              <input class="form-check-input phys-ed" type="radio" name="purpose" id="phys-ed" value="Phys Ed" />
+              <label class="form-check-label phys-ed" for="purpose">
+                Physical education
+              </label>
+            </div>
+            
+            <!-- Art  -->
+            <div class="form-check ">
+              <input class="form-check-input art" type="radio" name="purpose" id="art" value="Art" />
+              <label class="form-check-label art" for="purpose">
+                Art
+              </label>
+            </div>
+          </div>
+
+          <!-- Study Hall teacher  -->
+          <div class="row intervention-only assessment-only tutoring-only alt-setting-only non-intervention-only">
+            <div id="study-div" class="mb-4 col">
+              <label for="study-teacher" class="form-label main-label intervention-only assessment-only tutoring-only non-intervention-only">
+                Study hall teacher
+              </label>
+              <label for="study-teacher" class="form-label main-label alt-setting-only">
+                Reporting from (Study Hall or class)
+              </label>
+              <select class="form-select study-teacher" id="study-teacher-select" name="study-teacher"></select>
+
+              <!-- Fallback input if select box is broken -->
+              <input class="form-control d-none " id="study-teacher-input" name="study-teacher"></input> 
+            </div>
+
+            <!-- Academic teacher  -->
+            <div class="mb-4 col col-12 col-lg-6 assessment-only non-intervention-only alt-setting-only">
+              <label for="acad-teacher" class="form-label main-label">
+                Teacher you are doing work for
+              </label>
+              <input type="text" class="form-control" id="acad-teacher"></input>
+            </div>
+          </div>
+
+          <!-- Glass room reservation  -->
+          <div class="mb-4 non-intervention-only staff-reservation-only" id="glass-room">
+            <label class="mb-2 main-label">Glass Room reservations 
+              <a href="#" data-bs-toggle="tooltip" data-bs-title="Glass Rooms can only be requested by WHS staff members. Students should request assistance from a teacher to request a Glass Room reservation." data-bs-placement="right">
+                <i class="info-icon fa-solid fa-circle-info"></i>
+              </a>
+            </label> 
+
+            <!-- No room  -->
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="glass-room" id="glass-room-none" value="" checked />
+              <label class="form-check-label" for="glass-room">
+                None
+              </label>
+            </div>
+
+            <!-- Glass Room 1 -->
+            <div class="form-check staff-only">
+              <input class="form-check-input" type="radio" name="glass-room" id="glass-room-1" value="1" />
+              <label class="form-check-label" for="glass-room" id="glass-room-1-label">
+                Glass room 1 (<span class="availability">Available</span>)
+              </label>
+            </div>
+
+            <!-- Glass Room 2  -->
+            <div class="form-check staff-only">
+              <input class="form-check-input" type="radio" name="glass-room" id="glass-room-2" value="2" />
+              <label class="form-check-label" for="glass-room" id="glass-room-2-label">
+                Glass room 2 (<span class="availability">Available</span>)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full-width column for submit buttons  -->
+      <div class="col-12">
+        <div class="mb-4 text-center">
+
+          <!-- Submit button for new data  -->
+          <button class="btn btn-success submit-button mx-auto" id="btn-submit" onclick="submitForm();">Submit</button>
+
+          <!-- Update button for changing existing data  -->
+          <button class="btn btn-primary submit-button mx-auto d-none" id="btn-update" onclick="submitForm();">Update</button>
+
+          <!-- Delete button for removing data  -->
+          <button class="btn btn-danger submit-button mx-auto d-none" id="btn-delete" onclick="deleteData();">Delete Request</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden div, for showing "Successful submission" when complete -->
+    <div id="success-box" class="position-absolute top-50 start-50 translate-middle d-none text-center">
+      <h3>
+        Success!
+      </h3>
+      <p>
+        Your request has been successfully submitted. Please check your email for a confirmation receipt.
+      </p>
+      <p>
+        <i>Remember to check in with your study hall teacher before reporting to the media center!</i>
+      </p>
+      <button class="btn btn-primary staff-only" onclick="startOver();">Start over</button>
+    </div>
+
+    <!-- Hidden div, for showing "Successful update" when complete -->
+    <div id="success-update-box" class="position-absolute top-50 start-50 translate-middle d-none text-center">
+      <h3>
+        Success!
+      </h3>
+      <p>
+        Your update has been saved. Click <a id="attendance-link-updated" href="<?!=SCRIPT_URL?>?page=attendance" target="_top">here</a> to return to the attendance page.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Modal: Loading -->
+  <div class="modal fade" id="loading-modal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="d-flex">
+            <div class="spinner-border text-primary me-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="loading-text">
+              Loading rubric data
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Date/Period are full (deprecated)  -->
+  <div class="modal fade" id="full-modal" tabindex="-1" aria-labelledby="fullModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-danger">
+          <div class="modal-title text-white">
+            Period full
+          </div>
+        </div>
+        <div class="modal-body">
+          All signups for the media center on <span class="full-date"></span> during Period <span class="full-period"></span> have been taken. Please select a different date or time.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast (green): Success -->
+  <div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
+    <div id="success-toast" class="toast text-bg-success align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Submission complete!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast (red): Error -->
+  <div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
+    <div id="error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Error completing submission.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast (red): Invalid field data -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="validation-error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Please complete the missing information.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Helper area for storing data sent from the server -->
+<div class="d-none hidden-data">
+  <input id="update-row-id" type="checkbox" value="<?!= ROW_ID ?>" />
+  <input id="is-editor" type="checkbox" value="<?!= EDITOR ?>" />
+  <input id="is-admin" type="checkbox" value="<?!= ADMIN ?>" />
+  <input id="wed-int-active" type="checkbox" value="<?!= WED_INT_ACTIVE ?>" />
+  <input id="tutoring-active" type="checkbox" value="<?!= TUTORING_ACTIVE ?>" />
+</div>
+
+<!-- Javascript libraries and files -->
+<script src="https://kit.fontawesome.com/1a74660f3b.js" crossorigin="anonymous"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" integrity="sha512-57oZ/vW8ANMjR/KQ6Be9v/+/h6bq9/l3f0Oc7vn6qMqyhvPd1cvKBRWWpzu0QoneImqr2SkmO4MSqU+RpHom3Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<?!= include('Typeahead'); ?>
+<?!= include('ClientCode Signup'); ?>

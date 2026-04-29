@@ -1,0 +1,789 @@
+<script>
+  /** ======= CLIENT CODE  ======== 
+ * Javascript code (client-side) for the Attendance Page
+ * 
+ * Media Center Sign Up System
+ * Walpole High School, Walpole, MA
+ * @author: Tom Reeve, treeve@walpole.k12.ma.us
+ *
+ */  
+
+// Arrays of data to download
+let SIGNUPS = [];         // previous signup data
+let DAILY_SCHEDULES = []; // daily schedules for each date in the current school year
+
+// Page settings
+let IS_EDITOR = false;    // whether the current user may edit existing data
+let IS_ADMIN = false;
+let CURRENT_SORT = {      // the current data sort setting
+  FIELD: "study", 
+  ORDER: "asc"
+  };
+const DOWNLOADED = {      // indicates when certain pieces of data have been downloaded asynchronously
+  schedules: false,
+  signups: false,
+};
+const LAST_DATA = {        // tracks the last data shown
+  date: null,
+  period: null,
+}
+
+/* Initialization, after all html and scripts have loaded */
+$( function() {
+  // sets up the datepicker
+  $(".datepicker").datepicker({
+    maxDate: "+1w",
+    minDate: "-2w"
+  });
+  $(".datepicker").datepicker("setDate", new Date());
+  
+  // sets the editor status
+  IS_EDITOR = $("#is-editor").val() === "true";
+  checkAdminStatus();
+
+  // requests download of daily schedules
+  getDailySchedules();
+
+  // requests download of recent signups
+  getSignups();
+
+  // shows the Loading modal
+  showLoadingModal("Retrieving data");
+});
+
+/**
+ * Sets up the page based on whether the current user is admin
+ */
+function checkAdminStatus() {
+  IS_ADMIN = ($("#is-admin").val() === "true");
+  $(".admin-only").toggle(IS_ADMIN).removeClass("d-flex");
+}
+
+/**
+ * Responds to a checkin cancel X button click
+ * 
+ * @param {string} type The specific category of checkin (e.g. "mediaOut")
+ * @type {button} button The button that was clicked 
+ * */
+function cancelCheckin(type, button) {
+  // determines the rowId of the signup belonging to that button
+  const id = $(button).closest(".student-row").attr("data-signup-id");
+  
+  // matches the type with a div class
+  const divClass = {
+    "studyIn1": ".study-checkin",
+    "mediaIn": ".media-checkin",
+    "mediaOut": ".media-checkout",
+    "studyIn2": ".study-return",
+  };
+
+  // shows a loading UI for the button
+  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  $(box).find(".spinner").show().removeClass("d-none");
+  $(box).find("button").hide();
+  $(box).find(".time").hide();
+  
+  // sets the value to blank i.e. a blank (cleared) cell in the spreadsheet
+  const value = "";
+  
+  // sends the checkin request to the server for async processing
+  setCheckin(type, id, value)
+}
+
+/**
+ *  Responds to a Checkin button click 
+ * 
+ * @param {string} type The specific category of checkin (e.g. "mediaOut")
+ * @type {button} button The button that was clicked 
+ * */
+function checkin(type, button) {
+  // determines the rowId of the signup belonging to that button
+  const id = $(button).closest(".student-row").attr("data-signup-id");
+  
+  // matches the type with a div class
+  const divClass = {
+    "studyIn1": ".study-checkin",
+    "mediaIn": ".media-checkin",
+    "mediaOut": ".media-checkout",
+    "studyIn2": ".study-return",
+  };
+
+  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  $(box).find(".spinner").show().removeClass("d-none");
+  $(box).find("button").hide();
+  $(box).find(".time").hide();
+
+  // sets the value to the current time
+  const now = new Date();
+  
+  // sends the checkin request to the server for async processing
+  setCheckin(type, id, formatTime(now));
+
+  const thisSignup = SIGNUPS.filter(su => su.rowId == id);
+  thisSignup.forEach(su => {
+    su[type] = now.toISOString();
+  });
+}
+
+function showEditCheckin(type, button) {
+  // determines the rowId of the signup belonging to that button
+  const id = $(button).closest(".student-row").attr("data-signup-id");
+
+  // matches the type with a div class
+  const divClass = {
+    "studyIn1": ".study-checkin",
+    "mediaIn": ".media-checkin",
+    "mediaOut": ".media-checkout",
+    "studyIn2": ".study-return",
+  };
+
+  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  $(box).find(".time-edit").show().removeClass("d-none");
+  $(box).find("button").hide();
+  $(box).find(".primary-buttons").hide();
+  $(box).find(".time-value").hide();
+}
+
+function cancelEditCheckin(type, button) {
+  // determines the rowId of the signup belonging to that button
+  const id = $(button).closest(".student-row").attr("data-signup-id");
+
+  // matches the type with a div class
+  const divClass = {
+    "studyIn1": ".study-checkin",
+    "mediaIn": ".media-checkin",
+    "mediaOut": ".media-checkout",
+    "studyIn2": ".study-return",
+  };
+
+  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  $(box).find(".time-edit").hide();
+  $(box).find("button").hide();
+  $(box).find(".primary-buttons").show();
+  $(box).find(".time-value").show().removeClass("d-none");
+}
+
+function editCheckin(type, button) {
+  // determines the rowId of the signup belonging to that button
+  const id = $(button).closest(".student-row").attr("data-signup-id");
+  
+  // matches the type with a div class
+  const divClass = {
+    "studyIn1": ".study-checkin",
+    "mediaIn": ".media-checkin",
+    "mediaOut": ".media-checkout",
+    "studyIn2": ".study-return",
+  };
+
+  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  const inputtedValue = $(box).find("input").val();
+  if (!isValidTime(inputtedValue)) {
+    $(box).find(".validation-error").remove();
+    $(box).append("<span class='validation-error text-danger'><small>Invalid time</small><span>");
+    return;
+  }
+  $(box).find(".validation-error").remove();
+  
+  $(box).find(".spinner").show().removeClass("d-none");
+  $(box).find("button").hide();
+  $(box).find(".time").hide();
+ 
+  // sends the checkin request to the server for async processing
+  setCheckin(type, id, inputtedValue);
+
+  const thisSignup = SIGNUPS.filter(su => su.rowId == id);
+  thisSignup.forEach(su => {
+    su[type] = inputtedValue;
+  });
+}
+
+function isValidTime(timeStr) {
+  // Regex Breakdown:
+  // ^              : Start of the string
+  // (1[0-2]|0?[1-9]) : Hours 1-12 (allows optional leading zero for 1-9)
+  // :              : Literal colon
+  // [0-5][0-9]     : Minutes 00-59
+  // \s?            : Optional space (common in user input)
+  // (am|pm)        : The meridian (case-insensitive via 'i' flag)
+  // $              : End of the string
+  
+  const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm)$/i;
+  return regex.test(timeStr);
+}
+
+/**
+ *  Receives checkin data results 
+ * */
+function checkinSuccess(returnVal) {
+  const type = returnVal.type;
+  const id = returnVal.id;
+  const value = returnVal.value;
+
+  formatCheckin(type, id, value);
+}
+
+function formatCheckin(type, id, value) {
+  // matches the type with a div class
+  const divClass = {
+    "studyIn1": ".study-checkin",
+    "mediaIn": ".media-checkin",
+    "mediaOut": ".media-checkout",
+    "studyIn2": ".study-return",
+  };
+
+  // Updates the checkin box UI
+  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  $(box).find(".spinner").hide();
+
+  if (value === "") {
+    $(box).find("button").show();
+    $(box).find(".time").hide();
+    $(box).find(".time-value input").val("");
+    $(box).find(".time-edit").hide();
+  } else {
+    $(box).find("button").hide();
+    $(box).find(".time").show().removeClass("d-none");
+    $(box).find(".time-value").text(formatTime(value)).show();
+    $(box).find(".primary-buttons").show();
+    $(box).find(".time-edit").hide().find("input").val(formatTime(value));
+  }
+}
+
+/**
+ * Clears/resets all rows in the signup table 
+ * */
+function clearTable() {
+  // removes old data
+  $("#student-table .student-row").remove();
+  $("#staff-table .staff-row").remove();
+}
+
+/**
+ *  Responds to a change of the Date field 
+ * */
+function dateChanged() {
+  updatePeriodList();
+  periodChanged();
+  populateSignupTable();
+}
+
+/**
+ * Helper function to format a Date as MM/DD/YYYY 
+ * 
+ * @param {Date} date The date to format
+ * @return {string} The formatted date
+ * */
+function formatDateSlashes(date) {
+  return (date.getMonth()+1) +"/" + date.getDate() + "/" + date.getFullYear();
+}
+
+/**
+ * Helper function to format a Time as HH:MM AM/PM 
+ * 
+ * @param {Date} date The Datetime to format
+ * @return {string} The formatted time
+ * */
+function formatTime(date) {
+  if (isValidTime(date)) {
+    return date;
+  }
+
+  if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+
+  let hours = date.getHours();
+  let minutes = date.getMinutes();
+  let ampm = "AM";
+
+  if (hours >= 12) {
+    ampm = "PM";
+  }
+  if (hours > 12) {
+    hours = hours - 12;
+  }
+
+  if (minutes < 10) {
+    minutes = "0" + minutes
+  }
+
+  return `${hours}:${minutes} ${ampm}`;
+}
+
+/**
+ *  Requests daily schedule data from the server asynchronously 
+ * */
+function getDailySchedules() {
+  google.script.run
+    .withSuccessHandler(receiveDailySchedules)
+    .withFailureHandler(processError)
+    .getDailySchedules();
+}
+
+/**
+ *  Requests signup data from the server asynchronously 
+ * */
+function getSignups() {
+  google.script.run
+    .withSuccessHandler(receiveSignups)
+    .withFailureHandler(processError)
+    .getSignups();
+}
+
+/**
+ *  Hides the loading modal 
+ * */
+function hideLoadingModal() {
+  $("#loading-modal").modal('hide');
+}
+
+/**
+ *  Helper function to determined if two Dates are on the same day 
+ * */
+function isSameDate(date1, date2) {
+  const monthMatch = date1.getMonth() === date2.getMonth();
+  const yearMatch = date1.getFullYear() === date2.getFullYear();
+  const dateMatch = date1.getDate() === date2.getDate();
+
+  return monthMatch && yearMatch && dateMatch;
+}
+
+/**
+ *  Responds to a change of the Period field 
+ * */
+function periodChanged() {
+  // clear the "current" status from all rows
+  $(".data-row").removeClass("current-period").removeClass("current-date");
+
+  // saves new current date/time, returns if either is empty
+  LAST_DATA.date = $("#date").val();
+  if (LAST_DATA.date === "") {
+    return;
+  }
+  LAST_DATA.date = new Date(LAST_DATA.date);
+
+  LAST_DATA.period = $("#period").val();
+  if (LAST_DATA.period === null) {
+    return;
+  }
+
+  if (LAST_DATA.period === "Wed. PM") {
+    $(".wed-int").show();
+    $(".not-wed-int").hide();
+    $(".study-checkin button").text("Done");
+  } else {
+    $(".wed-int").hide();
+    $(".not-wed-int").show();
+    $(".study-checkin button").text("Check in");
+  }
+
+  $(".data-row").each(index => {
+    const row = $(".data-row")[index];
+    const id = $(row).attr("data-signup-id");
+
+    // finds the signup data for this row's id
+    const match = SIGNUPS.filter(su => su.rowId === id);
+    if (match.length !== 1) {
+      return;
+    }
+    const signup = match[0];
+
+    // gets the signup's date, and marks the row "current" if it matched the selection
+    let suDate = signup.date;
+    if (typeof suDate === "string") {
+      suDate = new Date(suDate);
+    }
+
+    console.log()
+
+    if (isSameDate(LAST_DATA.date, suDate)) {
+      $(row).addClass("current-date");
+    } 
+
+    // gets the signup's period, and marks the row "current" if it matched the selection
+    let suPeriod = "" + signup.period;
+    if (LAST_DATA.period === suPeriod) {
+      $(row).addClass("current-period");
+    }
+  });
+
+  // if no current date/time data for students, shows the "No records" row
+  if ($(".student-row.current-period.current-date").length <= 0) {
+    $(".student-row-empty").show().removeClass("d-none");
+  } else {
+    $(".student-row-empty").hide();
+  }
+
+  // if no current date/time data for staff, hides the staff table
+  if ($(".staff-row.current-period.current-date").length <= 0) {
+    $("#staff-table").hide();
+  } else {
+    $("#staff-table").show().removeClass("d-none");
+  }
+}
+
+/**
+ * Populates data into the form (useful for editing existing data)
+ */
+function populateSignupTable() {
+  sortSignups(CURRENT_SORT.FIELD, CURRENT_SORT.ORDER);
+  clearTable();
+
+  // sets the new current date/period
+  LAST_DATA.date = new Date($("#date").val());
+  LAST_DATA.period = $("#period").val();
+
+  const currentSignups = SIGNUPS.filter(su => (isSameDate(new Date(su.date), LAST_DATA.date)));
+
+  currentSignups.forEach(signup => {
+    // adds a new empty student row
+    let stRow;
+      if (signup.type === "Staff reservation") {
+        const table = $("#staff-table");
+        stRow = $("#templates #staff-row-template").clone().appendTo(table);
+      } else {
+        const table = $("#student-table");
+        stRow = $("#templates #student-row-template").clone().appendTo(table);
+      }
+
+    // places the row id into the row HTML element as "data-signup-id"
+    $(stRow).removeAttr("id");
+    $(stRow).attr("data-signup-id", signup.rowId);
+    
+    // assigns current-date or current-period tags if appropriate
+    if (LAST_DATA.period === "" + signup.period) {
+      $(stRow).addClass("current-period");
+    } 
+    const date = new Date(signup.date);
+    if (isSameDate(date, LAST_DATA.date)) {
+      $(stRow).addClass("current-date");
+    }
+
+    // fills names
+    let roomIcon = "";
+    if ((signup.room === "1") || (signup.room === 1)) {
+      roomIcon = `<span class="badge text-bg-success room-badge">Room 1</span>`;
+    } else if ((signup.room === "2") || (signup.room === 2)) {
+      roomIcon = `<span class="badge text-bg-danger room-badge">Room 2</span>`;
+    }
+    $(stRow).find('.student-name').html(`${signup.lastname}, ${signup.firstname}${roomIcon}`);
+
+    // adds edit icons if the user is an editor
+    if (IS_EDITOR) {
+      $(stRow).find('.edit-icons').removeClass("d-none").addClass("d-inline");
+      const href = $(stRow).find('.edit-icons a.edit-link').attr("href") + "&id=" + signup.rowId;
+      $(stRow).find('.edit-icons a.edit-link').attr("href", href);
+    }
+
+    // adds details to the row
+    if (signup.type === "Intervention") {
+      $(stRow).find('.type').text(`Intervention: ${signup.subject}`);
+    } else if (signup.type === "Tutoring") {
+      $(stRow).find('.type').text(`NHS Tutoring: ${signup.subject}`);
+    } else if (signup.type === "Assessment") {
+      $(stRow).find('.type').text(`Assessment Makeup: ${signup.teacherAcad}`);
+    } else if (signup.type === "Alt setting") {
+      $(stRow).find('.type').text(`Alt Setting for ${signup.teacherAcad}`);
+    } else if (signup.type === "Non-intervention") {
+      $(stRow).find('.type').text(`Non-Intervention (${signup.purpose}/${signup.teacherAcad})`);
+    } else if (signup.type === "Staff reservation") {
+      $(stRow).find('.type').text(`Staff reservation`);
+    }
+  
+    // populates checkin time data
+    if (signup.studyIn1.length > 0) {
+      formatCheckin("studyIn1", signup.rowId, signup.studyIn1);
+    }
+    if (signup.mediaIn.length > 0) {
+      formatCheckin("mediaIn", signup.rowId, signup.mediaIn);
+    }
+    if (signup.mediaOut.length > 0) {
+      formatCheckin("mediaOut", signup.rowId, signup.mediaOut);
+    }
+    if (signup.studyIn2.length > 0) {
+      formatCheckin("studyIn2", signup.rowId, signup.studyIn2);
+    }
+
+    // adds other simple data
+    $(stRow).find('.study-teacher').text(`${signup.teacherStudy}`);
+    $(stRow).find('.comments').text(`${signup.comments}`);
+    $(stRow).find('.room').text("");
+    if (signup.room !== "" ) {
+      $(stRow).find('.room').text(`Glass Room ${signup.room}, reserved by ${signup.email}`);
+    }
+  });
+
+  // resets other UI elements
+  periodChanged();
+}
+
+/**
+ *  Prevents default HTML submission behavior (generally, prevent form submit if the user hits Enter) 
+ * */
+function preventFormSubmit() {
+  var forms = document.querySelectorAll('form');
+  for (var i = 0; i < forms.length; i++) {
+    forms[i].addEventListener('submit', function(event) {
+      event.preventDefault();
+    });
+  }
+};
+
+/**
+ * Responds generically to a server error
+ * 
+ * @param {Error} error The sent error
+ * */
+function processError(error) {
+  hideLoadingModal();
+  showErrorToast(error.message);
+}
+
+/**
+ * Receives daily schedule data from the server 
+ * 
+ * @param {DaiyScheduleData[]} schedules Array of daily schedules
+ * */
+function receiveDailySchedules(schedules) {
+  DAILY_SCHEDULES = JSON.parse(schedules);
+  
+  updatePeriodList();
+  
+  DOWNLOADED.schedules = true;
+  if (DOWNLOADED.schedules && DOWNLOADED.signups) {
+    hideLoadingModal();
+  }
+}
+
+/**
+ *  Receives signup data from the server 
+ * 
+ * @param {SignupData[]} signups Array of signups
+ * */
+function receiveSignups(signups) {
+  SIGNUPS = JSON.parse(signups);
+  console.log(SIGNUPS.map(x => x.date).sort());
+  populateSignupTable();
+  periodChanged();
+  
+  DOWNLOADED.signups = true;
+  if (DOWNLOADED.schedules && DOWNLOADED.signups) {
+    hideLoadingModal();
+  }
+}
+
+/**
+ *  Requests new/updated data from the server 
+ * */
+function refreshData() {
+  getDailySchedules();
+  getSignups();
+  showLoadingModal("Retreiving data");
+}
+
+/**
+ *  Responds to new sort request 
+ * 
+ * @param {string} field The field to sort by
+ * */
+function resort(field) {
+  if (CURRENT_SORT.FIELD === field) {
+    CURRENT_SORT.ORDER = CURRENT_SORT.ORDER === "asc" ? "desc" : "asc";
+  }
+  CURRENT_SORT.FIELD = field;
+
+  // updates the sort icon UI
+  $(".sort-icon i").removeClass("active");
+
+  $(".sort-icon i").removeClass("fa-caret-up");
+  $(".sort-icon i").removeClass("fa-caret-down");
+  
+  if (CURRENT_SORT.FIELD === "student") {
+      $(".sort-student").addClass('active');
+  } else if (CURRENT_SORT.FIELD === "study") {
+      $(".sort-study").addClass('active');
+  }
+  
+  if (CURRENT_SORT.ORDER === "asc") {
+    $(".sort-icon i.active").addClass('fa-caret-down');
+    $(".sort-icon i.active").removeClass('fa-caret-up');
+  } else {
+    $(".sort-icon i.active").removeClass('fa-caret-down');
+    $(".sort-icon i.active").addClass('fa-caret-up');
+  }
+
+  // rebuild the table (with the new sort order)
+  populateSignupTable();
+}
+
+/**
+ * Sends checkin data to the server asynchronously 
+ * 
+ * @param {string} type The field to set
+ * @param {string} id The row id of the data
+ * @param {string} value The value to store, typically a time or ""
+ * */
+function setCheckin(type, id, value) {
+  google.script.run
+    .withSuccessHandler(checkinSuccess)
+    .withFailureHandler(processError)
+    .setCheckin(type, id, value);
+}
+
+/**
+ * Shows the attendance panel 
+ * */
+function showAttendance() {
+  // slide animation back to "original" position
+  $(".panel").css("transform", `translate(0, 0)`);
+
+  // updates the header
+  $(".header-row .signup-info").hide();
+  $(".header-row .attendance-info").show().removeClass("d-none");
+}
+
+/**
+ * Shows the loading modal, which waits until cleared 
+ * 
+ * @param {string} text The text to display in the modal
+ * */
+function showLoadingModal(text) {
+  $("#loading-modal .loading-text").text(text);
+  $("#loading-modal").modal('show');
+}
+
+/**
+ *  Shows the signup info panel
+ * */
+function showSignupInfo() {
+  // gets the width of the panel. Note: uses the header, because width
+  // calculations work best if the element is visible
+  const width = $(".header-row .attendance-info").width() -24; // -24 to include the extra margin/padding
+
+  // animates the panel
+  $(".panel").css("transform", `translate(-${width}px, 0)`);
+
+  // updates the header
+  $(".header-row .signup-info").show().removeClass("d-none");
+  $(".header-row .attendance-info").hide();
+}
+
+/**
+ *  Shows a successful submission toast 
+ * 
+ * @param {string} text The text to display in the toast
+ * */
+function showSuccessToast(text) {
+  $("#success-toast").toast("show");
+  $(`#success-toast .toast-body`).show();
+  $(`#success-toast .toast-body`).text(text);
+}
+
+/**
+ *  Shows an error toast 
+ * 
+ * @param {string} errorMessage The text to display in the toast
+ * */
+function showErrorToast(errorMessage) {
+  $("#error-toast").toast("show");
+  $("#error-toast").find(".toast-body").text(errorMessage);
+}
+
+/**
+ * Sorts the signup data according to the current sort order.
+ * 
+ * @param {string} field The data to sort by
+ * @param {string} order The sort order, either 'asc' or 'desc'
+ * */
+function sortSignups(field, order) {
+  if (field === "student") {
+    sortSignupsByField("firstname", order);
+    sortSignupsByField("lastname", order);
+  } else if (field === "study") {
+    sortSignupsByField("teacherStudy", order);
+  }
+}
+
+/**
+ * The sort function for a field. 
+ * Note: designed for string data. Not tested with numbers. 
+ * 
+ * @param {string} field The data to sort by
+ * @param {string} order The sort order, either 'asc' or 'desc'
+ *  */
+function sortSignupsByField(field, asc) {
+  const modifier = (asc === "asc") ? 1 : -1;
+  SIGNUPS.sort((a,b) => {
+    if (a[field] < b[field]) {
+      return  -1 * modifier;
+    } else if (a[field] > b[field]) {
+      return  modifier;
+    } else {
+      return 0;
+    }
+  });
+}
+
+/**
+ *  Updates the Periods select box based on the date 
+ * */
+function updatePeriodList() {
+  // remembers current selection. If this period is available in the new list,
+  const oldPeriodVal = LAST_DATA.period;
+  LAST_DATA.date = $("#date").val();
+  
+  // returns if no date selected
+  if (LAST_DATA.date === "") {
+    return;
+  }
+  try {
+    // clear previous options
+    $("#period option").remove();
+
+    // gets the data selected
+    const date = new Date(LAST_DATA.date);
+    
+    // cycles through daily schedules...
+    DAILY_SCHEDULES.forEach(schedule => {
+      const schedDate = new Date(schedule.date);
+
+      // for a matching date, creates an option for each period
+      if (isSameDate(schedDate, date)) {
+        schedule.periods.forEach(period => {
+          $("#period").append(`<option value="${period}">${period}</option>`);
+        })
+      }
+    })
+
+    if (wednesdayInterventions(date)) {
+      $("#period").append(`<option value="Wed. PM">Wed. PM</option>`);
+    }
+
+    // reselects the previously selected period, if possible
+    if (oldPeriodVal !== null) {
+      $("#period").val(oldPeriodVal);
+    } else {
+      $("#period").val($("#period option").first().val());
+    }
+  } catch (error) {
+    processError(error);
+  }
+  periodChanged();
+}
+
+/**
+ * Determines if the Wednesday Interventions is active and should be shown.
+ * 
+ * param {Date} - the date to show
+ * return {boolean} - True is should be shown
+ */
+function wednesdayInterventions(date) {
+  const wednesday = 3;
+  const weekday = date.getDay();
+  const dateIsWednesday = (weekday === wednesday);
+  const wedIntActive = ($("#wed-int-active").val() === "true");
+
+  return dateIsWednesday && wedIntActive;
+}
+
+</script>  

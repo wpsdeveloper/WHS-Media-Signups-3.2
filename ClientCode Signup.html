@@ -1,0 +1,1208 @@
+<script>
+/** ======= CLIENT CODE  ======== 
+ * Javascript code (client-side) for the Signup Form
+ * 
+ * Media Center Sign Up System
+ * Walpole High School, Walpole, MA
+ * @author: Tom Reeve, treeve@walpole.k12.ma.us
+ *
+ * Note: This script handles both new submissions and the updating of existing data.
+ * Updates are done by appending "?page=update&id" plus the record's row id to the URL.
+ */  
+
+// Arrays of data to download
+let STUDENTS = []; // list of students
+let STUDENT_NAMES; // special holder of formatted student names, for the typeahead feature
+let DAILY_SCHEDULES = []; // daily schedules for each date in the current school year
+let INTERVENTION_TEACHERS = {}; // complex listing of intervention teachers for each day/period
+let STUDY_TEACHERS = {}; // complex listing of study hall teachers for each day/period
+let SIGNUPS = []; // previous signups data
+let NO_FLY = []; // students not allowed to sign up
+
+// Form settings
+let IS_STAFF = false; // whether the current user is a staff member
+let IS_EDITOR = false; // whether the current user may edit existing data
+let IS_ADMIN = false; // whether the current user may edit existing data
+let UPDATE_ROW_ID = null; // if updating data, the row id of the record
+let UPDATE_DATA = null; // if updating data, the record data to update
+let DEFAULT_MAX = 15; // the default maximum number of signups per period
+let CURRENT_MAX = DEFAULT_MAX; // the number of signups allowed for the selected period
+
+/* Initialization, after everything has loaded */
+$( function() {
+  initializeUi();
+  showLoadingModal("Retrieving data");
+  updateDetailsPanel();
+
+  // preps for whether this page is a new submission or an update to existing data
+  setUpdateStatus();
+  
+  checkStaffStatus();
+  checkAdminStatus();
+
+  // gathers all data needed to populate the form
+  getInitialData();
+});
+
+function getInitialData() {
+  google.script.run
+    .withFailureHandler(processError)
+    .withSuccessHandler(receiveInitialData)
+    .getInitialSignupFormData();
+}
+
+function receiveInitialData(data) {
+  receiveStudents(data.students);
+  receiveDailySchedules(data.dailySchedules);
+  receiveSignups(data.signups);
+  receiveInterventionTeachers(data.interventionTeachers);
+  receiveStudyTeachers(data.studyTeachers);
+  receiveNoFlyList(data.noFlyList);
+  receiveMaxSignups(data.defaultMaxSignups);
+
+  hideLoadingModal();
+  typeChanged();
+  if (UPDATE_DATA !== null) {
+    populateData(UPDATE_DATA);
+  }
+}
+
+/**
+ * Calculates if a given date/period is full (too many existing reservations) 
+ * */
+function checkFull() {
+  // console.log("checking if full");
+  
+  // gets the date and period selected, returning if blank
+  const dateVal = $("#date").val();
+  if (dateVal === "") {
+    return;
+  }
+  const date = new Date(dateVal);
+  
+  const period = $("#period").val();
+  if (period === null) {
+    return;
+  }
+
+  // finding signups that match the date and period
+  let matching = SIGNUPS.filter(su => (isSameDate(new Date(su.date), date)) && (period == "" + su.period));
+
+  // filters for only non-intervention and tutoring
+  matching = matching.filter(su => (su.type === "Non-intervention") || (su.type === "Tutoring"));
+ 
+  if (matching.length >= CURRENT_MAX) {
+    console.info("Over limit, max = " + CURRENT_MAX);
+    
+    // disables checkbox and adjusts label
+    $("input#non-intervention").prop("disabled", "true");
+    $("input#non-intervention").prop("checked", false);
+    if ($("label[for='non-intervention'] span.type-warning").length === 0) {
+      $("label[for='non-intervention']").append("<span class='type-warning'> Full</span>");
+    }
+
+    // disables checkbox and adjusts label
+    $("input#tutoring").prop("disabled", "true");
+    $("input#tutoring").prop("checked", false);
+    if ($("label[for='tutoring'] span.type-warning").length === 0) {
+      $("label[for='tutoring']").append("<span class='type-warning'> Full</span>");
+    }
+  }
+}
+
+/**
+ * Sets up the page based on whether the current user is student or staff
+ */
+function checkStaffStatus() {
+  IS_STAFF = ($("input#email").val().indexOf("@walpole.k12.ma.us") > 0);
+  $(".staff-only").toggle(IS_STAFF).removeClass("d-flex");
+}
+
+/**
+ * Sets up the page based on whether the current user is admin
+ */
+function checkAdminStatus() {
+  IS_ADMIN = ($("#is-admin").val() === "true");
+  $(".admin-only").toggle(IS_ADMIN).removeClass("d-flex");
+}
+
+/**
+ * Gathers all entered form data in prep for validation and submission 
+ * @return {SignupData}
+ * */
+function collectData() {
+  const data = {};
+  
+  data.email = $("#email").val() || "";
+  
+  // sets at least blanks for the names
+  data.firstname = "";
+  data.lastname = "";
+
+  if ($("#student").is(":visible")) {
+    // this is a teacher submission
+    // breaks apart the line selected in the typeahead
+    const student = $("#student").val() || "";
+    const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
+    const names = (brackets.length > 0) ? brackets[0].split(", ") : [];
+
+    data.firstname = names.length > 0 ? names[1] : "";
+    data.lastname = names.length > 0 ? names[0] : "";
+    data.emailStudent = (brackets.length == 2) ? brackets[1].trim().substring(0, brackets[1].length-1) : "";
+  } else {
+    // this is a student submission
+    data.emailStudent = $("#email").val() || "";
+  }
+  data.date = $("#date").val() || "";
+  data.period = $("#period").val() || "";
+  data.type = $("input[name='signup-type']:checked").val() || "";
+  
+  // gets subject from whichever is visible
+  // console.log($(".subject-int:visible"));
+  if ($(".subject-int:visible").length > 0) {
+    data.subject = $(".subject-int:visible").val() || "";
+  } else if ($("#subject-non-int").is(":visible")) {
+    data.subject = $("#subject-non-int").val() || "";
+  }
+
+  data.purpose = $("#purpose").is(":visible") ? $("#purpose input:radio:checked").val() || "" : "";
+  data.room = $("#glass-room").is(":visible") ? $("#glass-room input:radio:checked").val() || "" : "";
+  data.teacherStudy = "";
+  if ($(".study-teacher:visible").length > 0) {
+    data.teacherStudy = $(".study-teacher:visible").val() || "";
+  }
+  data.teacherAcad = $("#acad-teacher").is(":visible") ? $("#acad-teacher").val() || "" : "";
+  data.comments = $("#topic-intervention").val() || "";
+
+  // console.log(data);
+  return data;
+}
+
+/**
+ *  Responds to a change in the Date field 
+ * */
+function dateChanged() {
+  updatePeriodList();
+  periodChanged();
+}
+
+/**
+ * Formats a Date into MM/DD/YYYY
+ * 
+ * @param {Date} date The date to format
+ * @return {string} The formatted string
+ */
+function formatDateSlashes(date) {
+  return (date.getMonth()+1) +"/" + date.getDate() + "/" + date.getFullYear();
+}
+
+/**
+ *  Requests daily schedule data from the server asynchronously 
+ * */
+function getDailySchedules() {
+  google.script.run
+    .withSuccessHandler(receiveDailySchedules)
+    .withFailureHandler(processError)
+    .getDailySchedules();
+}
+
+/**
+ *  Requests teacher intervention schedule from the server asynchronously 
+ * */
+function getInterventionTeachers() {
+  google.script.run
+    .withSuccessHandler(receiveInterventionTeachers)
+    .withFailureHandler(processError)
+    .getInterventionTeachers();
+}
+
+/**
+ *  Logic for each field to determine if valid or not 
+ * 
+ * @return {string[]} Array of class names to mark aas invalid
+ * */
+function getInvalidFields() {
+  const invalidFields = [];
+  
+  // gathers form data
+  const data = collectData();
+
+  // requires student names if student is visible (teacher submission)
+  if ($("#student").is(":visible")) {
+    if (data.firstname.length <= 0) {
+      invalidFields.push("#student");
+    }
+    if (data.lastname.length <= 0) {
+      invalidFields.push("#student");
+    }
+  }
+
+  // why is this here?
+  const now = new Date();
+  
+  // requires valid date
+  let dateReq = null;
+  try {
+    if (data.date.length <= 0) {
+      invalidFields.push("#date");
+    }
+    dateReq = new Date(data.date);
+    const month = dateReq.getMonth();
+  } catch(error) {
+    invalidFields.push("#date");
+  }
+
+  // requires period is selected
+  if (data.period.length <=0) {
+    invalidFields.push("#period");
+  }
+
+  // requires study teacher is selected/input
+  if ($("#study-teacher").is(":visible") && (data.teacherStudy.length <= 0)) {
+    invalidFields.push("#study-teacher");
+  }
+
+  // requires type is selected
+  if (data.type.length <=0) {
+    invalidFields.push("#type");
+  }
+
+  // if one of these types, requires academic teacher is input
+  if ((data.type === "Non-intervention") || (data.type === "Assessment") || (data.type === "Alt setting")){
+    if (data.teacherAcad.length <=0) {
+      invalidFields.push("#acad-teacher");
+    }
+  }
+
+  // sends invalid class names back
+  return invalidFields;
+}
+
+
+/**
+ *  Requests list of emails not allowed to sign up 
+ * */
+function getNoFlyList() {
+  google.script.run
+    .withSuccessHandler(receiveNoFlyList)
+    .withFailureHandler(processError)
+    .getNoFlyList();
+}
+
+/**
+ *  Requests max number of signups - set in spreadsheet settings 
+ * */
+function getMaxSignups() {
+  google.script.run
+    .withSuccessHandler(receiveMaxSignups)
+    .withFailureHandler(processError)
+    .getDefaultMaxSignups();
+}
+
+/**
+ *  Requests signup data from the server asynchronously 
+ * */
+function getSignups() {
+  google.script.run
+    .withSuccessHandler(receiveSignups)
+    .withFailureHandler(processError)
+    .getSignups();
+}
+
+/**
+ *  Requests student data from the server asynchronously
+ */ 
+function getStudents() {
+  google.script.run
+    .withSuccessHandler(receiveStudents)
+    .withFailureHandler(processError)
+    .getStudentNames();
+}
+
+/**
+ *  Requests teacher intervention schedule from the server asynchronously 
+ * */
+function getStudyTeachers() {
+  google.script.run
+    .withSuccessHandler(receiveStudyTeachers)
+    .withFailureHandler(processError)
+    .getStudyTeachers();
+}
+
+/**
+ *  Hides the loading modal 
+ * */
+function hideLoadingModal() {
+  $("#loading-modal").modal('hide');
+}
+
+/**
+ *  Hides all Details sections 
+ * */
+function hideTypes() {
+  $(".intervention-only").hide();
+  $(".assessment-only").hide();
+  $(".tutoring-only").hide();
+  $(".non-intervention-only").hide();
+  $(".alt-setting-only").hide();
+  $(".staff-reservation-only").hide();
+}
+
+/**
+ * Sets up the typeahead feature for selecting a student 
+ * */
+function initializeTypeahead() {
+  $('.typeahead').typeahead({
+    minLength: 3,
+    highlight: true
+  },
+  {
+    name: 'teachers',
+    source: substringMatcher(STUDENT_NAMES)
+  });
+}
+
+/**
+ * Sets up some UI elements, such as the date picker and tooltips
+ */
+function initializeUi() {
+  // initializes the datepicker calendar interface
+  $(".datepicker").datepicker({
+    maxDate: "+2w",
+    minDate: "-2w"
+  });
+
+  // sets the date requested to today
+  $(".datepicker").datepicker("setDate", "today");
+
+  // prepares the Bootstrap tooltip styling
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+  // hides links to schedules if those boxes are not filled in in the spreadsheet
+  if ($(".int-link").attr("href").length > 58) {
+    $(".int-link").removeClass("d-none");
+  }
+
+  if ($(".tut-link").attr("href").length > 58) {
+    $(".tut-link").removeClass("d-none");
+  }
+}
+
+/** 
+ * Determines if two Date object are the same date, regardless of time-of-day
+ * 
+ * @param {Date} date1 The first date to compare
+ * @param {Date} date2 The second date to compare
+ * @return {boolean} True if the two dates are the same
+ */
+function isSameDate(date1, date2) {
+  const monthMatch = date1.getMonth() === date2.getMonth();
+  const yearMatch = date1.getFullYear() === date2.getFullYear();
+  const dateMatch = date1.getDate() === date2.getDate();
+
+  return monthMatch && yearMatch && dateMatch;
+}
+
+/**
+ *  Responds to a change in the Period field 
+ * */
+function periodChanged() {
+  updateTypeOptions();
+  updateSubjectList();
+  updateStudyList();
+  updateGlassRooms();
+  checkFull();
+}
+
+/**
+ * Populates data into the form (useful for editing existing data)
+ * 
+ * @param {SignupData} signup A record of signup date to enter into fields
+ */
+function populateData(signup) {
+  $("#student").val(`${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
+  $("#date").val(formatDateSlashes(new Date(signup.date)));
+  dateChanged();
+  
+  $("#period").val("" + signup.period);
+  periodChanged();
+  
+  $("#subject").val(signup.subject);
+  $("#study-teacher").val(signup.teacherStudy);
+  $("#acad-teacher").val(signup.teacherAcad);
+
+  // unchecks Types, and check the correct one
+  $("#type input").prop("checked", "false");
+  $(`#type input[value="${signup.type}"]`).prop("checked", "true");
+  typeChanged();
+
+  // unchecks all Purposes and then checks the correct one 
+  $("#purpose input").prop("checked", "false");
+  $(`#purpose input[value="${signup.purpose}"]`).prop("checked", "true");
+
+  // unchecks all Glass Rooms and then checks the correct one 
+  $("#glass-room input").prop("checked", "false");
+  $(`#glass-room input[value="${signup.room}"]`).prop("checked", "true");
+
+  // fills the topic/comments
+  $("#topic-intervention").val(signup.comments);
+}
+
+/**
+ *  For testing the form only 
+ * */
+function populateTestData() {
+  populateData({
+    comments: "",
+    date: "3/6/2024",
+    email: "demowhs@wpsma.org",
+    firstname: "Belinda",
+    lastname: "Zzdemo",
+    mediaIn: "",
+    mediaOut: "",
+    period: "8",
+    purpose: "Group-project",
+    room: 1,
+    rowId: "",
+    studyIn1: "",
+    studyIn2: "",
+    subject: "",
+    teacherAcad: "Hahn",
+    teacherStudy: "Reeve",
+    timestamp: "3/1/2024",
+    type: "Non-intervention",
+  })
+}
+
+/**
+ *  Prevents default HTML submission behavior (generally, prevent form submit if the user hits Enter) 
+ * */
+function preventFormSubmit() {
+  var forms = document.querySelectorAll('form');
+  for (var i = 0; i < forms.length; i++) {
+    forms[i].addEventListener('submit', function(event) {
+      event.preventDefault();
+    });
+  }
+};
+
+/**
+ *  Receives daily schedule data from the server 
+ * */
+function receiveDailySchedules(schedules) {
+  DAILY_SCHEDULES = JSON.parse(schedules);
+  // console.log("DAILY_SCHEDULES", DAILY_SCHEDULES);
+  updatePeriodList();
+}
+
+/**
+ *  Receives teacher intervention data from the server 
+ * */
+function receiveInterventionTeachers(schedulesJson) {
+  // graceful fallback; if the intervention schedule can't be found, 
+  // use an input box instead of a select box
+  INTERVENTION_TEACHERS = JSON.parse(schedulesJson);
+  showIntTeacherAltInput(false);
+  if (INTERVENTION_TEACHERS === null) {
+    showIntTeacherAltInput(true);
+  } else {
+  }
+  updateSubjectList();
+}
+
+/**
+ *  Receives no fly from the server 
+ * */
+function receiveNoFlyList(emails) {
+  NO_FLY = emails;
+}
+
+/**
+ *  Receives max signups from the server 
+ * */
+function receiveMaxSignups(maxValue) {
+  console.log(`maxValue ${maxValue}`);
+  if (!Number.isNaN(maxValue) && (maxValue >= 0)) {
+    DEFAULT_MAX = maxValue;
+    CURRENT_MAX = DEFAULT_MAX;
+  } else {
+    console.error("Error parsing max signups value: " + maxValue);
+  }
+}
+
+/**
+ *  Receives signup data from the server 
+ * */
+function receiveSignups(signups) {
+  SIGNUPS = JSON.parse(signups);
+  // console.log("SIGNUPS", SIGNUPS);
+}
+
+/**
+ *  Receives student data from the server 
+ */
+function receiveStudents(students) {
+  STUDENTS = students;
+  // console.log("STUDENTS", STUDENTS);
+
+  // formats names for use in typeahed feature
+  STUDENT_NAMES = STUDENTS.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
+  initializeTypeahead();
+}
+
+/**
+ *  Receives teacher intervention data from the server 
+ * */
+function receiveStudyTeachers(studyTeachersJson) {
+  // graceful fallback; if the study hall schedule can't be found, 
+  // use an input box instead of a select box
+  showStudyAltInput(false);
+  if (STUDY_TEACHERS === null) {
+    showStudyAltInput(true);
+  } else {
+    STUDY_TEACHERS = JSON.parse(studyTeachersJson);
+  }
+  updateStudyList();
+  // console.log("STUDY_TEACHERS", STUDY_TEACHERS);
+}
+
+function showStudyAltInput(show) {
+  // graceful fallback; if the study hall schedule can't be found, 
+  // use an input box instead of a select box
+  
+  if (show) {
+    $("#study-teacher-select").hide();
+    $("#study-teacher-input").show().removeClass("d-none");
+  } else {
+    $("#study-teacher-select").show().removeClass("d-none");
+    $("#study-teacher-input").hide();
+  }
+}
+
+function showIntTeacherAltInput(show) {
+    // use an input box instead of a select box
+
+  if (show) {
+    $("#subject-int-select").hide();
+    $("#subject-int-input").show().removeClass("d-none");
+  } else {
+    $("#subject-int-select").show().removeClass("d-none");
+    $("#subject-int-input").hide();
+  }
+}
+
+/**
+ *  Shows the Details section for a particular Type 
+ * */
+function showType(typeClass) {
+  // hides all panels by default
+  hideTypes();
+
+  // shows only the indicated panel
+  $(typeClass).removeClass("d-none");
+  $(typeClass).show();
+}
+
+/**
+ * Resets the page for another submission 
+ * */
+ function startOver() {
+    $("#student").val("");
+    $("#purpose").val("");
+    $("#study-teacher-input").val("");
+    $("#acad-teacher").val("");
+    $("#topic-intervention").val("");
+    $("#subject-int-select").val("");
+
+    $("#form").show();
+    $("#success-box").hide();
+
+ }
+
+/**
+ *  Responds to a successful submission notice from the server 
+ * */
+function submitComplete(success) {
+  showSuccessToast("Submission complete");
+  hideLoadingModal();
+
+  // shows success panel, hides input fields
+  $("#form").hide();
+  $("#success-box").removeClass("d-none");
+  $("#success-box").show();
+}
+
+/**
+ *  Sends the form data to the server for submission 
+ * */
+function submitForm(){
+  // returns if form is not validated (validation indicators occur in validateForm function)
+  if (!validateForm()) {
+    return;
+  }
+  // gathers the form data
+  const data = collectData();
+
+  if ((UPDATE_ROW_ID === null) || (UPDATE_ROW_ID === "")) {
+    // new submission
+
+    google.script.run
+      .withSuccessHandler(submitComplete)
+      .withFailureHandler(processError)
+      .submitForm(data);
+  } else {
+    // updating existing records
+
+    data.rowId = UPDATE_ROW_ID;
+    google.script.run
+      .withSuccessHandler(updateComplete)
+      .withFailureHandler(processError)
+      .submitForm(data);
+  }
+  
+  showLoadingModal("Submitting");
+}
+
+/**
+ *  Responds to a change in the Type field 
+ * */
+function typeChanged() {
+  updateTypeOptions();
+  checkFull();
+  updateDetailsPanel();
+  updateStudyList();
+  updateSubjectList();
+}
+
+/**
+ *  Responds to a successful update notice from the server 
+ * */
+function updateComplete(success) {
+  showSuccessToast("Update complete.");
+  hideLoadingModal();
+
+  // shows success panel, hides input fields
+  $("#form").hide();
+  $("#success-update-box").removeClass("d-none");
+  $("#success-update-box").show();
+}
+
+/**
+ *  Updates the Details section of the form based on which Type is selected 
+ * */
+function updateDetailsPanel() {
+  if ($("input#intervention").is(":checked")) {
+    showType(".intervention-only");
+  } else if ($("input#assessment").is(":checked")) {
+    showType(".assessment-only");
+  } else if ($("input#tutoring").is(":checked")) {
+    showType(".tutoring-only");
+  } else if ($("input#non-intervention").is(":checked")) {
+    showType(".non-intervention-only");
+  } else if ($("input#alt-setting").is(":checked")) {
+    showType(".alt-setting-only");
+  } else if ($("input#staff-reservation").is(":checked")) {
+    showType(".staff-reservation-only");
+  }
+}
+
+/**
+ *  Updates the Glass Room labels if the rooms are already reserved or not 
+ * */
+function updateGlassRooms() {
+  // marks rooms as available by default
+  $("#glass-room-1").prop("disabled", false);
+  $("#glass-room-2").prop("disabled", false);
+  $("#glass-room-1-label .availability").text("Available");
+  $("#glass-room-2-label .availability").text("Available");
+
+  // returns if date or period are blank
+  const dateStr = $("#date").val();
+  if (dateStr.length === 0) {
+    return;
+  }
+  const date = new Date(dateStr);
+
+  const period = $("#period").val();
+  if (typeof period === "undefined") {
+    return;
+  }
+
+  // cycles through signup data
+  SIGNUPS.forEach(signup => {
+    const suDate = new Date(signup.date);
+    
+    // skips if dates or periods don't match
+    if (!isSameDate(suDate, date)) {
+      return;
+    }
+    const suPeriod = "" + signup.period;
+    if (suPeriod !== period) {
+      return;
+    }
+
+    const room = signup.room;
+    if ((room >= 1) && (room <= 2)) {
+      // disables the checkbox
+      $(`#glass-room-${room}`).prop("disabled", true);
+
+      // unchecks the checkbox
+      $(`#glass-room-${room}`).prop("checked", false);
+
+      // updates the label
+      $(`#glass-room-${room}-label .availability`).text("Unavailable");
+    } 
+  });
+}
+
+/**
+ * Updates the Periods select box based on the date 
+ * */
+function updatePeriodList() {
+  // remembers current selection. If this period is available in the new list,
+  // it will be selected again
+  const oldPeriodVal = $("#period").val();
+  const dateVal = $("#date").val();
+
+  // returns if no date selected
+  if (dateVal === "") {
+    return;
+  }
+  const date = new Date(dateVal);
+
+  try {
+    // clear previous options
+    $("#period option").remove();
+    
+    // cycles through daily schedules...
+    DAILY_SCHEDULES.forEach(schedule => {
+      const schedDate = new Date(schedule.date);
+    
+      // for a matching date, creates an option for each period
+      if (isSameDate(schedDate, date)) {
+        schedule.periods.forEach(period => {
+          $("#period").append(`<option value="${period}">${period}</option>`);
+        })
+      }
+    })
+
+    if (wednesdayInterventions(date)) {
+      $("#period").append(`<option value="Wed. PM">Wed. PM</option>`);
+    }
+
+    // reselects the previously selected period, if possible
+    $("#period").val(oldPeriodVal);
+  } catch (error) {
+    processError(error);
+  }
+
+  // updates UI that depends on the period
+  updateSubjectList()
+  updateStudyList();
+  updateGlassRooms();
+}
+
+/**
+ *  Updates the Subject select box based on the date and period selected 
+ * */
+function updateSubjectList() {
+  // clears previous options
+  $("#subject-int-select option").remove();
+
+  // only proceeds if the select box is still here
+  if (INTERVENTION_TEACHERS === null) {
+    return;
+  }
+  
+  // gets the date and period selected, returning if blank
+  const dateStr = $("#date").val();
+  if (dateStr.length === 0) {
+    return;
+  }
+  const date = new Date(dateStr);
+  
+  const period = $("#period").val();
+  if (period === null) {
+    return;
+  }
+
+  if (period === "Wed. PM") {
+    showIntTeacherAltInput(true);
+    return;
+  }
+  showIntTeacherAltInput(false);
+
+  const today = new Date();
+  const s2Date = new Date(INTERVENTION_TEACHERS.s2Date);
+
+  let schedules;
+  if (today.getTime() < s2Date.getTime()) {
+    schedules = INTERVENTION_TEACHERS.s1;
+  } else {
+    schedules = INTERVENTION_TEACHERS.s2;
+  }
+  
+  // cycles through the schedules...
+  DAILY_SCHEDULES.forEach(sched => {
+    const schedDate = new Date(sched.date);
+
+    if (isSameDate(schedDate, date)) {
+      // if the date is in the schedule...
+      const day = sched.day;
+      
+      // if no teachers for this date/period, return
+      if ((typeof schedules[day] === "undefined") || (typeof schedules[day][period] === "undefined")) {
+        return;
+      }
+
+      // create options for each teacher for this date/period
+      const availableTeachers = schedules[day][period];
+      if (!availableTeachers) {
+        return;
+      }
+
+      availableTeachers.forEach(teacher => {
+        $("#subject-int-select").append(`<option value="${teacher}">${teacher}</option`);
+      })
+    }
+  })
+}
+
+/**
+ * Updates the Study Teacher select box based on the date and period selected 
+ * */
+function updateStudyList() {
+   // clears previous options
+  $("#study-teacher-select option").remove();
+
+  // only proceeds if the select box is still here
+  if (STUDY_TEACHERS === null) {
+    return;
+  }
+  
+  // gets the date and period selected, returning if blank
+  const dateStr = $("#date").val();
+  if (dateStr.length === 0) {
+    return;
+  }
+  const date = new Date(dateStr);
+
+  const period = $("#period").val();
+  if (period === null) {
+    return;
+  }
+
+  $("#study-div").show()
+  if (period === "Wed. PM") {
+    $("#study-div").hide();
+  }  
+
+  const today = new Date();
+  const s2Date = new Date(STUDY_TEACHERS.s2Date);
+
+  let schedules;
+  if (today.getTime() < s2Date.getTime()) {
+    schedules = STUDY_TEACHERS.s1;
+  } else {
+    schedules = STUDY_TEACHERS.s2;
+  }
+
+  const altSetting = $("input[name='signup-type']:checked").val() === "Alt setting";
+  if (altSetting) {
+    $("#study-teacher-select").append(`<option if="from-class" value="Directly from class">Directly from class</option`);
+    $("#study-teacher-select #from-class").attr("selected", true);
+  }
+
+  // cycles through the schedules...
+  DAILY_SCHEDULES.forEach(sched => {
+    const schedDate = new Date(sched.date);
+
+    if (isSameDate(schedDate, date)) {
+      // if the date is in the schedule...
+      const day = sched.day;
+
+      // if no teachers for this date/period, return
+      if ((typeof schedules[day] === "undefined") || (typeof schedules[day][period] === "undefined")) {
+        return;
+      }
+
+      // create options for each teacher for this date/period
+      const availableTeachers = schedules[day][period];
+      if (!availableTeachers) {
+        return;
+      }
+      
+      availableTeachers.forEach(teacher => {
+        // console.log(teacher);
+          $("#study-teacher-select").append(`<option value="${teacher}">${teacher}</option`);
+      })
+    }
+  })
+}
+
+/**
+ *  Updates the Type options is there is a special schedule that period 
+ * */
+function updateTypeOptions() {
+  resetAllTypes();
+
+  toggleTutoringActive();
+  preventSignupForNoFly();
+  setSpecialScheduleAdjustments();
+}
+
+function resetAllTypes() {
+  $("input[name='signup-type']").prop("disabled", false);
+  $("input[name='purpose']").prop("disabled", false);
+  $("span.type-warning").remove();
+}
+
+function toggleTutoringActive() {
+  const tutoringActive = $('#tutoring-active').val() === "On";
+  if (!tutoringActive) {
+    markTutoringDisabled();
+  }
+}
+
+function setSpecialScheduleAdjustments() {
+  // returns if date or period are blank
+  const dateStr = $("#date").val();
+  if (dateStr.length === 0) {
+    return;
+  }
+  const date = new Date(dateStr);
+
+  let period = $("#period").val();
+  if (typeof period === "undefined") {
+    return;
+  }
+  
+  const isWednesdayInterventions = (period === "Wed. PM");
+  if (isWednesdayInterventions) {
+    showWednesdayInterventions();
+  }
+  
+  let special = {
+    allowInterventions: "",
+    allowAssessmentMakeups: "",
+    allowAltSetting: "",
+    allowTutoring: "",
+    allowNonInterventions: "",
+  };
+
+  // finds schedule matches with special schedules, returns if none
+  const match = DAILY_SCHEDULES.filter(sched => (isSameDate(new Date(sched.date), date) && (sched.specials !== null)));
+  if (match.length == 0) {
+    return;
+  }
+  
+  const specials = match[0].specials;
+  if (specials.hasOwnProperty(period)) {
+    special = specials[period];
+  } else {
+    // returns if no special schedule for this period
+    return;
+  }
+  
+  // for the IF statements below ANY text value counts as "not allowed".
+  // if not allowed, disables the check, unchecks, and adds a label warning
+  if (special.allowInterventions.length > 0) {
+    showInterventions();
+  }
+
+  if ((special.allowAssessmentMakeups.length > 0) || isWednesdayInterventions) {
+    showAssessmentMakeups();
+  }
+
+  if (special.allowAltSetting.length > 0) {
+    showAltSetting();
+  }
+
+  if ((special.allowTutoring.length > 0) || isWednesdayInterventions) {
+    showTutoring();
+  }
+
+  if ((special.allowNonInterventions.length > 0) && !isWednesdayInterventions) {
+    showNonInterventions();
+  }
+
+  checkMax(special.max);
+}
+
+function preventSignupForNoFly() {
+  const email = $("input#email").val();
+  if (Array.isArray(NO_FLY) && (NO_FLY.includes(email))) {
+    $("input#non-intervention").prop("disabled", "true");
+    $("input#non-intervention").prop("checked", false);
+    $("label[for='non-intervention']").append("<span class='type-warning'> <i>Not permitted</i></span>");
+  }
+}
+
+function showInterventions() {
+  $("input#intervention").prop("disabled", "true");
+  $("input#intervention").prop("checked", false);
+  $("label[for='intervention']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+function showAssessmentMakeups() {
+  $("input#assessment").prop("disabled", "true");
+  $("input#assessment").prop("checked", false);
+  $("label[for='assessment']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+function showAltSetting() {
+  $("input#alt-setting").prop("disabled", "true");
+  $("input#alt-setting").prop("checked", false);
+  $("label[for='alt-setting']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+function showTutoring() {
+  $("input#tutoring").prop("disabled", "true");
+  $("input#tutoring").prop("checked", false);
+  $("label[for='tutoring']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+function showWednesdayInterventions() {
+    $("input#non-intervention").prop("disabled", "true");
+    $("input#non-intervention").prop("checked", false);
+    $("label[for='non-intervention']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+function showNonInterventions() {
+  $("input#non-intervention").prop("disabled", "true");
+  $("input#non-intervention").prop("checked", false);
+  $("input[name='purpose']").prop("disabled", "true");
+  $("input[name='purpose']").prop("checked", false);
+  $("label[for='purpose']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+// gets the max number of signsups for the date/period and checks if full
+function checkMax(specialMax) {
+  // gets the max number of signsups for the date/period and checks if full
+  CURRENT_MAX = specialMax;
+  if (Number.isNaN(CURRENT_MAX) && (CURRENT_MAX !== "")) {
+    CURRENT_MAX = parseInt(CURRENT_MAX);
+  } else {
+    CURRENT_MAX = DEFAULT_MAX;
+  }
+  checkFull();
+}
+
+function markTutoringDisabled() {
+  $("input#tutoring").prop("disabled", "true");
+  $("input#tutoring").prop("checked", false);
+  $("label[for='tutoring']").append("<span class='type-warning'> <i>Not available</i></span>");
+}
+
+/**
+ *  Checks fields to make sure not required data is missing 
+ * */
+function validateForm() {
+  $("input, select, textarea, div").removeClass("invalid");
+  const invalidFields = getInvalidFields(); 
+  // console.log(invalidFields);
+  if (invalidFields.length > 0) {
+    invalidFields.forEach(field => {
+      $(field).addClass("invalid");
+    })
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Determines if the Wednesday Interventions is active and should be shown.
+ * 
+ * param {Date} - the date to show
+ * return {boolean} - True is should be shown
+ */
+function wednesdayInterventions(date) {
+  const wednesday = 3;
+  const weekday = date.getDay();
+  const dateIsWednesday = (weekday === wednesday);
+  const wedIntActive = ($("#wed-int-active").val() === "true");
+
+  // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
+  return dateIsWednesday && wedIntActive;
+}
+
+/**
+ *  Checks to see if the URL sent a row id. If so, this form is to update existing data 
+ * rather than submit new data 
+ * */
+function setUpdateStatus() {
+  // requires that user is an editor and that and update row was provided
+  IS_EDITOR = $("#is-editor").val() === "true";
+  UPDATE_ROW_ID = $("#update-row-id").val(); 
+  
+  // allow editors to edit the email field
+  $("#email").prop("disabled", !IS_EDITOR);
+
+  // hide any elements that aren't for editors
+  $(".editors-only").toggle(IS_EDITOR);
+
+  if (!IS_EDITOR || (UPDATE_ROW_ID === "")) {
+    return;
+  }
+  
+  // swap the submit button for an update button
+  $("#btn-submit").hide();
+  $("#btn-update").removeClass("d-none").show();
+  // $("#btn-delete").removeClass("d-none").show();
+    
+  // requests the signup data for this row id
+  google.script.run
+    .withSuccessHandler(receiveUpdateStudent)
+    .withFailureHandler(processError)
+    .getSignupByRow(UPDATE_ROW_ID);
+}
+
+/**
+ *  Receives signup data from the server (if updating instead of creating new) 
+ * */
+function receiveUpdateStudent(signupJson) {
+  if (signupJson === null) {
+    processError(new Error("Invalid URL parameters"));
+    return;
+  }
+  const signup = JSON.parse(signupJson);
+  // console.log("SIGNUP", signup);
+  UPDATE_DATA = signup;
+}
+
+/**
+ *  Responds generically to a server error 
+ * */
+function processError(error) {
+  hideLoadingModal();
+  showErrorToast(error.message);
+  console.error(error);
+}
+
+/**
+ *  Shows an error (red) toast 
+ * */
+function showErrorToast(errorMessage) {
+  $("#error-toast").toast("show");
+  $("#error-toast").find(".toast-body").text(errorMessage);
+}
+
+/**
+ *  Shows the loading modal, which waits until cleared 
+ * */
+function showLoadingModal(text) {
+  $("#loading-modal .loading-text").text(text);
+  $("#loading-modal").modal('show');
+}
+
+/**
+ *  Shows a successful (green) submission toast 
+ * */
+function showSuccessToast(text) {
+  $("#success-toast").toast("show");
+  $(`#success-toast .toast-body`).show();
+  $(`#success-toast .toast-body`).text(text);
+}
+
+</script>  
