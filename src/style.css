@@ -1,22 +1,17 @@
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
-
-<style>
 /*
 font-family: 'Open Sans', sans-serif;
 font-family: 'Roboto Slab', serif;
 
-#F65C02; /* WPS Orange */
-#042350; /* WPS Blue */
-#01256F; /* WPS Text Blue */
-#4984D1; /* bright blue */
-#EBF3FF; /* pale blue background */
-#8AAEE3; /* gray-blue */
+#F65C02; WPS Orange 
+#042350; WPS Blue 
+#01256F; WPS Text Blue
+#4984D1; bright blue
+#EBF3FF; pale blue background
+#8AAEE3; gray-blue
 */
 
 html {
-  font-size: 0.75rem;
+  font-size: 1.0rem;
 }
 
 body {
@@ -236,5 +231,3 @@ h4.sortable {
     color: black;
   }
 }
-
-</style>

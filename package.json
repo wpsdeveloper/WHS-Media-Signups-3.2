@@ -1,0 +1,17 @@
+{
+  "name": "whs-media-3-0",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "push": "vite build && clasp push",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/google-apps-script": "^2.0.8",
+    "vite": "^8.0.10",
+    "vite-plugin-singlefile": "^2.3.3"
+  }
+}

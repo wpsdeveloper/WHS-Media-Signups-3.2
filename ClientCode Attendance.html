@@ -28,17 +28,38 @@ const LAST_DATA = {        // tracks the last data shown
   period: null,
 }
 
+const qs = (selector, root = document) => root.querySelector(selector);
+const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
+const setVisible = (elements, visible) => {
+  const list = elements instanceof Element ? [elements] : elements;
+  list.forEach(element => element?.classList.toggle("d-none", !visible));
+};
+const setText = (selector, text, root = document) => {
+  const element = typeof selector === "string" ? qs(selector, root) : selector;
+  if (element) element.textContent = text ?? "";
+};
+const showModal = id => bootstrap.Modal.getOrCreateInstance(qs(id)).show();
+const hideModal = id => bootstrap.Modal.getOrCreateInstance(qs(id)).hide();
+const showToast = id => bootstrap.Toast.getOrCreateInstance(qs(id)).show();
+
 /* Initialization, after all html and scripts have loaded */
-$( function() {
-  // sets up the datepicker
-  $(".datepicker").datepicker({
-    maxDate: "+1w",
-    minDate: "-2w"
-  });
-  $(".datepicker").datepicker("setDate", new Date());
+document.addEventListener("DOMContentLoaded", () => {
+  const dateInput = qs(".date-input");
+  const today = new Date();
+  const toDateValue = date => date.toISOString().slice(0, 10);
+  if (dateInput) {
+    const minDate = new Date(today);
+    const maxDate = new Date(today);
+    minDate.setDate(today.getDate() - 14);
+    maxDate.setDate(today.getDate() + 7);
+    dateInput.type = "date";
+    dateInput.min = toDateValue(minDate);
+    dateInput.max = toDateValue(maxDate);
+    dateInput.value = toDateValue(today);
+  }
   
   // sets the editor status
-  IS_EDITOR = $("#is-editor").val() === "true";
+  IS_EDITOR = qs("#is-editor")?.value === "true";
   checkAdminStatus();
 
   // requests download of daily schedules
@@ -55,8 +76,11 @@ $( function() {
  * Sets up the page based on whether the current user is admin
  */
 function checkAdminStatus() {
-  IS_ADMIN = ($("#is-admin").val() === "true");
-  $(".admin-only").toggle(IS_ADMIN).removeClass("d-flex");
+  IS_ADMIN = qs("#is-admin")?.value === "true";
+  qsa(".admin-only").forEach(element => {
+    element.classList.toggle("d-none", !IS_ADMIN);
+    element.classList.remove("d-flex");
+  });
 }
 
 /**
@@ -67,7 +91,7 @@ function checkAdminStatus() {
  * */
 function cancelCheckin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
   
   // matches the type with a div class
   const divClass = {
@@ -78,10 +102,9 @@ function cancelCheckin(type, button) {
   };
 
   // shows a loading UI for the button
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".time").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), true);
+  qsa("button, .time", box).forEach(element => setVisible(element, false));
   
   // sets the value to blank i.e. a blank (cleared) cell in the spreadsheet
   const value = "";
@@ -98,7 +121,7 @@ function cancelCheckin(type, button) {
  * */
 function checkin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
   
   // matches the type with a div class
   const divClass = {
@@ -108,10 +131,9 @@ function checkin(type, button) {
     "studyIn2": ".study-return",
   };
 
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".time").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), true);
+  qsa("button, .time", box).forEach(element => setVisible(element, false));
 
   // sets the value to the current time
   const now = new Date();
@@ -127,7 +149,7 @@ function checkin(type, button) {
 
 function showEditCheckin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
 
   // matches the type with a div class
   const divClass = {
@@ -137,16 +159,14 @@ function showEditCheckin(type, button) {
     "studyIn2": ".study-return",
   };
 
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".time-edit").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".primary-buttons").hide();
-  $(box).find(".time-value").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".time-edit", box), true);
+  qsa("button, .primary-buttons, .time-value", box).forEach(element => setVisible(element, false));
 }
 
 function cancelEditCheckin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
 
   // matches the type with a div class
   const divClass = {
@@ -156,16 +176,16 @@ function cancelEditCheckin(type, button) {
     "studyIn2": ".study-return",
   };
 
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".time-edit").hide();
-  $(box).find("button").hide();
-  $(box).find(".primary-buttons").show();
-  $(box).find(".time-value").show().removeClass("d-none");
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".time-edit", box), false);
+  qsa("button", box).forEach(element => setVisible(element, false));
+  setVisible(qs(".primary-buttons", box), true);
+  setVisible(qs(".time-value", box), true);
 }
 
 function editCheckin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
   
   // matches the type with a div class
   const divClass = {
@@ -175,18 +195,20 @@ function editCheckin(type, button) {
     "studyIn2": ".study-return",
   };
 
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  const inputtedValue = $(box).find("input").val();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  const inputtedValue = qs("input", box)?.value || "";
   if (!isValidTime(inputtedValue)) {
-    $(box).find(".validation-error").remove();
-    $(box).append("<span class='validation-error text-danger'><small>Invalid time</small><span>");
+    qs(".validation-error", box)?.remove();
+    const error = document.createElement("span");
+    error.className = "validation-error text-danger";
+    error.innerHTML = "<small>Invalid time</small>";
+    box.append(error);
     return;
   }
-  $(box).find(".validation-error").remove();
+  qs(".validation-error", box)?.remove();
   
-  $(box).find(".spinner").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".time").hide();
+  setVisible(qs(".spinner", box), true);
+  qsa("button, .time", box).forEach(element => setVisible(element, false));
  
   // sends the checkin request to the server for async processing
   setCheckin(type, id, inputtedValue);
@@ -232,20 +254,23 @@ function formatCheckin(type, id, value) {
   };
 
   // Updates the checkin box UI
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), false);
 
   if (value === "") {
-    $(box).find("button").show();
-    $(box).find(".time").hide();
-    $(box).find(".time-value input").val("");
-    $(box).find(".time-edit").hide();
+    qsa("button", box).forEach(element => setVisible(element, true));
+    setVisible(qs(".time", box), false);
+    const timeInput = qs(".time-value input", box);
+    if (timeInput) timeInput.value = "";
+    setVisible(qs(".time-edit", box), false);
   } else {
-    $(box).find("button").hide();
-    $(box).find(".time").show().removeClass("d-none");
-    $(box).find(".time-value").text(formatTime(value)).show();
-    $(box).find(".primary-buttons").show();
-    $(box).find(".time-edit").hide().find("input").val(formatTime(value));
+    qsa("button", box).forEach(element => setVisible(element, false));
+    setVisible(qs(".time", box), true);
+    setText(".time-value", formatTime(value), box);
+    setVisible(qs(".primary-buttons", box), true);
+    setVisible(qs(".time-edit", box), false);
+    const timeInput = qs(".time-edit input", box);
+    if (timeInput) timeInput.value = formatTime(value);
   }
 }
 
@@ -254,8 +279,7 @@ function formatCheckin(type, id, value) {
  * */
 function clearTable() {
   // removes old data
-  $("#student-table .student-row").remove();
-  $("#staff-table .staff-row").remove();
+  qsa("#student-table .student-row, #staff-table .staff-row").forEach(row => row.remove());
 }
 
 /**
@@ -334,7 +358,7 @@ function getSignups() {
  *  Hides the loading modal 
  * */
 function hideLoadingModal() {
-  $("#loading-modal").modal('hide');
+  hideModal("#loading-modal");
 }
 
 /**
@@ -353,33 +377,32 @@ function isSameDate(date1, date2) {
  * */
 function periodChanged() {
   // clear the "current" status from all rows
-  $(".data-row").removeClass("current-period").removeClass("current-date");
+  qsa(".data-row").forEach(row => row.classList.remove("current-period", "current-date"));
 
   // saves new current date/time, returns if either is empty
-  LAST_DATA.date = $("#date").val();
+  LAST_DATA.date = qs("#date")?.value || "";
   if (LAST_DATA.date === "") {
     return;
   }
   LAST_DATA.date = new Date(LAST_DATA.date);
 
-  LAST_DATA.period = $("#period").val();
+  LAST_DATA.period = qs("#period")?.value || null;
   if (LAST_DATA.period === null) {
     return;
   }
 
   if (LAST_DATA.period === "Wed. PM") {
-    $(".wed-int").show();
-    $(".not-wed-int").hide();
-    $(".study-checkin button").text("Done");
+    setVisible(qsa(".wed-int"), true);
+    setVisible(qsa(".not-wed-int"), false);
+    qsa(".study-checkin button").forEach(button => { button.textContent = "Done"; });
   } else {
-    $(".wed-int").hide();
-    $(".not-wed-int").show();
-    $(".study-checkin button").text("Check in");
+    setVisible(qsa(".wed-int"), false);
+    setVisible(qsa(".not-wed-int"), true);
+    qsa(".study-checkin button").forEach(button => { button.textContent = "Check in"; });
   }
 
-  $(".data-row").each(index => {
-    const row = $(".data-row")[index];
-    const id = $(row).attr("data-signup-id");
+  qsa(".data-row").forEach(row => {
+    const id = row.dataset.signupId;
 
     // finds the signup data for this row's id
     const match = SIGNUPS.filter(su => su.rowId === id);
@@ -394,31 +417,29 @@ function periodChanged() {
       suDate = new Date(suDate);
     }
 
-    console.log()
-
     if (isSameDate(LAST_DATA.date, suDate)) {
-      $(row).addClass("current-date");
+      row.classList.add("current-date");
     } 
 
     // gets the signup's period, and marks the row "current" if it matched the selection
     let suPeriod = "" + signup.period;
     if (LAST_DATA.period === suPeriod) {
-      $(row).addClass("current-period");
+      row.classList.add("current-period");
     }
   });
 
   // if no current date/time data for students, shows the "No records" row
-  if ($(".student-row.current-period.current-date").length <= 0) {
-    $(".student-row-empty").show().removeClass("d-none");
+  if (qsa(".student-row.current-period.current-date").length <= 0) {
+    setVisible(qsa(".student-row-empty"), true);
   } else {
-    $(".student-row-empty").hide();
+    setVisible(qsa(".student-row-empty"), false);
   }
 
   // if no current date/time data for staff, hides the staff table
-  if ($(".staff-row.current-period.current-date").length <= 0) {
-    $("#staff-table").hide();
+  if (qsa(".staff-row.current-period.current-date").length <= 0) {
+    setVisible(qs("#staff-table"), false);
   } else {
-    $("#staff-table").show().removeClass("d-none");
+    setVisible(qs("#staff-table"), true);
   }
 }
 
@@ -430,8 +451,8 @@ function populateSignupTable() {
   clearTable();
 
   // sets the new current date/period
-  LAST_DATA.date = new Date($("#date").val());
-  LAST_DATA.period = $("#period").val();
+  LAST_DATA.date = new Date(qs("#date")?.value);
+  LAST_DATA.period = qs("#period")?.value || null;
 
   const currentSignups = SIGNUPS.filter(su => (isSameDate(new Date(su.date), LAST_DATA.date)));
 
@@ -439,24 +460,26 @@ function populateSignupTable() {
     // adds a new empty student row
     let stRow;
       if (signup.type === "Staff reservation") {
-        const table = $("#staff-table");
-        stRow = $("#templates #staff-row-template").clone().appendTo(table);
+        const table = qs("#staff-table");
+        stRow = qs("#templates #staff-row-template").cloneNode(true);
+        table.append(stRow);
       } else {
-        const table = $("#student-table");
-        stRow = $("#templates #student-row-template").clone().appendTo(table);
+        const table = qs("#student-table");
+        stRow = qs("#templates #student-row-template").cloneNode(true);
+        table.append(stRow);
       }
 
     // places the row id into the row HTML element as "data-signup-id"
-    $(stRow).removeAttr("id");
-    $(stRow).attr("data-signup-id", signup.rowId);
+    stRow.removeAttribute("id");
+    stRow.dataset.signupId = signup.rowId;
     
     // assigns current-date or current-period tags if appropriate
     if (LAST_DATA.period === "" + signup.period) {
-      $(stRow).addClass("current-period");
+      stRow.classList.add("current-period");
     } 
     const date = new Date(signup.date);
     if (isSameDate(date, LAST_DATA.date)) {
-      $(stRow).addClass("current-date");
+      stRow.classList.add("current-date");
     }
 
     // fills names
@@ -466,28 +489,29 @@ function populateSignupTable() {
     } else if ((signup.room === "2") || (signup.room === 2)) {
       roomIcon = `<span class="badge text-bg-danger room-badge">Room 2</span>`;
     }
-    $(stRow).find('.student-name').html(`${signup.lastname}, ${signup.firstname}${roomIcon}`);
+    qs('.student-name', stRow).innerHTML = `${signup.lastname}, ${signup.firstname}${roomIcon}`;
 
     // adds edit icons if the user is an editor
     if (IS_EDITOR) {
-      $(stRow).find('.edit-icons').removeClass("d-none").addClass("d-inline");
-      const href = $(stRow).find('.edit-icons a.edit-link').attr("href") + "&id=" + signup.rowId;
-      $(stRow).find('.edit-icons a.edit-link').attr("href", href);
+      qs('.edit-icons', stRow)?.classList.remove("d-none");
+      qs('.edit-icons', stRow)?.classList.add("d-inline");
+      const editLink = qs('.edit-icons a.edit-link', stRow);
+      if (editLink) editLink.href = `${editLink.href}&id=${signup.rowId}`;
     }
 
     // adds details to the row
     if (signup.type === "Intervention") {
-      $(stRow).find('.type').text(`Intervention: ${signup.subject}`);
+      setText('.type', `Intervention: ${signup.subject}`, stRow);
     } else if (signup.type === "Tutoring") {
-      $(stRow).find('.type').text(`NHS Tutoring: ${signup.subject}`);
+      setText('.type', `NHS Tutoring: ${signup.subject}`, stRow);
     } else if (signup.type === "Assessment") {
-      $(stRow).find('.type').text(`Assessment Makeup: ${signup.teacherAcad}`);
+      setText('.type', `Assessment Makeup: ${signup.teacherAcad}`, stRow);
     } else if (signup.type === "Alt setting") {
-      $(stRow).find('.type').text(`Alt Setting for ${signup.teacherAcad}`);
+      setText('.type', `Alt Setting for ${signup.teacherAcad}`, stRow);
     } else if (signup.type === "Non-intervention") {
-      $(stRow).find('.type').text(`Non-Intervention (${signup.purpose}/${signup.teacherAcad})`);
+      setText('.type', `Non-Intervention (${signup.purpose}/${signup.teacherAcad})`, stRow);
     } else if (signup.type === "Staff reservation") {
-      $(stRow).find('.type').text(`Staff reservation`);
+      setText('.type', "Staff reservation", stRow);
     }
   
     // populates checkin time data
@@ -505,11 +529,11 @@ function populateSignupTable() {
     }
 
     // adds other simple data
-    $(stRow).find('.study-teacher').text(`${signup.teacherStudy}`);
-    $(stRow).find('.comments').text(`${signup.comments}`);
-    $(stRow).find('.room').text("");
+    setText('.study-teacher', signup.teacherStudy, stRow);
+    setText('.comments', signup.comments, stRow);
+    setText('.room', "", stRow);
     if (signup.room !== "" ) {
-      $(stRow).find('.room').text(`Glass Room ${signup.room}, reserved by ${signup.email}`);
+      setText('.room', `Glass Room ${signup.room}, reserved by ${signup.email}`, stRow);
     }
   });
 
@@ -593,23 +617,20 @@ function resort(field) {
   CURRENT_SORT.FIELD = field;
 
   // updates the sort icon UI
-  $(".sort-icon i").removeClass("active");
-
-  $(".sort-icon i").removeClass("fa-caret-up");
-  $(".sort-icon i").removeClass("fa-caret-down");
+  qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
   
   if (CURRENT_SORT.FIELD === "student") {
-      $(".sort-student").addClass('active');
+      qs(".sort-student")?.classList.add("active");
   } else if (CURRENT_SORT.FIELD === "study") {
-      $(".sort-study").addClass('active');
+      qs(".sort-study")?.classList.add("active");
   }
   
   if (CURRENT_SORT.ORDER === "asc") {
-    $(".sort-icon i.active").addClass('fa-caret-down');
-    $(".sort-icon i.active").removeClass('fa-caret-up');
+    qs(".sort-icon i.active")?.classList.add("fa-caret-down");
+    qs(".sort-icon i.active")?.classList.remove("fa-caret-up");
   } else {
-    $(".sort-icon i.active").removeClass('fa-caret-down');
-    $(".sort-icon i.active").addClass('fa-caret-up');
+    qs(".sort-icon i.active")?.classList.remove("fa-caret-down");
+    qs(".sort-icon i.active")?.classList.add("fa-caret-up");
   }
 
   // rebuild the table (with the new sort order)
@@ -635,11 +656,11 @@ function setCheckin(type, id, value) {
  * */
 function showAttendance() {
   // slide animation back to "original" position
-  $(".panel").css("transform", `translate(0, 0)`);
+  qs(".panel").style.transform = "translate(0, 0)";
 
   // updates the header
-  $(".header-row .signup-info").hide();
-  $(".header-row .attendance-info").show().removeClass("d-none");
+  setVisible(qs(".header-row .signup-info"), false);
+  setVisible(qs(".header-row .attendance-info"), true);
 }
 
 /**
@@ -648,8 +669,8 @@ function showAttendance() {
  * @param {string} text The text to display in the modal
  * */
 function showLoadingModal(text) {
-  $("#loading-modal .loading-text").text(text);
-  $("#loading-modal").modal('show');
+  setText("#loading-modal .loading-text", text);
+  showModal("#loading-modal");
 }
 
 /**
@@ -658,14 +679,14 @@ function showLoadingModal(text) {
 function showSignupInfo() {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const width = $(".header-row .attendance-info").width() -24; // -24 to include the extra margin/padding
+  const width = qs(".header-row .attendance-info").getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
 
   // animates the panel
-  $(".panel").css("transform", `translate(-${width}px, 0)`);
+  qs(".panel").style.transform = `translate(-${width}px, 0)`;
 
   // updates the header
-  $(".header-row .signup-info").show().removeClass("d-none");
-  $(".header-row .attendance-info").hide();
+  setVisible(qs(".header-row .signup-info"), true);
+  setVisible(qs(".header-row .attendance-info"), false);
 }
 
 /**
@@ -674,9 +695,8 @@ function showSignupInfo() {
  * @param {string} text The text to display in the toast
  * */
 function showSuccessToast(text) {
-  $("#success-toast").toast("show");
-  $(`#success-toast .toast-body`).show();
-  $(`#success-toast .toast-body`).text(text);
+  setText("#success-toast .toast-body", text);
+  showToast("#success-toast");
 }
 
 /**
@@ -685,8 +705,8 @@ function showSuccessToast(text) {
  * @param {string} errorMessage The text to display in the toast
  * */
 function showErrorToast(errorMessage) {
-  $("#error-toast").toast("show");
-  $("#error-toast").find(".toast-body").text(errorMessage);
+  setText("#error-toast .toast-body", errorMessage);
+  showToast("#error-toast");
 }
 
 /**
@@ -730,7 +750,7 @@ function sortSignupsByField(field, asc) {
 function updatePeriodList() {
   // remembers current selection. If this period is available in the new list,
   const oldPeriodVal = LAST_DATA.period;
-  LAST_DATA.date = $("#date").val();
+  LAST_DATA.date = qs("#date")?.value || "";
   
   // returns if no date selected
   if (LAST_DATA.date === "") {
@@ -738,7 +758,7 @@ function updatePeriodList() {
   }
   try {
     // clear previous options
-    $("#period option").remove();
+    qs("#period").replaceChildren();
 
     // gets the data selected
     const date = new Date(LAST_DATA.date);
@@ -750,20 +770,26 @@ function updatePeriodList() {
       // for a matching date, creates an option for each period
       if (isSameDate(schedDate, date)) {
         schedule.periods.forEach(period => {
-          $("#period").append(`<option value="${period}">${period}</option>`);
+          const option = document.createElement("option");
+          option.value = period;
+          option.textContent = period;
+          qs("#period").append(option);
         })
       }
     })
 
     if (wednesdayInterventions(date)) {
-      $("#period").append(`<option value="Wed. PM">Wed. PM</option>`);
+      const option = document.createElement("option");
+      option.value = "Wed. PM";
+      option.textContent = "Wed. PM";
+      qs("#period").append(option);
     }
 
     // reselects the previously selected period, if possible
     if (oldPeriodVal !== null) {
-      $("#period").val(oldPeriodVal);
+      qs("#period").value = oldPeriodVal;
     } else {
-      $("#period").val($("#period option").first().val());
+      qs("#period").value = qs("#period option")?.value || "";
     }
   } catch (error) {
     processError(error);
@@ -781,7 +807,7 @@ function wednesdayInterventions(date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = ($("#wed-int-active").val() === "true");
+  const wedIntActive = qs("#wed-int-active")?.value === "true";
 
   return dateIsWednesday && wedIntActive;
 }

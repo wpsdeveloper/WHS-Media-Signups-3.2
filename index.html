@@ -1,4 +1,17 @@
- <!-- HTML for the Signup Form  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+  <title>Document</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+   <!-- HTML for the Signup Form  -->
 <script>
   if (window.trustedTypes && window.trustedTypes.createPolicy) {
     window.trustedTypes.createPolicy('default', {
@@ -11,7 +24,6 @@
 
 <!-- CSS files -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-<?!= include('CSS'); ?>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -25,7 +37,7 @@
 
         <!-- Logo image -->
         <div class="logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center">
-          <img src="https://lh3.googleusercontent.com/d/<?!= LOGO_ID ?>">
+          <img id="logo-image" src="https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc" data-logo-id="<?!= LOGO_ID ?>" alt="Walpole Public Schools">
           <div class="ms-3 d-none d-lg-inline">
             <span class="d-inline d-md-block">Walpole </span><span class="public-schools d-inline d-md-block">Public Schools</span>
           </div>
@@ -40,8 +52,8 @@
 
         <!-- Buttons/links to other pages  -->
         <div class="link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center ">
-          <a id="attendance-link" class="staff-only btn btn-light" href="<?!=SCRIPT_URL?>?page=attendance" target="_top">Attendance</a>
-          <a id="admin-link" class="admin-only btn btn-light ms-1" href="<?!=SCRIPT_URL?>?page=admin" target="_top">Admin</a>
+          <a id="attendance-link" class="staff-only btn btn-light" href="#" target="_top">Attendance</a>
+          <a id="admin-link" class="admin-only btn btn-light ms-1" href="#" target="_top">Admin</a>
         </div>
       </div>
     </div>
@@ -68,7 +80,7 @@
                 <label class="form-check-label" for="intervention">
                   <a href="#" data-bs-toggle="tooltip" data-bs-title="For extra help with academic learning" data-bs-placement="right">
                     Intervention 
-                    <a class="int-link schedule-link d-none" href="https://docs.google.com/spreadsheets/d/<?!= INT_DOC_ID ?>/view" target="_new">(schedule)</a> 
+                    <a class="int-link schedule-link d-none" href="#" data-doc-id="<?!= INT_DOC_ID ?>" target="_blank">(schedule)</a> 
                   </a>
                 </label>
               </div>
@@ -89,7 +101,7 @@
                 <label class="form-check-label" for="tutoring">
                   <a href="#" data-bs-toggle="tooltip" data-bs-title="During March, get academic help from National Honor Society students" data-bs-placement="right">
                     NHS tutoring 
-                    <a class="tut-link schedule-link d-none" href="https://docs.google.com/spreadsheets/d/<?!= TUTORING_DOC_ID ?>/view" target="_new">(schedule)</a> 
+                    <a class="tut-link schedule-link d-none" href="#" data-doc-id="<?!= TUTORING_DOC_ID ?>" target="_blank">(schedule)</a> 
                   </a>
                 </label>
               </div>
@@ -386,7 +398,7 @@
         Success!
       </h3>
       <p>
-        Your update has been saved. Click <a id="attendance-link-updated" href="<?!=SCRIPT_URL?>?page=attendance" target="_top">here</a> to return to the attendance page.
+        Your update has been saved. Click <a id="attendance-link-updated" href="#" target="_top">here</a> to return to the attendance page.
       </p>
     </div>
 
@@ -479,7 +491,8 @@
 <!-- Javascript libraries and files -->
 <script src="https://kit.fontawesome.com/1a74660f3b.js" crossorigin="anonymous"></script>
 
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-
-<?!= include('ClientCode Signup'); ?>
+ 
+<script src="src/client-code-signup.js" type="module"></script>
+</body>
+</html>

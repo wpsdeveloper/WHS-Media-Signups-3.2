@@ -12,7 +12,7 @@
 let SIGNUPS = [];         // previous signup data
 let DAILY_SCHEDULES = []; // daily schedules for each date in the current school year
 let STUDENTS = [];
-let STUDENT_NAMES; // special holder of formatted student names, for the typeahead feature
+let STUDENT_NAMES; // formatted student names for the student datalist
 let CURRENT_AUDIT = [];
 
 // Page settings
@@ -35,21 +35,44 @@ const LAST_DATA = {        // tracks the last data shown
 const MONTH = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-/* Initialization, after all html and scripts have loaded */
-$( function() {
-  // sets up the datepicker
-  $(".datepicker").datepicker({
-    maxDate: "+1w",
-    minDate: "-2w"
+const qs = (selector, root = document) => root.querySelector(selector);
+const qsa = (selector, root = document) => [...root.querySelectorAll(selector)];
+const setVisible = (elements, visible) => {
+  const list = elements instanceof Element ? [elements] : elements;
+  list.forEach(element => {
+    if (element) element.classList.toggle("d-none", !visible);
   });
-  $(".datepicker").datepicker("setDate", new Date());
+};
+const setText = (selector, text, root = document) => {
+  const element = typeof selector === "string" ? qs(selector, root) : selector;
+  if (element) element.textContent = text ?? "";
+};
+const showModal = id => bootstrap.Modal.getOrCreateInstance(qs(id)).show();
+const hideModal = id => bootstrap.Modal.getOrCreateInstance(qs(id)).hide();
+const showToast = id => bootstrap.Toast.getOrCreateInstance(qs(id)).show();
+
+/* Initialization, after all html and scripts have loaded */
+document.addEventListener("DOMContentLoaded", () => {
+  const dateInput = qs(".date-input");
+  const today = new Date();
+  const toDateValue = date => date.toISOString().slice(0, 10);
+  if (dateInput) {
+    const minDate = new Date(today);
+    const maxDate = new Date(today);
+    minDate.setDate(today.getDate() - 14);
+    maxDate.setDate(today.getDate() + 7);
+    dateInput.type = "date";
+    dateInput.min = toDateValue(minDate);
+    dateInput.max = toDateValue(maxDate);
+    dateInput.value = toDateValue(today);
+  }
 
   initializeTabs();
 
   getAppSettings();
   
   // sets the editor status
-  IS_EDITOR = $("#is-editor").val() === "true";
+  IS_EDITOR = qs("#is-editor")?.value === "true";
 
   // requests download of daily schedules
   getDailySchedules();
@@ -62,7 +85,7 @@ $( function() {
   // shows the Loading modal
   showLoadingModal("Retrieving data");
 
-  $("#student-name").on("change", getStudentAudit());
+  qs("#student-name")?.addEventListener("change", getStudentAudit);
 });
 
 /**
@@ -108,7 +131,7 @@ function receiveAppSettings(dataJSON) {
 }
 
 function populateSettingsTable(settings) {
-  const table = $("#settings-panel");
+  const table = qs("#settings-panel");
 
   settings.forEach(settingRow => {
     const key = settingRow[0];
@@ -117,25 +140,30 @@ function populateSettingsTable(settings) {
     const comments = settingRow[3];
     const type = settingRow[4];
 
-    const stRow = $("#templates #settings-row-template").clone().appendTo(table);
-    $(stRow).removeAttr("id");
-    $(stRow).find(".key").text(key);
-    $(stRow).find(".description").text(description);
-    $(stRow).find(".comments").html(`<small>${comments}</small>`);
-    const input = $(stRow).find(".value input");
+    const stRow = qs("#settings-row-template").cloneNode(true);
+    stRow.removeAttribute("id");
+    table.append(stRow);
+    setText(".key", key, stRow);
+    setText(".description", description, stRow);
+    qs(".comments", stRow).innerHTML = `<small>${comments}</small>`;
+    const input = qs(".value input", stRow);
 
     switch(type) {
       case "string":
       case "string-array":
-        $(input).val(value).prop("type", "text");
+        input.value = value;
+        input.type = "text";
         break;
       case "integer":
-        $(input).val(value).prop("type", "number");
+        input.value = value;
+        input.type = "number";
         break;
       case "boolean":
         const on = (value==="On") || (value==="true");
-        $(input).removeClass("form-control").addClass("form-check-input")
-        .prop("type", "checkbox").prop("checked", on);
+        input.classList.remove("form-control");
+        input.classList.add("form-check-input");
+        input.type = "checkbox";
+        input.checked = on;
         break;
       case "date":
         console.log(new Date(value));
@@ -144,7 +172,8 @@ function populateSettingsTable(settings) {
         const day = ("0" + date.getDate()).slice(-2);
         const month = ("0" + (date.getMonth() + 1)).slice(-2);
         const year = date.getFullYear();
-        $(input).prop("type", "date").val(`${year}-${month}-${day}`)
+        input.type = "date";
+        input.value = `${year}-${month}-${day}`;
         
         break;
     }
@@ -153,11 +182,10 @@ function populateSettingsTable(settings) {
 
 function saveSettings() {
   showLoadingModal("Saving settings");
-  const rows = $("#settings-panel .settings-row");
+  const rows = qsa("#settings-panel .settings-row");
     
-  $(rows).each(function() {
-    const row = this;
-    const key = $(row).find(".key").text();
+  rows.forEach(row => {
+    const key = qs(".key", row).textContent;
     
     let foundIndex = -1;
     const settings = SETTINGS;
@@ -169,17 +197,17 @@ function saveSettings() {
     if (foundIndex < 0) {
       return;
     }
-    const input = $(row).find("input");
+    const input = qs("input", row);
     let newValue = "";
     switch (SETTINGS[foundIndex][4]) {
       case "string":
       case "string-array":
       case "integer":
       case "date":
-        newValue = $(input).val();
+        newValue = input.value;
         break;
       case "boolean":
-        newValue = $(input).is(":checked") ? "On" : "Off";
+        newValue = input.checked ? "On" : "Off";
         break;
       }
     SETTINGS[foundIndex][1] = newValue; 
@@ -205,7 +233,7 @@ function settingsSaveComplete() {
  * */
 function cancelCheckin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
   
   // matches the type with a div class
   const divClass = {
@@ -216,10 +244,10 @@ function cancelCheckin(type, button) {
   };
 
   // shows a loading UI for the button
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".time").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), true);
+  qs(".spinner", box)?.classList.remove("d-none");
+  qsa("button, .time", box).forEach(element => setVisible(element, false));
   
   // sets the value to blank i.e. a blank (cleared) cell in the spreadsheet
   const value = "";
@@ -236,7 +264,7 @@ function cancelCheckin(type, button) {
  * */
 function checkin(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
   
   // matches the type with a div class
   const divClass = {
@@ -246,10 +274,10 @@ function checkin(type, button) {
     "studyIn2": ".study-return",
   };
 
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".time").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), true);
+  qs(".spinner", box)?.classList.remove("d-none");
+  qsa("button, .time", box).forEach(element => setVisible(element, false));
 
   // sets the value to the current time
   const now = new Date();
@@ -265,7 +293,7 @@ function checkin(type, button) {
 
 function checkinUpdateTime(type, button) {
   // determines the rowId of the signup belonging to that button
-  const id = $(button).closest(".student-row").attr("data-signup-id");
+  const id = button.closest(".student-row").dataset.signupId;
   
   // matches the type with a div class
   const divClass = {
@@ -275,13 +303,13 @@ function checkinUpdateTime(type, button) {
     "studyIn2": ".study-return",
   };
 
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").show().removeClass("d-none");
-  $(box).find("button").hide();
-  $(box).find(".time").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), true);
+  qs(".spinner", box)?.classList.remove("d-none");
+  qsa("button, .time", box).forEach(element => setVisible(element, false));
 
   // sets the value to the current time
-  const now = $(`.${divClass[type]} `);
+  const now = qs(`${divClass[type]} input`)?.value;
   
   // sends the checkin request to the server for async processing
   setCheckin(type, id, formatTime(now));
@@ -289,7 +317,7 @@ function checkinUpdateTime(type, button) {
   const thisSignup = SIGNUPS.filter(su => su.rowId == id);
   
   thisSignup.forEach(su => {
-    su[type] = now.toISOString();
+    su[type] = now;
   });
 }
 
@@ -314,21 +342,21 @@ function formatCheckin(type, id, value, alreadyFormatted) {
   };
 
   // Updates the checkin box UI
-  const box = $(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
-  $(box).find(".spinner").hide();
+  const box = qs(`.student-row[data-signup-id="${id}"] ${divClass[type]}`);
+  setVisible(qs(".spinner", box), false);
 
   if (value === "") {
-    $(box).find("button").show();
-    $(box).find(".time").hide();
-    $(box).find(".time-value").text("");
+    qsa("button", box).forEach(element => setVisible(element, true));
+    setVisible(qs(".time", box), false);
+    setText(".time-value", "", box);
   } else {
-    $(box).find("button").hide();
-    $(box).find(".time").show();
-    $(box).find(".time").removeClass("d-none");
+    qsa("button", box).forEach(element => setVisible(element, false));
+    setVisible(qs(".time", box), true);
+    qs(".time", box)?.classList.remove("d-none");
     if (alreadyFormatted) {
-      $(box).find(".time-value").text(value);
+      setText(".time-value", value, box);
     } else {
-      $(box).find(".time-value").text(formatTime(new Date(value)));
+      setText(".time-value", formatTime(new Date(value)), box);
     }
   }
 }
@@ -338,7 +366,7 @@ function formatCheckin(type, id, value, alreadyFormatted) {
  * */
 function clearTable() {
   // removes old data
-  $("#student-panel .student-row").remove();
+  qsa("#student-panel .student-row").forEach(row => row.remove());
 }
 
 /**
@@ -414,12 +442,12 @@ function getSignups() {
  *  Requests student data from the server asynchronously
  */ 
 function getStudentAudit() {
-  if ($("#student-name").val().length < 3) {
+  if (qs("#student-name").value.length < 3) {
     return;
   }
   // this is a teacher submission
-  // breaks apart the line selected in the typeahead
-  const student = $("#student-name").val() || "";
+  // breaks apart the line selected in the student datalist
+  const student = qs("#student-name").value || "";
   const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
   const names = (brackets.length > 0) ? brackets[0].split(", ") : [];
 
@@ -447,21 +475,27 @@ function getStudents() {
  *  Hides the loading modal 
  * */
 function hideLoadingModal() {
-  $("#loading-modal").modal('hide');
+  hideModal("#loading-modal");
 }
 
 /**
- * Sets up the typeahead feature for selecting a student 
+ * Sets up the student datalist
  * */
-function initializeTypeahead() {
-  $('.typeahead').typeahead({
-    minLength: 3,
-    highlight: true
-  },
-  {
-    name: 'teachers',
-    source: substringMatcher(STUDENT_NAMES)
-  });
+function initializeStudentDatalist() {
+  const input = qs(".student-autocomplete");
+  if (!input) return;
+  let list = qs("#student-suggestions");
+  if (!list) {
+    list = document.createElement("datalist");
+    list.id = "student-suggestions";
+    document.body.append(list);
+  }
+  list.replaceChildren(...(STUDENT_NAMES || []).map(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    return option;
+  }));
+  input.setAttribute("list", list.id);
 }
 
 /**
@@ -491,26 +525,28 @@ function populateSignupTable() {
   const currentSignups = SIGNUPS;
 
   if (currentSignups.length === 0) {
-    $(".student-row-empty").show().removeClass("d-none");
+    qsa(".student-row-empty").forEach(row => row.classList.remove("d-none"));
     return;
   }
 
-  $(".student-row-empty").hide();
+  qsa(".student-row-empty").forEach(row => row.classList.add("d-none"));
   
   currentSignups.forEach(signup => {
     // adds a new empty student row
     let stRow;
       if (signup.type === "Staff reservation") {
-        const table = $("#staff-table");
-        stRow = $("#templates #staff-row-template").clone().appendTo(table);
+        const table = qs("#staff-table");
+        stRow = qs("#templates #staff-row-template").cloneNode(true);
+        table.append(stRow);
       } else {
-        const table = $("#student-panel");
-        stRow = $("#templates #student-row-template").clone().appendTo(table);
+        const table = qs("#student-panel");
+        stRow = qs("#templates #student-row-template").cloneNode(true);
+        table.append(stRow);
       }
 
     // places the row id into the row HTML element as "data-signup-id"
-    $(stRow).removeAttr("id");
-    $(stRow).attr("data-signup-id", signup.rowId);
+    stRow.removeAttribute("id");
+    stRow.dataset.signupId = signup.rowId;
 
     // fills names
     let roomIcon = "";
@@ -522,25 +558,27 @@ function populateSignupTable() {
 
     // adds edit icons if the user is an editor
     if (IS_EDITOR) {
-      $(stRow).find('.edit-icons').removeClass("d-none").addClass("d-inline");
-      const href = $(stRow).find('.edit-icons a.edit-link').attr("href") + "&id=" + signup.rowId;
-      $(stRow).find('.edit-icons a.edit-link').attr("href", href);
+      qs('.edit-icons', stRow)?.classList.remove("d-none");
+      qs('.edit-icons', stRow)?.classList.add("d-inline");
+      const editLink = qs('.edit-icons a.edit-link', stRow);
+      if (editLink) editLink.href = `${editLink.href}&id=${signup.rowId}`;
     }
 
     // adds details to the row
     if (signup.type === "Intervention") {
-      $(stRow).find('.type').text(`Intervention: ${signup.subject}`);
+      setText('.type', `Intervention: ${signup.subject}`, stRow);
     } else if (signup.type === "Tutoring") {
-      $(stRow).find('.type').text(`NHS Tutoring: ${signup.subject}`);
+      setText('.type', `NHS Tutoring: ${signup.subject}`, stRow);
     } else if (signup.type === "Assessment") {
-      $(stRow).find('.type').text(`Assessment Makeup: ${signup.teacherAcad}`);
+      setText('.type', `Assessment Makeup: ${signup.teacherAcad}`, stRow);
     } else if (signup.type === "Alt setting") {
-      $(stRow).find('.type').text(`Alt Setting for ${signup.teacherAcad}`);
+      setText('.type', `Alt Setting for ${signup.teacherAcad}`, stRow);
     } else if (signup.type === "Non-intervention") {
-      $(stRow).find('.type').text(`Non-Intervention (${signup.purpose}/${signup.teacherAcad})`);
+      setText('.type', `Non-Intervention (${signup.purpose}/${signup.teacherAcad})`, stRow);
     } else if (signup.type === "Staff reservation") {
-      $(stRow).find('.type').text(`Staff reservation`);
+      setText('.type', "Staff reservation", stRow);
     }
+  setText('.date', formatDateShort(signup.date), stRow);
  
     // populates checkin time data
     if (signup.studyIn1.length > 0) {
@@ -556,26 +594,24 @@ function populateSignupTable() {
       formatCheckin("studyIn2", signup.rowId, signup.studyIn2);
     }
 
-    $(stRow).find('.date').html(`${formatDateShort(signup.date)}`);
-
     // saves new current date/time, returns if either is empty
     if (signup.period === "Wed. PM") {
-      $(stRow).find('.period').html(`${signup.period}`);
-      $(".wed-int").show();
-      $(".not-wed-int").hide();
-      $(".study-checkin button").text("Done");
+      setText('.period', signup.period, stRow);
+      setVisible(qsa(".wed-int"), true);
+      setVisible(qsa(".not-wed-int"), false);
+      qsa(".study-checkin button").forEach(button => { button.textContent = "Done"; });
     } else {
-      $(stRow).find('.period').html(`Period ${signup.period}`);
-      $(".wed-int").hide();
-      $(".not-wed-int").show();
-      $(".study-checkin button").text("Check in");
+      setText('.period', `Period ${signup.period}`, stRow);
+      setVisible(qsa(".wed-int"), false);
+      setVisible(qsa(".not-wed-int"), true);
+      qsa(".study-checkin button").forEach(button => { button.textContent = "Check in"; });
     }
     // adds other simple data
-    $(stRow).find('.study-teacher').text(`${signup.teacherStudy}`);
-    $(stRow).find('.comments').text(`${signup.comments}`);
-    $(stRow).find('.room').text("");
+    setText('.study-teacher', signup.teacherStudy, stRow);
+    setText('.comments', signup.comments, stRow);
+    setText('.room', "", stRow);
     if (signup.room !== "" ) {
-      $(stRow).find('.room').text(`Glass Room ${signup.room}, reserved by ${signup.email}`);
+      setText('.room', `Glass Room ${signup.room}, reserved by ${signup.email}`, stRow);
     }
   });
 }
@@ -603,7 +639,7 @@ function processError(error) {
   modal.addEventListener('hidden.bs.modal', () => {
     showErrorToast(error.message);
   }, {once: true });
-  $("#loading-modal").modal('hide');
+  hideModal("#loading-modal");
 }
 
 /**
@@ -649,7 +685,7 @@ function receiveStudentAudit(signups) {
 
   // // formats names for use in typeahed feature
   // STUDENT_NAMES = STUDENTS.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
-  // initializeTypeahead();
+  // initializeStudentDatalist();
   
   // // marks as downloaded
   // DOWNLOADED.students = true;
@@ -665,7 +701,7 @@ function receiveStudents(students) {
 
   // formats names for use in typeahed feature
   STUDENT_NAMES = STUDENTS.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
-  initializeTypeahead();
+  initializeStudentDatalist();
   
   // marks as downloaded
   DOWNLOADED.students = true;
@@ -705,23 +741,20 @@ function resort(field) {
   CURRENT_SORT.FIELD = field;
 
   // updates the sort icon UI
-  $(".sort-icon i").removeClass("active");
-
-  $(".sort-icon i").removeClass("fa-caret-up");
-  $(".sort-icon i").removeClass("fa-caret-down");
+  qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
   
   if (CURRENT_SORT.FIELD === "date") {
-      $(".sort-date").addClass('active');
+        qs(".sort-date")?.classList.add("active");
   } else if (CURRENT_SORT.FIELD === "period") {
-      $(".sort-period").addClass('active');
+        qs(".sort-period")?.classList.add("active");
   }
   
   if (CURRENT_SORT.ORDER === "asc") {
-    $(".sort-icon i.active").addClass('fa-caret-down');
-    $(".sort-icon i.active").removeClass('fa-caret-up');
+    qs(".sort-icon i.active")?.classList.add("fa-caret-down");
+    qs(".sort-icon i.active")?.classList.remove("fa-caret-up");
   } else {
-    $(".sort-icon i.active").removeClass('fa-caret-down');
-    $(".sort-icon i.active").addClass('fa-caret-up');
+    qs(".sort-icon i.active")?.classList.remove("fa-caret-down");
+    qs(".sort-icon i.active")?.classList.add("fa-caret-up");
   }
 
   // rebuild the table (with the new sort order)
@@ -747,11 +780,11 @@ function setCheckin(type, id, value) {
  * */
 function showAttendance() {
   // slide animation back to "original" position
-  $(".panel").css("transform", `translate(0, 0)`);
+  qs(".panel").style.transform = "translate(0, 0)";
 
   // updates the header
-  $(".header-row .signup-info").hide();
-  $(".header-row .attendance-info").show().removeClass("d-none");
+  setVisible(qs(".header-row .signup-info"), false);
+  setVisible(qs(".header-row .attendance-info"), true);
 }
 
 /**
@@ -760,8 +793,8 @@ function showAttendance() {
  * @param {string} text The text to display in the modal
  * */
 function showLoadingModal(text) {
-  $("#loading-modal .loading-text").text(text);
-  $("#loading-modal").modal('show');
+  setText("#loading-modal .loading-text", text);
+  showModal("#loading-modal");
 }
 
 /**
@@ -770,14 +803,14 @@ function showLoadingModal(text) {
 function showSignupInfo() {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const width = $(".header-row .attendance-info").width() -24; // -24 to include the extra margin/padding
+  const width = qs(".header-row .attendance-info").getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
 
   // animates the panel
-  $(".panel").css("transform", `translate(-${width}px, 0)`);
+  qs(".panel").style.transform = `translate(-${width}px, 0)`;
 
   // updates the header
-  $(".header-row .signup-info").show().removeClass("d-none");
-  $(".header-row .attendance-info").hide();
+  setVisible(qs(".header-row .signup-info"), true);
+  setVisible(qs(".header-row .attendance-info"), false);
 }
 
 /**
@@ -793,9 +826,8 @@ function showPanel(panelName) {
  * @param {string} text The text to display in the toast
  * */
 function showSuccessToast(text) {
-  $("#success-toast").toast("show");
-  $(`#success-toast .toast-body`).show();
-  $(`#success-toast .toast-body`).text(text);
+  setText("#success-toast .toast-body", text);
+  showToast("#success-toast");
 }
 
 /**
@@ -804,8 +836,8 @@ function showSuccessToast(text) {
  * @param {string} errorMessage The text to display in the toast
  * */
 function showErrorToast(errorMessage) {
-  $("#error-toast").find(".toast-body").text(errorMessage);
-  $("#error-toast").toast("show");
+  setText("#error-toast .toast-body", errorMessage);
+  showToast("#error-toast");
 }
 
 /**
@@ -850,7 +882,7 @@ function sortSignupsByField(field, asc) {
 function updatePeriodList() {
   // remembers current selection. If this period is available in the new list,
   const oldPeriodVal = LAST_DATA.period;
-  LAST_DATA.date = $("#date").val();
+  LAST_DATA.date = qs("#date")?.value || "";
   
   // returns if no date selected
   if (LAST_DATA.date === "") {
@@ -858,7 +890,7 @@ function updatePeriodList() {
   }
   try {
     // clear previous options
-    $("#period option").remove();
+    qs("#period").replaceChildren();
 
     // gets the data selected
     const date = new Date(LAST_DATA.date);
@@ -870,21 +902,27 @@ function updatePeriodList() {
       // for a matching date, creates an option for each period
       if (isSameDate(schedDate, date)) {
         schedule.periods.forEach(period => {
-          $("#period").append(`<option value="${period}">${period}</option>`);
+          const option = document.createElement("option");
+          option.value = period;
+          option.textContent = period;
+          qs("#period").append(option);
         })
       }
     })
 
     // console.log(date, wednesdayInterventions(date));
     if (wednesdayInterventions(date)) {
-      $("#period").append(`<option value="Wed. PM">Wed. PM</option>`);
+      const option = document.createElement("option");
+      option.value = "Wed. PM";
+      option.textContent = "Wed. PM";
+      qs("#period").append(option);
     }
 
     // reselects the previously selected period, if possible
     if (oldPeriodVal !== null) {
-      $("#period").val(oldPeriodVal);
+      qs("#period").value = oldPeriodVal;
     } else {
-      $("#period").val($("#period option").first().val());
+      qs("#period").value = qs("#period option")?.value || "";
     }
   } catch (error) {
     processError(error);
@@ -901,7 +939,7 @@ function wednesdayInterventions(date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = ($("#wed-int-active").val() === "true");
+  const wedIntActive = qs("#wed-int-active")?.value === "true";
 
   // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
   return dateIsWednesday && wedIntActive;
