@@ -132,7 +132,7 @@ async function setMockData() {
   setIsAdmin(true);
   checkStaffStatus();
 
-  const sampleData = await import("./sampledata.js");
+  const sampleData = await import("../sampledata.js");
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   await delay(2000); 
   
