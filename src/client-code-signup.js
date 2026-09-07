@@ -108,7 +108,7 @@ async function getInitialData() {
 }
 
 function receiveInitialData(data) {
-  console.log(data);
+  // console.log(data);
   receiveStudents(data.students);
   receiveDailySchedules(data.dailySchedules);
   receiveSignups(data.signups);
@@ -172,15 +172,6 @@ function checkFull() {
         setChecked(selector, false);
         setVisible(`${selector} label span.type-warning`, true);
         setText(`${selector} label span.type-warning`, "Full");
-      
-        // const label = document.querySelector(`label[for='${selector.substring(1)}']`);
-        // if (!label.querySelector("span.type-warning")) {
-        //   const span = document.createElement("span");
-        //   span.textContent = " Full";
-        //   span.addClass("type-warning");
-        //   $(label)?.append(span);
-        // }
-          // label.querySelector("span.type-warning").html("<span class='type-warning'> Full</span>");
       });
     }
   }
@@ -235,7 +226,7 @@ function collectData() {
   
   // gets subject from whichever is visible
   if (isVisible(".subject-int")) {
-    data.subject = valueOf(".subject-int:visible");
+    data.subject = valueOf(".subject-int");
   } else if (isVisible("#subject-non-int")) {
     data.subject = valueOf("#subject-non-int");
   }
@@ -671,7 +662,13 @@ function updateGlassRooms() {
   if (dateStr.length === 0) {
     return;
   }
-  const date = new Date(dateStr);
+  const date = new Date();
+  date.setFullYear(
+    parseInt(dateStr.split('-')[0]),
+    parseInt(dateStr.split('-')[1]) - 1,
+    parseInt(dateStr.split('-')[2])
+  );
+  date.setHours(0, 0, 0, 0); // Midnight in local timezone
 
   const period = valueOf("#period");
   if (typeof period === "undefined") {

@@ -71,7 +71,7 @@ header .logo img {
   width: auto;
 }
 
-h1 {
+h1, header h1 {
   padding-top: 20px;
   color: #F65C02; /* WPS Orange */
 }
