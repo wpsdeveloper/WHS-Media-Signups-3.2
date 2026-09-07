@@ -1,3 +1,4 @@
+<script>
 /** ======= CLIENT CODE  ======== 
  * Javascript code (client-side) for the Signup Form
  * 
@@ -9,70 +10,27 @@
  * Updates are done by appending "?page=update&id" plus the record's row id to the URL.
  */  
 
-import {
-  STUDENT_NAMES,
-  DAILY_SCHEDULES,
-  INTERVENTION_TEACHERS,
-  STUDY_TEACHERS,
-  SIGNUPS,
-  NO_FLY,
-  IS_STAFF,
-  IS_EDITOR,
-  IS_ADMIN,
-  UPDATE_ROW_ID,
-  UPDATE_DATA,
-  CURRENT_MAX,
-  DEFAULT_MAX,
-  setIsStaff,
-  setIsAdmin,
-  setIsEditor,
-  setUpdateRowId,
-  setUpdateData,
-  setStudents,
-  setStudentNames,
-  setSignups,
-  setDailySchedules,
-  setInterventionTeachers,
-  setStudyTeachers,
-  setNoFly,
-  setCurrentMax,
-  setDefaultMax,
-} from "./signup/state.js";
-import {
-  $,
-  $$,
-  valueOf, setValue,
-  isVisible, setVisible,
-  isChecked, setChecked,
-  getAttribute, setAttribute,
-  setText,
-  setDisabled,
-  setInvalid,
-  appendOption,
-  clearOptions,
-  addEventListener,
-  parseJsonValue,
-  initializeStudentDatalist,
-  showBootstrapModal,
-  hideBootstrapModal,
-  showBootstrapToast,
-  configureDateInput,
-  setTooltips,
-} from "./signup/dom.js";
+// Arrays of data to download
+let STUDENTS = []; // list of students
+let STUDENT_NAMES; // special holder of formatted student names, for the typeahead feature
+let DAILY_SCHEDULES = []; // daily schedules for each date in the current school year
+let INTERVENTION_TEACHERS = {}; // complex listing of intervention teachers for each day/period
+let STUDY_TEACHERS = {}; // complex listing of study hall teachers for each day/period
+let SIGNUPS = []; // previous signups data
+let NO_FLY = []; // students not allowed to sign up
 
-import {
-  parseDateInput,
-  toDateInputValue,
-  updatePeriodList as renderPeriodList,
-  getTeachersForSelection,
-  updateSubjectList as renderSubjectList,
-  updateStudyList as renderStudyList,
-} from "./signup/schedule.js";
+// Form settings
+let IS_STAFF = false; // whether the current user is a staff member
+let IS_EDITOR = false; // whether the current user may edit existing data
+let IS_ADMIN = false; // whether the current user may edit existing data
+let UPDATE_ROW_ID = null; // if updating data, the row id of the record
+let UPDATE_DATA = null; // if updating data, the record data to update
+let DEFAULT_MAX = 15; // the default maximum number of signups per period
+let CURRENT_MAX = DEFAULT_MAX; // the number of signups allowed for the selected period
 
 /* Initialization, after everything has loaded */
-document.addEventListener("DOMContentLoaded", () => {
+$( function() {
   initializeUi();
-  bindEvents();
   showLoadingModal("Retrieving data");
   updateDetailsPanel();
 
@@ -86,29 +44,14 @@ document.addEventListener("DOMContentLoaded", () => {
   getInitialData();
 });
 
-function bindEvents() {
-  addEventListener('input[name="signup-type"]', "change", typeChanged);
-  addEventListener('#date', "change", dateChanged);
-  addEventListener('#period', "change", periodChanged);
-  addEventListener('#btn-submit', "click", submitForm);
-  addEventListener('#btn-update', "click", submitForm);
-  addEventListener('.success-box-start-over', "click", startOver); 
-}
-
-async function getInitialData() {
-  const url = window.location.href;
-  if ((url.indexOf("localhost") >=0 ) || (url.indexOf("127.0.0.1") >= 0)) {
-    await setMockData();
-  } else {
-    google.script.run
+function getInitialData() {
+  google.script.run
     .withFailureHandler(processError)
     .withSuccessHandler(receiveInitialData)
     .getInitialSignupFormData();
-  }
 }
 
 function receiveInitialData(data) {
-  console.log(data);
   receiveStudents(data.students);
   receiveDailySchedules(data.dailySchedules);
   receiveSignups(data.signups);
@@ -124,21 +67,6 @@ function receiveInitialData(data) {
   }
 }
 
-async function setMockData() {
-  setValue("#email", "wpsdeveloper@walpole.k12.ma.us");
-  setValue("#update-row-id", "");
-  setIsStaff(true);
-  setIsEditor(true);
-  setIsAdmin(true);
-  checkStaffStatus();
-
-  const sampleData = await import("./sampledata.js");
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  await delay(2000); 
-  
-  receiveInitialData(sampleData.default);
-}
-
 /**
  * Calculates if a given date/period is full (too many existing reservations) 
  * */
@@ -146,13 +74,13 @@ function checkFull() {
   // console.log("checking if full");
   
   // gets the date and period selected, returning if blank
-  const dateVal = valueOf("#date");
+  const dateVal = $("#date").val();
   if (dateVal === "") {
     return;
   }
   const date = new Date(dateVal);
   
-  const period = valueOf("#period");
+  const period = $("#period").val();
   if (period === null) {
     return;
   }
@@ -166,22 +94,18 @@ function checkFull() {
   if (matching.length >= CURRENT_MAX) {
     console.info("Over limit, max = " + CURRENT_MAX);
     
-    if (matching.length >= CURRENT_MAX) {
-      ["#non-intervention", "#tutoring"].forEach(selector => {
-        setDisabled(selector, true);
-        setChecked(selector, false);
-        setVisible(`${selector} label span.type-warning`, true);
-        setText(`${selector} label span.type-warning`, "Full");
-      
-        // const label = document.querySelector(`label[for='${selector.substring(1)}']`);
-        // if (!label.querySelector("span.type-warning")) {
-        //   const span = document.createElement("span");
-        //   span.textContent = " Full";
-        //   span.addClass("type-warning");
-        //   $(label)?.append(span);
-        // }
-          // label.querySelector("span.type-warning").html("<span class='type-warning'> Full</span>");
-      });
+    // disables checkbox and adjusts label
+    $("input#non-intervention").prop("disabled", "true");
+    $("input#non-intervention").prop("checked", false);
+    if ($("label[for='non-intervention'] span.type-warning").length === 0) {
+      $("label[for='non-intervention']").append("<span class='type-warning'> Full</span>");
+    }
+
+    // disables checkbox and adjusts label
+    $("input#tutoring").prop("disabled", "true");
+    $("input#tutoring").prop("checked", false);
+    if ($("label[for='tutoring'] span.type-warning").length === 0) {
+      $("label[for='tutoring']").append("<span class='type-warning'> Full</span>");
     }
   }
 }
@@ -190,16 +114,16 @@ function checkFull() {
  * Sets up the page based on whether the current user is student or staff
  */
 function checkStaffStatus() {
-  setIsStaff(valueOf("input#email").indexOf("@walpole.k12.ma.us") > 0);
-  setVisible(".staff-only", IS_STAFF);
+  IS_STAFF = ($("input#email").val().indexOf("@walpole.k12.ma.us") > 0);
+  $(".staff-only").toggle(IS_STAFF).removeClass("d-flex");
 }
 
 /**
  * Sets up the page based on whether the current user is admin
  */
 function checkAdminStatus() {
-  setIsAdmin(valueOf("#is-admin") === "true");
-  setVisible(".admin-only", IS_ADMIN);
+  IS_ADMIN = ($("#is-admin").val() === "true");
+  $(".admin-only").toggle(IS_ADMIN).removeClass("d-flex");
 }
 
 /**
@@ -209,16 +133,16 @@ function checkAdminStatus() {
 function collectData() {
   const data = {};
   
-  data.email = valueOf("#email");
+  data.email = $("#email").val() || "";
   
   // sets at least blanks for the names
   data.firstname = "";
   data.lastname = "";
 
-  if (isVisible("#student")) {
+  if ($("#student").is(":visible")) {
     // this is a teacher submission
     // breaks apart the line selected in the typeahead
-    const student = valueOf("#student");
+    const student = $("#student").val() || "";
     const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
     const names = (brackets.length > 0) ? brackets[0].split(", ") : [];
 
@@ -227,26 +151,30 @@ function collectData() {
     data.emailStudent = (brackets.length == 2) ? brackets[1].trim().substring(0, brackets[1].length-1) : "";
   } else {
     // this is a student submission
-    data.emailStudent = data.email;
+    data.emailStudent = $("#email").val() || "";
   }
-  data.date = valueOf("#date");
-  data.period = valueOf("#period");
-  data.type = valueOf("input[name='signup-type']:checked");
+  data.date = $("#date").val() || "";
+  data.period = $("#period").val() || "";
+  data.type = $("input[name='signup-type']:checked").val() || "";
   
   // gets subject from whichever is visible
-  if (isVisible(".subject-int")) {
-    data.subject = valueOf(".subject-int:visible");
-  } else if (isVisible("#subject-non-int")) {
-    data.subject = valueOf("#subject-non-int");
+  // console.log($(".subject-int:visible"));
+  if ($(".subject-int:visible").length > 0) {
+    data.subject = $(".subject-int:visible").val() || "";
+  } else if ($("#subject-non-int").is(":visible")) {
+    data.subject = $("#subject-non-int").val() || "";
   }
 
-  data.purpose = isVisible("#purpose") ? valueOf("#purpose input[type='radio']:checked") : "";
-  data.room = isVisible("#glass-room") ? valueOf("#glass-room input[type='radio']:checked") : "";
-  data.teacherStudy = valueOf(".study-teacher");
-  data.teacherAcad = valueOf("#acad-teacher");
-  data.comments = valueOf("#topic-intervention");
+  data.purpose = $("#purpose").is(":visible") ? $("#purpose input:radio:checked").val() || "" : "";
+  data.room = $("#glass-room").is(":visible") ? $("#glass-room input:radio:checked").val() || "" : "";
+  data.teacherStudy = "";
+  if ($(".study-teacher:visible").length > 0) {
+    data.teacherStudy = $(".study-teacher:visible").val() || "";
+  }
+  data.teacherAcad = $("#acad-teacher").is(":visible") ? $("#acad-teacher").val() || "" : "";
+  data.comments = $("#topic-intervention").val() || "";
 
-  console.log(data);
+  // console.log(data);
   return data;
 }
 
@@ -269,6 +197,26 @@ function formatDateSlashes(date) {
 }
 
 /**
+ *  Requests daily schedule data from the server asynchronously 
+ * */
+function getDailySchedules() {
+  google.script.run
+    .withSuccessHandler(receiveDailySchedules)
+    .withFailureHandler(processError)
+    .getDailySchedules();
+}
+
+/**
+ *  Requests teacher intervention schedule from the server asynchronously 
+ * */
+function getInterventionTeachers() {
+  google.script.run
+    .withSuccessHandler(receiveInterventionTeachers)
+    .withFailureHandler(processError)
+    .getInterventionTeachers();
+}
+
+/**
  *  Logic for each field to determine if valid or not 
  * 
  * @return {string[]} Array of class names to mark aas invalid
@@ -280,7 +228,7 @@ function getInvalidFields() {
   const data = collectData();
 
   // requires student names if student is visible (teacher submission)
-  if (isVisible("#student")) {
+  if ($("#student").is(":visible")) {
     if (data.firstname.length <= 0) {
       invalidFields.push("#student");
     }
@@ -310,7 +258,7 @@ function getInvalidFields() {
   }
 
   // requires study teacher is selected/input
-  if (isVisible("#study-teacher") && (data.teacherStudy.length <= 0)) {
+  if ($("#study-teacher").is(":visible") && (data.teacherStudy.length <= 0)) {
     invalidFields.push("#study-teacher");
   }
 
@@ -330,37 +278,115 @@ function getInvalidFields() {
   return invalidFields;
 }
 
+
+/**
+ *  Requests list of emails not allowed to sign up 
+ * */
+function getNoFlyList() {
+  google.script.run
+    .withSuccessHandler(receiveNoFlyList)
+    .withFailureHandler(processError)
+    .getNoFlyList();
+}
+
+/**
+ *  Requests max number of signups - set in spreadsheet settings 
+ * */
+function getMaxSignups() {
+  google.script.run
+    .withSuccessHandler(receiveMaxSignups)
+    .withFailureHandler(processError)
+    .getDefaultMaxSignups();
+}
+
+/**
+ *  Requests signup data from the server asynchronously 
+ * */
+function getSignups() {
+  google.script.run
+    .withSuccessHandler(receiveSignups)
+    .withFailureHandler(processError)
+    .getSignups();
+}
+
+/**
+ *  Requests student data from the server asynchronously
+ */ 
+function getStudents() {
+  google.script.run
+    .withSuccessHandler(receiveStudents)
+    .withFailureHandler(processError)
+    .getStudentNames();
+}
+
+/**
+ *  Requests teacher intervention schedule from the server asynchronously 
+ * */
+function getStudyTeachers() {
+  google.script.run
+    .withSuccessHandler(receiveStudyTeachers)
+    .withFailureHandler(processError)
+    .getStudyTeachers();
+}
+
 /**
  *  Hides the loading modal 
  * */
 function hideLoadingModal() {
-  hideBootstrapModal("#loading-modal");
+  $("#loading-modal").modal('hide');
 }
 
 /**
  *  Hides all Details sections 
  * */
 function hideTypes() {
-   setVisible(
-    ".intervention-only, .assessment-only, .tutoring-only, .non-intervention-only, .alt-setting-only, .staff-reservation-only",
-    false);
+  $(".intervention-only").hide();
+  $(".assessment-only").hide();
+  $(".tutoring-only").hide();
+  $(".non-intervention-only").hide();
+  $(".alt-setting-only").hide();
+  $(".staff-reservation-only").hide();
+}
+
+/**
+ * Sets up the typeahead feature for selecting a student 
+ * */
+function initializeTypeahead() {
+  $('.typeahead').typeahead({
+    minLength: 3,
+    highlight: true
+  },
+  {
+    name: 'teachers',
+    source: substringMatcher(STUDENT_NAMES)
+  });
 }
 
 /**
  * Sets up some UI elements, such as the date picker and tooltips
  */
 function initializeUi() {
-  const today = new Date();
-  configureDateInput("#date",
-    toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
-    toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
-    toDateInputValue(today)
-  );
-  
-  setTooltips('[data-bs-toggle="tooltip"]');
+  // initializes the datepicker calendar interface
+  $(".datepicker").datepicker({
+    maxDate: "+2w",
+    minDate: "-2w"
+  });
 
-  setVisible(".int-link", (getAttribute(".int-link", "href") || "").length > 58);
-  setVisible(".tut-link", (getAttribute("href") || "").length > 58);
+  // sets the date requested to today
+  $(".datepicker").datepicker("setDate", "today");
+
+  // prepares the Bootstrap tooltip styling
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+  // hides links to schedules if those boxes are not filled in in the spreadsheet
+  if ($(".int-link").attr("href").length > 58) {
+    $(".int-link").removeClass("d-none");
+  }
+
+  if ($(".tut-link").attr("href").length > 58) {
+    $(".tut-link").removeClass("d-none");
+  }
 }
 
 /** 
@@ -395,32 +421,32 @@ function periodChanged() {
  * @param {SignupData} signup A record of signup date to enter into fields
  */
 function populateData(signup) {
-  setValue("#student", `${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
-  setValue("#date", formatDateSlashes(new Date(signup.date)));
+  $("#student").val(`${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
+  $("#date").val(formatDateSlashes(new Date(signup.date)));
   dateChanged();
   
-  setValue("#period", "" + signup.period);
+  $("#period").val("" + signup.period);
   periodChanged();
   
-  setValue("#subject").val(signup.subject);
-  setValue("#study-teacher", signup.teacherStudy);
-  setValue("#acad-teacher", signup.teacherAcad);
+  $("#subject").val(signup.subject);
+  $("#study-teacher").val(signup.teacherStudy);
+  $("#acad-teacher").val(signup.teacherAcad);
 
   // unchecks Types, and check the correct one
-  setValue("#type input").prop("checked", "false");
-  setValue(`#type input[value="${signup.type}"]`).prop("checked", "true");
+  $("#type input").prop("checked", "false");
+  $(`#type input[value="${signup.type}"]`).prop("checked", "true");
   typeChanged();
 
   // unchecks all Purposes and then checks the correct one 
-  setChecked("#purpose input", false);
-  setChecked(`#purpose input[value="${signup.purpose}"]`, true);
+  $("#purpose input").prop("checked", "false");
+  $(`#purpose input[value="${signup.purpose}"]`).prop("checked", "true");
 
   // unchecks all Glass Rooms and then checks the correct one 
-  setChecked("#glass-room input", false);
-  setChecked(`#glass-room input[value="${signup.room}"]`, true);
+  $("#glass-room input").prop("checked", "false");
+  $(`#glass-room input[value="${signup.room}"]`).prop("checked", "true");
 
   // fills the topic/comments
-  setValue("#topic-intervention", signup.comments);
+  $("#topic-intervention").val(signup.comments);
 }
 
 /**
@@ -465,7 +491,7 @@ function preventFormSubmit() {
  *  Receives daily schedule data from the server 
  * */
 function receiveDailySchedules(schedules) {
-  setDailySchedules(JSON.parse(schedules));
+  DAILY_SCHEDULES = JSON.parse(schedules);
   // console.log("DAILY_SCHEDULES", DAILY_SCHEDULES);
   updatePeriodList();
 }
@@ -476,7 +502,7 @@ function receiveDailySchedules(schedules) {
 function receiveInterventionTeachers(schedulesJson) {
   // graceful fallback; if the intervention schedule can't be found, 
   // use an input box instead of a select box
-  setInterventionTeachers(JSON.parse(schedulesJson));
+  INTERVENTION_TEACHERS = JSON.parse(schedulesJson);
   showIntTeacherAltInput(false);
   if (INTERVENTION_TEACHERS === null) {
     showIntTeacherAltInput(true);
@@ -489,7 +515,7 @@ function receiveInterventionTeachers(schedulesJson) {
  *  Receives no fly from the server 
  * */
 function receiveNoFlyList(emails) {
-  setNoFly(emails);
+  NO_FLY = emails;
 }
 
 /**
@@ -498,8 +524,8 @@ function receiveNoFlyList(emails) {
 function receiveMaxSignups(maxValue) {
   console.log(`maxValue ${maxValue}`);
   if (!Number.isNaN(maxValue) && (maxValue >= 0)) {
-    setDefaultMax(maxValue);
-    setCurrentMax(maxValue);
+    DEFAULT_MAX = maxValue;
+    CURRENT_MAX = DEFAULT_MAX;
   } else {
     console.error("Error parsing max signups value: " + maxValue);
   }
@@ -509,7 +535,7 @@ function receiveMaxSignups(maxValue) {
  *  Receives signup data from the server 
  * */
 function receiveSignups(signups) {
-  setSignups(JSON.parse(signups));
+  SIGNUPS = JSON.parse(signups);
   // console.log("SIGNUPS", SIGNUPS);
 }
 
@@ -517,12 +543,12 @@ function receiveSignups(signups) {
  *  Receives student data from the server 
  */
 function receiveStudents(students) {
-  setStudents(students);
+  STUDENTS = students;
   // console.log("STUDENTS", STUDENTS);
 
   // formats names for use in typeahed feature
-  setStudentNames(students.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`));
-  initializeStudentDatalist(STUDENT_NAMES);
+  STUDENT_NAMES = STUDENTS.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
+  initializeTypeahead();
 }
 
 /**
@@ -535,20 +561,35 @@ function receiveStudyTeachers(studyTeachersJson) {
   if (STUDY_TEACHERS === null) {
     showStudyAltInput(true);
   } else {
-    setStudyTeachers(JSON.parse(studyTeachersJson));
+    STUDY_TEACHERS = JSON.parse(studyTeachersJson);
   }
   updateStudyList();
   // console.log("STUDY_TEACHERS", STUDY_TEACHERS);
 }
 
 function showStudyAltInput(show) {
-  setVisible("#study-teacher-select", !show);
-  setVisible("#study-teacher-input", show);
+  // graceful fallback; if the study hall schedule can't be found, 
+  // use an input box instead of a select box
+  
+  if (show) {
+    $("#study-teacher-select").hide();
+    $("#study-teacher-input").show().removeClass("d-none");
+  } else {
+    $("#study-teacher-select").show().removeClass("d-none");
+    $("#study-teacher-input").hide();
+  }
 }
 
 function showIntTeacherAltInput(show) {
-  setVisible("#subject-int-select", !show);
-  setVisible("#subject-int-input", show);
+    // use an input box instead of a select box
+
+  if (show) {
+    $("#subject-int-select").hide();
+    $("#subject-int-input").show().removeClass("d-none");
+  } else {
+    $("#subject-int-select").show().removeClass("d-none");
+    $("#subject-int-input").hide();
+  }
 }
 
 /**
@@ -559,21 +600,24 @@ function showType(typeClass) {
   hideTypes();
 
   // shows only the indicated panel
-  setVisible(typeClass, true);
+  $(typeClass).removeClass("d-none");
+  $(typeClass).show();
 }
 
 /**
  * Resets the page for another submission 
  * */
  function startOver() {
-  setValue("#student", "");
-  setValue("#purpose", "");
-  setValue("#study-teacher-input", "");
-  setValue("#acad-teacher", "");
-  setValue("#topic-intervention", "");
-  setValue("#subject-int-select", "");
-  setVisible("#form", true);
-  setVisible("#success-box", false);
+    $("#student").val("");
+    $("#purpose").val("");
+    $("#study-teacher-input").val("");
+    $("#acad-teacher").val("");
+    $("#topic-intervention").val("");
+    $("#subject-int-select").val("");
+
+    $("#form").show();
+    $("#success-box").hide();
+
  }
 
 /**
@@ -584,8 +628,9 @@ function submitComplete(success) {
   hideLoadingModal();
 
   // shows success panel, hides input fields
-  setVisible("#form", false);
-  setVisible("#success-box", true);
+  $("#form").hide();
+  $("#success-box").removeClass("d-none");
+  $("#success-box").show();
 }
 
 /**
@@ -638,20 +683,28 @@ function updateComplete(success) {
   hideLoadingModal();
 
   // shows success panel, hides input fields
-  setVisible("#form", false);
-  setVisible("#success-update-box", true);
+  $("#form").hide();
+  $("#success-update-box").removeClass("d-none");
+  $("#success-update-box").show();
 }
 
 /**
  *  Updates the Details section of the form based on which Type is selected 
  * */
 function updateDetailsPanel() {
-  if (isChecked("input#intervention")) showType(".intervention-only");
-  else if (isChecked("input#assessment")) showType(".assessment-only");
-  else if (isChecked("input#tutoring")) showType(".tutoring-only");
-  else if (isChecked("input#non-intervention")) showType(".non-intervention-only");
-  else if (isChecked("input#alt-setting")) showType(".alt-setting-only");
-  else if (isChecked("input#staff-reservation")) showType(".staff-reservation-only");
+  if ($("input#intervention").is(":checked")) {
+    showType(".intervention-only");
+  } else if ($("input#assessment").is(":checked")) {
+    showType(".assessment-only");
+  } else if ($("input#tutoring").is(":checked")) {
+    showType(".tutoring-only");
+  } else if ($("input#non-intervention").is(":checked")) {
+    showType(".non-intervention-only");
+  } else if ($("input#alt-setting").is(":checked")) {
+    showType(".alt-setting-only");
+  } else if ($("input#staff-reservation").is(":checked")) {
+    showType(".staff-reservation-only");
+  }
 }
 
 /**
@@ -659,21 +712,19 @@ function updateDetailsPanel() {
  * */
 function updateGlassRooms() {
   // marks rooms as available by default
-  setVisible("#glass-room-1", true);
-  setVisible("#glass-room-2", true);
-  setDisabled("#glass-room-1", false);
-  setDisabled("#glass-room-2", false);
-  setText("#glass-room-1-label .availability", "Available");
-  setText("#glass-room-2-label .availability", "Available");
+  $("#glass-room-1").prop("disabled", false);
+  $("#glass-room-2").prop("disabled", false);
+  $("#glass-room-1-label .availability").text("Available");
+  $("#glass-room-2-label .availability").text("Available");
 
   // returns if date or period are blank
-  const dateStr = valueOf("#date");
+  const dateStr = $("#date").val();
   if (dateStr.length === 0) {
     return;
   }
   const date = new Date(dateStr);
 
-  const period = valueOf("#period");
+  const period = $("#period").val();
   if (typeof period === "undefined") {
     return;
   }
@@ -694,13 +745,13 @@ function updateGlassRooms() {
     const room = signup.room;
     if ((room >= 1) && (room <= 2)) {
       // disables the checkbox
-      setDisabled(`#glass-room-${room}`, true);
+      $(`#glass-room-${room}`).prop("disabled", true);
 
       // unchecks the checkbox
-      setChecked(`#glass-room-${room}`, false);
+      $(`#glass-room-${room}`).prop("checked", false);
 
       // updates the label
-      setText(`#glass-room-${room}-label .availability`, "Unavailable");
+      $(`#glass-room-${room}-label .availability`).text("Unavailable");
     } 
   });
 }
@@ -710,47 +761,46 @@ function updateGlassRooms() {
  * */
 function updatePeriodList() {
   // remembers current selection. If this period is available in the new list,
-  const oldPeriodVal = valueOf("#period");
-  const dateVal = valueOf("#date");
-  if (dateVal === "") return;
-  const date = parseDateInput(dateVal);
+  // it will be selected again
+  const oldPeriodVal = $("#period").val();
+  const dateVal = $("#date").val();
+
+  // returns if no date selected
+  if (dateVal === "") {
+    return;
+  }
+  const date = new Date(dateVal);
 
   try {
     // clear previous options
-    clearOptions("#period");
-
-    // gets the data selected
-    const date = new Date(dateVal);
+    $("#period option").remove();
     
     // cycles through daily schedules...
     DAILY_SCHEDULES.forEach(schedule => {
       const schedDate = new Date(schedule.date);
-
+    
       // for a matching date, creates an option for each period
       if (isSameDate(schedDate, date)) {
         schedule.periods.forEach(period => {
-          const option = document.createElement("option");
-          option.value = period;
-          option.textContent = period;
-          appendOption("#period", period, period);
+          $("#period").append(`<option value="${period}">${period}</option>`);
         })
       }
     })
 
-    // console.log(date, wednesdayInterventions(date));
     if (wednesdayInterventions(date)) {
-      appendOption("#period", "Wed. PM", "Wed. PM");
+      $("#period").append(`<option value="Wed. PM">Wed. PM</option>`);
     }
 
     // reselects the previously selected period, if possible
-    if (oldPeriodVal !== null) {
-      setValue("#period", oldPeriodVal);
-    } else {
-      setValue("#period", valueOf("#period option") || "");
-    }
+    $("#period").val(oldPeriodVal);
   } catch (error) {
     processError(error);
   }
+
+  // updates UI that depends on the period
+  updateSubjectList()
+  updateStudyList();
+  updateGlassRooms();
 }
 
 /**
@@ -758,7 +808,7 @@ function updatePeriodList() {
  * */
 function updateSubjectList() {
   // clears previous options
-   document.querySelector("#subject-int-select").replaceChildren();
+  $("#subject-int-select option").remove();
 
   // only proceeds if the select box is still here
   if (INTERVENTION_TEACHERS === null) {
@@ -766,13 +816,13 @@ function updateSubjectList() {
   }
   
   // gets the date and period selected, returning if blank
-  const dateStr = valueOf("#date");
+  const dateStr = $("#date").val();
   if (dateStr.length === 0) {
     return;
   }
   const date = new Date(dateStr);
   
-  const period = valueOf("#period");
+  const period = $("#period").val();
   if (period === null) {
     return;
   }
@@ -813,7 +863,7 @@ function updateSubjectList() {
       }
 
       availableTeachers.forEach(teacher => {
-        appendOption("#subject-int-select", teacher, teacher);
+        $("#subject-int-select").append(`<option value="${teacher}">${teacher}</option`);
       })
     }
   })
@@ -824,7 +874,7 @@ function updateSubjectList() {
  * */
 function updateStudyList() {
    // clears previous options
-  document.querySelector("#study-teacher-select").replaceChildren();
+  $("#study-teacher-select option").remove();
 
   // only proceeds if the select box is still here
   if (STUDY_TEACHERS === null) {
@@ -832,20 +882,20 @@ function updateStudyList() {
   }
   
   // gets the date and period selected, returning if blank
-  const dateStr = valueOf("#date");
+  const dateStr = $("#date").val();
   if (dateStr.length === 0) {
     return;
   }
   const date = new Date(dateStr);
 
-  const period = valueOf("#period");
+  const period = $("#period").val();
   if (period === null) {
     return;
   }
 
-  setVisible("#study-div", true);
+  $("#study-div").show()
   if (period === "Wed. PM") {
-    setVisible("#study-div", false);
+    $("#study-div").hide();
   }  
 
   const today = new Date();
@@ -858,10 +908,10 @@ function updateStudyList() {
     schedules = STUDY_TEACHERS.s2;
   }
 
-  const altSetting = valueOf("input[name='signup-type']:checked") === "Alt setting";
+  const altSetting = $("input[name='signup-type']:checked").val() === "Alt setting";
   if (altSetting) {
-    appendOption("#study-teacher-select", "Directly from class", "Directly from class");
-    setAttribute("#study-teacher-select #from-class", "selected", true);
+    $("#study-teacher-select").append(`<option if="from-class" value="Directly from class">Directly from class</option`);
+    $("#study-teacher-select #from-class").attr("selected", true);
   }
 
   // cycles through the schedules...
@@ -884,7 +934,8 @@ function updateStudyList() {
       }
       
       availableTeachers.forEach(teacher => {
-        appendOption("#study-teacher-select", teacher, teacher, false);
+        // console.log(teacher);
+          $("#study-teacher-select").append(`<option value="${teacher}">${teacher}</option`);
       })
     }
   })
@@ -902,13 +953,13 @@ function updateTypeOptions() {
 }
 
 function resetAllTypes() {
-  setDisabled(`input[name='signup-type'], input[name='purpose']`, false);
-  setVisible('span.type-warning', false);
-
+  $("input[name='signup-type']").prop("disabled", false);
+  $("input[name='purpose']").prop("disabled", false);
+  $("span.type-warning").remove();
 }
 
 function toggleTutoringActive() {
-  const tutoringActive = valueOf('#tutoring-active') === "On";
+  const tutoringActive = $('#tutoring-active').val() === "On";
   if (!tutoringActive) {
     markTutoringDisabled();
   }
@@ -916,13 +967,13 @@ function toggleTutoringActive() {
 
 function setSpecialScheduleAdjustments() {
   // returns if date or period are blank
-  const dateStr = valueOf("#date");
+  const dateStr = $("#date").val();
   if (dateStr.length === 0) {
     return;
   }
   const date = new Date(dateStr);
 
-  let period = valueOf("#period");
+  let period = $("#period").val();
   if (typeof period === "undefined") {
     return;
   }
@@ -980,86 +1031,81 @@ function setSpecialScheduleAdjustments() {
 }
 
 function preventSignupForNoFly() {
-  const email = valueOf("input#email");
+  const email = $("input#email").val();
   if (Array.isArray(NO_FLY) && (NO_FLY.includes(email))) {
-    setDisabled("input#non-intervention", true);
-    setChecked("input#non-intervention", false);
-    setVisible("label[for='non-intervention'] span.type-warning", true);
-    setText("label[for='non-intervention'] span.type-warning", "Not permitted");
+    $("input#non-intervention").prop("disabled", "true");
+    $("input#non-intervention").prop("checked", false);
+    $("label[for='non-intervention']").append("<span class='type-warning'> <i>Not permitted</i></span>");
   }
 }
 
 function showInterventions() {
-  setDisabled("input#intervention", true);
-  setChecked("input#intervention", false);
-  setVisible("label[for='intervention'] span.type-warning", true);
-  setText("label[for='intervention'] span.type-warning", "Not available");
+  $("input#intervention").prop("disabled", "true");
+  $("input#intervention").prop("checked", false);
+  $("label[for='intervention']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 function showAssessmentMakeups() {
-  setDisabled("input#assessment", true);
-  setChecked("input#assessment", false);
-  setVisible("label[for='assessment'] span.type-warning", true);
-  setText("label[for='assessment'] span.type-warning", "Not available");
+  $("input#assessment").prop("disabled", "true");
+  $("input#assessment").prop("checked", false);
+  $("label[for='assessment']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 function showAltSetting() {
-  setDisabled("input#alt-setting", true);
-  setChecked("input#alt-setting", false);
-  setVisible("label[for='alt-setting'] span.type-warning", true);
-  setText("label[for='alt-setting'] span.type-warning", "Not available");
+  $("input#alt-setting").prop("disabled", "true");
+  $("input#alt-setting").prop("checked", false);
+  $("label[for='alt-setting']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 function showTutoring() {
-  setDisabled("input#tutoring", true);
-  setChecked("input#tutoring", false);
-  setVisible("label[for='tutoring'] span.type-warning", true);
-  setText("label[for='tutoring'] span.type-warning", "Not available");
+  $("input#tutoring").prop("disabled", "true");
+  $("input#tutoring").prop("checked", false);
+  $("label[for='tutoring']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 function showWednesdayInterventions() {
-  setDisabled("input#non-intervention", true);
-  setChecked("input#non-intervention", false);
-  setVisible("label[for='non-intervention'] span.type-warning", true);
-  setText("label[for='non-intervention'] span.type-warning", "Not available");
+    $("input#non-intervention").prop("disabled", "true");
+    $("input#non-intervention").prop("checked", false);
+    $("label[for='non-intervention']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 function showNonInterventions() {
-  setDisabled("input#non-intervention", true);
-  setChecked("input#non-intervention", false);
-  setDisabled("input[name='purpose']", true);
-  setChecked("input[name='purpose']", false);
-  setVisible("label[for='purpose'] span.type-warning", true);
-  setText("label[for='purpose'] span.type-warning", "Not available");
+  $("input#non-intervention").prop("disabled", "true");
+  $("input#non-intervention").prop("checked", false);
+  $("input[name='purpose']").prop("disabled", "true");
+  $("input[name='purpose']").prop("checked", false);
+  $("label[for='purpose']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 // gets the max number of signsups for the date/period and checks if full
 function checkMax(specialMax) {
   // gets the max number of signsups for the date/period and checks if full
-  setCurrentMax(specialMax);
+  CURRENT_MAX = specialMax;
   if (Number.isNaN(CURRENT_MAX) && (CURRENT_MAX !== "")) {
-    setCurrentMax(parseInt(CURRENT_MAX));
+    CURRENT_MAX = parseInt(CURRENT_MAX);
   } else {
-    setCurrentMax(DEFAULT_MAX);
+    CURRENT_MAX = DEFAULT_MAX;
   }
   checkFull();
 }
 
 function markTutoringDisabled() {
-  setDisabled("input#tutoring", true);
-  setChecked("input#tutoring", false);
-  showTutoring();
+  $("input#tutoring").prop("disabled", "true");
+  $("input#tutoring").prop("checked", false);
+  $("label[for='tutoring']").append("<span class='type-warning'> <i>Not available</i></span>");
 }
 
 /**
  *  Checks fields to make sure not required data is missing 
  * */
 function validateForm() {
-  setInvalid("input, select, textarea, div", false);
+  $("input, select, textarea, div").removeClass("invalid");
   const invalidFields = getInvalidFields(); 
   // console.log(invalidFields);
   if (invalidFields.length > 0) {
-    setInvalid(invalidFields, true);
+    invalidFields.forEach(field => {
+      $(field).addClass("invalid");
+    })
     return false;
   }
   return true;
@@ -1075,7 +1121,7 @@ function wednesdayInterventions(date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = valueOf("#wed-int-active") === "true";
+  const wedIntActive = ($("#wed-int-active").val() === "true");
 
   // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
   return dateIsWednesday && wedIntActive;
@@ -1087,22 +1133,23 @@ function wednesdayInterventions(date) {
  * */
 function setUpdateStatus() {
   // requires that user is an editor and that and update row was provided
-  setIsEditor(valueOf("#is-editor") === "true");
-  setUpdateRowId(valueOf("#update-row-id"));
+  IS_EDITOR = $("#is-editor").val() === "true";
+  UPDATE_ROW_ID = $("#update-row-id").val(); 
   
   // allow editors to edit the email field
-  setDisabled("#email", !IS_EDITOR);
+  $("#email").prop("disabled", !IS_EDITOR);
 
   // hide any elements that aren't for editors
-  setVisible(".editors-only", IS_EDITOR);
+  $(".editors-only").toggle(IS_EDITOR);
 
   if (!IS_EDITOR || (UPDATE_ROW_ID === "")) {
     return;
   }
   
   // swap the submit button for an update button
-  setVisible("#btn-submit", false);
-  setVisible("#btn-update", true);
+  $("#btn-submit").hide();
+  $("#btn-update").removeClass("d-none").show();
+  // $("#btn-delete").removeClass("d-none").show();
     
   // requests the signup data for this row id
   google.script.run
@@ -1137,21 +1184,25 @@ function processError(error) {
  *  Shows an error (red) toast 
  * */
 function showErrorToast(errorMessage) {
-  setText("#error-toast .toast-body", errorMessage);
-  showBootstrapToast("#error-toast");
+  $("#error-toast").toast("show");
+  $("#error-toast").find(".toast-body").text(errorMessage);
 }
 
 /**
  *  Shows the loading modal, which waits until cleared 
  * */
 function showLoadingModal(text) {
-  setText("#loading-modal .loading-text", text);
-  showBootstrapModal("#loading-modal");
+  $("#loading-modal .loading-text").text(text);
+  $("#loading-modal").modal('show');
 }
 
 /**
  *  Shows a successful (green) submission toast 
  * */
 function showSuccessToast(text) {
-  showBootstrapToast("#success-toast", text)
+  $("#success-toast").toast("show");
+  $(`#success-toast .toast-body`).show();
+  $(`#success-toast .toast-body`).text(text);
 }
+
+</script>  
