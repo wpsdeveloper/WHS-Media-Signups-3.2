@@ -10,188 +10,77 @@
  */  
 
 import {
-  STUDENT_NAMES,
-  DAILY_SCHEDULES,
-  INTERVENTION_TEACHERS,
-  STUDY_TEACHERS,
-  SIGNUPS,
-  NO_FLY,
-  IS_STAFF,
-  IS_EDITOR,
-  IS_ADMIN,
-  UPDATE_ROW_ID,
-  UPDATE_DATA,
-  CURRENT_MAX,
-  DEFAULT_MAX,
-  setIsStaff,
-  setIsAdmin,
-  setIsEditor,
-  setUpdateRowId,
-  setUpdateData,
-  setStudents,
-  setStudentNames,
-  setSignups,
-  setDailySchedules,
-  setInterventionTeachers,
-  setStudyTeachers,
-  setNoFly,
-  setCurrentMax,
-  setDefaultMax,
+  state
 } from "./signup/state.js";
-import {
-  $,
-  $$,
-  valueOf, setValue,
-  isVisible, setVisible,
-  isChecked, setChecked,
-  getAttribute, setAttribute,
-  setText,
-  setDisabled,
-  setInvalid,
-  appendOption,
-  clearOptions,
-  addEventListener,
-  parseJsonValue,
-  initializeStudentDatalist,
-  showBootstrapModal,
-  hideBootstrapModal,
-  showBootstrapToast,
-  configureDateInput,
-  setTooltips,
-} from "./signup/dom.js";
 
 import {
-  parseDateInput,
-  toDateInputValue,
-  updatePeriodList as renderPeriodList,
-  getTeachersForSelection,
-  updateSubjectList as renderSubjectList,
-  updateStudyList as renderStudyList,
-} from "./signup/schedule.js";
+  getInitialData,
+} from "./signup/init.js";
+
+import * as scheduling from './signup/scheduling.js'
+import * as dom from "./signup/dom.js";
+import * as ui from "./signup/ui.js";
+import * as parser from "./signup/parsers.js";
+import * as dates from "./signup/dates.js";
+
 
 /* Initialization, after everything has loaded */
 document.addEventListener("DOMContentLoaded", () => {
   initializeUi();
   bindEvents();
   showLoadingModal("Retrieving data");
-  updateDetailsPanel();
+  ui.updateDetailsPanel();
 
   // preps for whether this page is a new submission or an update to existing data
-  setUpdateStatus();
+  setUpdateStatus(state);
   
-  checkStaffStatus();
-  checkAdminStatus();
+  ui.checkStaffStatus(state);
+  ui.checkAdminStatus(state);
 
   // gathers all data needed to populate the form
-  getInitialData();
+  getInitialData(processInitialData, processError);
 });
 
 function bindEvents() {
-  addEventListener('input[name="signup-type"]', "change", typeChanged);
-  addEventListener('#date', "change", dateChanged);
-  addEventListener('#period', "change", periodChanged);
-  addEventListener('#btn-submit', "click", submitForm);
-  addEventListener('#btn-update', "click", submitForm);
-  addEventListener('.success-box-start-over', "click", startOver); 
+  dom.addEventListener('input[name="signup-type"]', "change", typeChanged);
+  dom.addEventListener('#date', "change", dateChanged);
+  dom.addEventListener('#period', "change", periodChanged);
+  dom.addEventListener('#btn-submit', "click", submitForm);
+  dom.addEventListener('#btn-update', "click", submitForm);
+  dom.addEventListener('.success-box-start-over', "click", startOver); 
 }
 
-async function getInitialData() {
-  const url = window.location.href;
-  if ((url.indexOf("localhost") >=0 ) || (url.indexOf("127.0.0.1") >= 0)) {
-    await setMockData();
-  } else {
-    google.script.run
-    .withFailureHandler(processError)
-    .withSuccessHandler(receiveInitialData)
-    .getInitialSignupFormData();
-  }
+function processInitialData(data) {
+  parseInitialData(data);
+  initUi();
 }
 
-function receiveInitialData(data) {
+function parseInitialData(data) {
   // console.log(data);
-  receiveStudents(data.students);
-  receiveDailySchedules(data.dailySchedules);
-  receiveSignups(data.signups);
-  receiveInterventionTeachers(data.interventionTeachers);
-  receiveStudyTeachers(data.studyTeachers);
-  receiveNoFlyList(data.noFlyList);
-  receiveMaxSignups(data.defaultMaxSignups);
+  state.students = parser.parseStudents(data.students);
+  state.studentNames = parser.parseStudentNames(state.students);
+  state.dailySchedules = parser.parseDailySchedules(data.dailySchedules);
+  state.signups = parser.parseSignups(data.signups);
+  state.interventionTeachers = parser.parseInterventionTeachers(data.interventionTeachers);
+  state.studyTeachers = parser.parseStudyTeachers(data.studyTeachers);
+  state.noFlyList = parser.parseNoFlyList(data.noFlyList);
+  state.defaultMax = parser.parseMaxSignups(data.defaultMaxSignups);
+  state.currentMax = state.defaultMax;
 
   hideLoadingModal();
   typeChanged();
-  if (UPDATE_DATA !== null) {
-    populateData(UPDATE_DATA);
+  if (state.updateData !== null) {
+    populateData(state.updateData);
   }
 }
 
-async function setMockData() {
-  setValue("#email", "wpsdeveloper@walpole.k12.ma.us");
-  setValue("#update-row-id", "");
-  setIsStaff(true);
-  setIsEditor(true);
-  setIsAdmin(true);
-  checkStaffStatus();
-
-  const sampleData = await import("../sampledata.js");
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  await delay(2000); 
-  
-  receiveInitialData(sampleData.default);
+function initUi() {
+  ui.checkStaffStatus(state);
+  ui.checkAdminStatus(state);
+  typeChanged();
+  dateChanged();
 }
 
-/**
- * Calculates if a given date/period is full (too many existing reservations) 
- * */
-function checkFull() {
-  // console.log("checking if full");
-  
-  // gets the date and period selected, returning if blank
-  const dateVal = valueOf("#date");
-  if (dateVal === "") {
-    return;
-  }
-  const date = new Date(dateVal);
-  
-  const period = valueOf("#period");
-  if (period === null) {
-    return;
-  }
-
-  // finding signups that match the date and period
-  let matching = SIGNUPS.filter(su => (isSameDate(new Date(su.date), date)) && (period == "" + su.period));
-
-  // filters for only non-intervention and tutoring
-  matching = matching.filter(su => (su.type === "Non-intervention") || (su.type === "Tutoring"));
- 
-  if (matching.length >= CURRENT_MAX) {
-    console.info("Over limit, max = " + CURRENT_MAX);
-    
-    if (matching.length >= CURRENT_MAX) {
-      ["#non-intervention", "#tutoring"].forEach(selector => {
-        setDisabled(selector, true);
-        setChecked(selector, false);
-        setVisible(`${selector} label span.type-warning`, true);
-        setText(`${selector} label span.type-warning`, "Full");
-      });
-    }
-  }
-}
-
-/**
- * Sets up the page based on whether the current user is student or staff
- */
-function checkStaffStatus() {
-  setIsStaff(valueOf("input#email").indexOf("@walpole.k12.ma.us") > 0);
-  setVisible(".staff-only", IS_STAFF);
-}
-
-/**
- * Sets up the page based on whether the current user is admin
- */
-function checkAdminStatus() {
-  setIsAdmin(valueOf("#is-admin") === "true");
-  setVisible(".admin-only", IS_ADMIN);
-}
 
 /**
  * Gathers all entered form data in prep for validation and submission 
@@ -200,16 +89,16 @@ function checkAdminStatus() {
 function collectData() {
   const data = {};
   
-  data.email = valueOf("#email");
+  data.email = dom.valueOf("#email");
   
   // sets at least blanks for the names
   data.firstname = "";
   data.lastname = "";
 
-  if (isVisible("#student")) {
+  if (dom.isVisible("#student")) {
     // this is a teacher submission
     // breaks apart the line selected in the typeahead
-    const student = valueOf("#student");
+    const student = dom.valueOf("#student");
     const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
     const names = (brackets.length > 0) ? brackets[0].split(", ") : [];
 
@@ -220,22 +109,22 @@ function collectData() {
     // this is a student submission
     data.emailStudent = data.email;
   }
-  data.date = valueOf("#date");
-  data.period = valueOf("#period");
-  data.type = valueOf("input[name='signup-type']:checked");
+  data.date = dom.valueOf("#date");
+  data.period = dom.valueOf("#period");
+  data.type = dom.valueOf("input[name='signup-type']:checked");
   
   // gets subject from whichever is visible
-  if (isVisible(".subject-int")) {
-    data.subject = valueOf(".subject-int");
-  } else if (isVisible("#subject-non-int")) {
-    data.subject = valueOf("#subject-non-int");
+  if (dom.isVisible(".subject-int")) {
+    data.subject = dom.valueOf(".subject-int");
+  } else if (dom.isVisible("#subject-non-int")) {
+    data.subject = dom.valueOf("#subject-non-int");
   }
 
-  data.purpose = isVisible("#purpose") ? valueOf("#purpose input[type='radio']:checked") : "";
-  data.room = isVisible("#glass-room") ? valueOf("#glass-room input[type='radio']:checked") : "";
-  data.teacherStudy = valueOf(".study-teacher");
-  data.teacherAcad = valueOf("#acad-teacher");
-  data.comments = valueOf("#topic-intervention");
+  data.purpose = dom.isVisible("#purpose") ? dom.valueOf("#purpose input[type='radio']:checked") : "";
+  data.room = dom.isVisible("#glass-room") ? dom.valueOf("#glass-room input[type='radio']:checked") : "";
+  data.teacherStudy = dom.valueOf(".study-teacher");
+  data.teacherAcad = dom.valueOf("#acad-teacher");
+  data.comments = dom.valueOf("#topic-intervention");
 
   console.log(data);
   return data;
@@ -245,7 +134,7 @@ function collectData() {
  *  Responds to a change in the Date field 
  * */
 function dateChanged() {
-  updatePeriodList();
+  ui.updatePeriodList(state.dailySchedules);
   periodChanged();
 }
 
@@ -271,7 +160,7 @@ function getInvalidFields() {
   const data = collectData();
 
   // requires student names if student is visible (teacher submission)
-  if (isVisible("#student")) {
+  if (dom.isVisible("#student")) {
     if (data.firstname.length <= 0) {
       invalidFields.push("#student");
     }
@@ -301,7 +190,7 @@ function getInvalidFields() {
   }
 
   // requires study teacher is selected/input
-  if (isVisible("#study-teacher") && (data.teacherStudy.length <= 0)) {
+  if (dom.isVisible("#study-teacher") && (data.teacherStudy.length <= 0)) {
     invalidFields.push("#study-teacher");
   }
 
@@ -325,59 +214,39 @@ function getInvalidFields() {
  *  Hides the loading modal 
  * */
 function hideLoadingModal() {
-  hideBootstrapModal("#loading-modal");
+  dom.hideBootstrapModal("#loading-modal");
 }
 
-/**
- *  Hides all Details sections 
- * */
-function hideTypes() {
-   setVisible(
-    ".intervention-only, .assessment-only, .tutoring-only, .non-intervention-only, .alt-setting-only, .staff-reservation-only",
-    false);
-}
+
 
 /**
  * Sets up some UI elements, such as the date picker and tooltips
  */
 function initializeUi() {
   const today = new Date();
-  configureDateInput("#date",
-    toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
-    toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
-    toDateInputValue(today)
+  dom.configureDateInput("#date",
+    dates.toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
+    dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
+    dates.toDateInputValue(today)
   );
   
-  setTooltips('[data-bs-toggle="tooltip"]');
+  dom.setTooltips('[data-bs-toggle="tooltip"]');
 
-  setVisible(".int-link", (getAttribute(".int-link", "href") || "").length > 58);
-  setVisible(".tut-link", (getAttribute("href") || "").length > 58);
+  dom.setVisible(".int-link", (dom.getAttribute(".int-link", "href") || "").length > 58);
+  dom.setVisible(".tut-link", (dom.getAttribute("href") || "").length > 58);
 }
 
-/** 
- * Determines if two Date object are the same date, regardless of time-of-day
- * 
- * @param {Date} date1 The first date to compare
- * @param {Date} date2 The second date to compare
- * @return {boolean} True if the two dates are the same
- */
-function isSameDate(date1, date2) {
-  const monthMatch = date1.getMonth() === date2.getMonth();
-  const yearMatch = date1.getFullYear() === date2.getFullYear();
-  const dateMatch = date1.getDate() === date2.getDate();
 
-  return monthMatch && yearMatch && dateMatch;
-}
 
 /**
  *  Responds to a change in the Period field 
  * */
 function periodChanged() {
-  updateTypeOptions();
-  updateSubjectList();
-  updateStudyList();
-  updateGlassRooms();
-  checkFull();
+  ui.updateTypeOptions(state);
+  ui.updateSubjectList(state.interventionTeachers, state.dailySchedules);
+  ui.updateStudyList(state.studyTeachers, state.dailySchedules);
+  ui.updateGlassRooms(state.signups);
+  scheduling.checkFull(state.signups, state.currentMax);
 }
 
 /**
@@ -386,32 +255,32 @@ function periodChanged() {
  * @param {SignupData} signup A record of signup date to enter into fields
  */
 function populateData(signup) {
-  setValue("#student", `${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
-  setValue("#date", formatDateSlashes(new Date(signup.date)));
+  dom.setValue("#student", `${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
+  dom.setValue("#date", formatDateSlashes(new Date(signup.date)));
   dateChanged();
   
-  setValue("#period", "" + signup.period);
+  dom.setValue("#period", "" + signup.period);
   periodChanged();
   
-  setValue("#subject").val(signup.subject);
-  setValue("#study-teacher", signup.teacherStudy);
-  setValue("#acad-teacher", signup.teacherAcad);
+  dom.setValue("#subject").val(signup.subject);
+  dom.setValue("#study-teacher", signup.teacherStudy);
+  dom.setValue("#acad-teacher", signup.teacherAcad);
 
   // unchecks Types, and check the correct one
-  setValue("#type input").prop("checked", "false");
-  setValue(`#type input[value="${signup.type}"]`).prop("checked", "true");
+  dom.setValue("#type input").prop("checked", "false");
+  dom.setValue(`#type input[value="${signup.type}"]`).prop("checked", "true");
   typeChanged();
 
   // unchecks all Purposes and then checks the correct one 
-  setChecked("#purpose input", false);
-  setChecked(`#purpose input[value="${signup.purpose}"]`, true);
+  dom.setChecked("#purpose input", false);
+  dom.setChecked(`#purpose input[value="${signup.purpose}"]`, true);
 
   // unchecks all Glass Rooms and then checks the correct one 
-  setChecked("#glass-room input", false);
-  setChecked(`#glass-room input[value="${signup.room}"]`, true);
+  dom.setChecked("#glass-room input", false);
+  dom.setChecked(`#glass-room input[value="${signup.room}"]`, true);
 
   // fills the topic/comments
-  setValue("#topic-intervention", signup.comments);
+  dom.setValue("#topic-intervention", signup.comments);
 }
 
 /**
@@ -446,125 +315,28 @@ function populateTestData() {
 function preventFormSubmit() {
   var forms = document.querySelectorAll('form');
   for (var i = 0; i < forms.length; i++) {
-    forms[i].addEventListener('submit', function(event) {
+    forms[i].dom.addEventListener('submit', function(event) {
       event.preventDefault();
     });
   }
 };
 
-/**
- *  Receives daily schedule data from the server 
- * */
-function receiveDailySchedules(schedules) {
-  setDailySchedules(JSON.parse(schedules));
-  // console.log("DAILY_SCHEDULES", DAILY_SCHEDULES);
-  updatePeriodList();
-}
 
-/**
- *  Receives teacher intervention data from the server 
- * */
-function receiveInterventionTeachers(schedulesJson) {
-  // graceful fallback; if the intervention schedule can't be found, 
-  // use an input box instead of a select box
-  setInterventionTeachers(JSON.parse(schedulesJson));
-  showIntTeacherAltInput(false);
-  if (INTERVENTION_TEACHERS === null) {
-    showIntTeacherAltInput(true);
-  } else {
-  }
-  updateSubjectList();
-}
 
-/**
- *  Receives no fly from the server 
- * */
-function receiveNoFlyList(emails) {
-  setNoFly(emails);
-}
 
-/**
- *  Receives max signups from the server 
- * */
-function receiveMaxSignups(maxValue) {
-  console.log(`maxValue ${maxValue}`);
-  if (!Number.isNaN(maxValue) && (maxValue >= 0)) {
-    setDefaultMax(maxValue);
-    setCurrentMax(maxValue);
-  } else {
-    console.error("Error parsing max signups value: " + maxValue);
-  }
-}
-
-/**
- *  Receives signup data from the server 
- * */
-function receiveSignups(signups) {
-  setSignups(JSON.parse(signups));
-  // console.log("SIGNUPS", SIGNUPS);
-}
-
-/**
- *  Receives student data from the server 
- */
-function receiveStudents(students) {
-  setStudents(students);
-  // console.log("STUDENTS", STUDENTS);
-
-  // formats names for use in typeahed feature
-  setStudentNames(students.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`));
-  initializeStudentDatalist(STUDENT_NAMES);
-}
-
-/**
- *  Receives teacher intervention data from the server 
- * */
-function receiveStudyTeachers(studyTeachersJson) {
-  // graceful fallback; if the study hall schedule can't be found, 
-  // use an input box instead of a select box
-  showStudyAltInput(false);
-  if (STUDY_TEACHERS === null) {
-    showStudyAltInput(true);
-  } else {
-    setStudyTeachers(JSON.parse(studyTeachersJson));
-  }
-  updateStudyList();
-  // console.log("STUDY_TEACHERS", STUDY_TEACHERS);
-}
-
-function showStudyAltInput(show) {
-  setVisible("#study-teacher-select", !show);
-  setVisible("#study-teacher-input", show);
-}
-
-function showIntTeacherAltInput(show) {
-  setVisible("#subject-int-select", !show);
-  setVisible("#subject-int-input", show);
-}
-
-/**
- *  Shows the Details section for a particular Type 
- * */
-function showType(typeClass) {
-  // hides all panels by default
-  hideTypes();
-
-  // shows only the indicated panel
-  setVisible(typeClass, true);
-}
 
 /**
  * Resets the page for another submission 
  * */
  function startOver() {
-  setValue("#student", "");
-  setValue("#purpose", "");
-  setValue("#study-teacher-input", "");
-  setValue("#acad-teacher", "");
-  setValue("#topic-intervention", "");
-  setValue("#subject-int-select", "");
-  setVisible("#form", true);
-  setVisible("#success-box", false);
+  dom.setValue("#student", "");
+  dom.setValue("#purpose", "");
+  dom.setValue("#study-teacher-input", "");
+  dom.setValue("#acad-teacher", "");
+  dom.setValue("#topic-intervention", "");
+  dom.setValue("#subject-int-select", "");
+  dom.setVisible("#form", true);
+  dom.setVisible("#success-box", false);
  }
 
 /**
@@ -575,8 +347,8 @@ function submitComplete(success) {
   hideLoadingModal();
 
   // shows success panel, hides input fields
-  setVisible("#form", false);
-  setVisible("#success-box", true);
+  dom.setVisible("#form", false);
+  dom.setVisible("#success-box", true);
 }
 
 /**
@@ -614,11 +386,11 @@ function submitForm(){
  *  Responds to a change in the Type field 
  * */
 function typeChanged() {
-  updateTypeOptions();
-  checkFull();
-  updateDetailsPanel();
-  updateStudyList();
-  updateSubjectList();
+  ui.updateTypeOptions(state);
+  scheduling.checkFull(state.signups, state.currentMax);
+  ui.updateDetailsPanel(state.dailySchedules);
+  ui.updateStudyList(state.studyTeachers, state.dailySchedules);
+  ui.updateSubjectList(state.interventionTeachers, state.dailySchedules);
 }
 
 /**
@@ -629,424 +401,11 @@ function updateComplete(success) {
   hideLoadingModal();
 
   // shows success panel, hides input fields
-  setVisible("#form", false);
-  setVisible("#success-update-box", true);
+  dom.setVisible("#form", false);
+  dom.setVisible("#success-update-box", true);
 }
 
-/**
- *  Updates the Details section of the form based on which Type is selected 
- * */
-function updateDetailsPanel() {
-  if (isChecked("input#intervention")) showType(".intervention-only");
-  else if (isChecked("input#assessment")) showType(".assessment-only");
-  else if (isChecked("input#tutoring")) showType(".tutoring-only");
-  else if (isChecked("input#non-intervention")) showType(".non-intervention-only");
-  else if (isChecked("input#alt-setting")) showType(".alt-setting-only");
-  else if (isChecked("input#staff-reservation")) showType(".staff-reservation-only");
-}
 
-/**
- *  Updates the Glass Room labels if the rooms are already reserved or not 
- * */
-function updateGlassRooms() {
-  // marks rooms as available by default
-  setVisible("#glass-room-1", true);
-  setVisible("#glass-room-2", true);
-  setDisabled("#glass-room-1", false);
-  setDisabled("#glass-room-2", false);
-  setText("#glass-room-1-label .availability", "Available");
-  setText("#glass-room-2-label .availability", "Available");
-
-  // returns if date or period are blank
-  const dateStr = valueOf("#date");
-  if (dateStr.length === 0) {
-    return;
-  }
-  const date = new Date();
-  date.setFullYear(
-    parseInt(dateStr.split('-')[0]),
-    parseInt(dateStr.split('-')[1]) - 1,
-    parseInt(dateStr.split('-')[2])
-  );
-  date.setHours(0, 0, 0, 0); // Midnight in local timezone
-
-  const period = valueOf("#period");
-  if (typeof period === "undefined") {
-    return;
-  }
-
-  // cycles through signup data
-  SIGNUPS.forEach(signup => {
-    const suDate = new Date(signup.date);
-    
-    // skips if dates or periods don't match
-    if (!isSameDate(suDate, date)) {
-      return;
-    }
-    const suPeriod = "" + signup.period;
-    if (suPeriod !== period) {
-      return;
-    }
-
-    const room = signup.room;
-    if ((room >= 1) && (room <= 2)) {
-      // disables the checkbox
-      setDisabled(`#glass-room-${room}`, true);
-
-      // unchecks the checkbox
-      setChecked(`#glass-room-${room}`, false);
-
-      // updates the label
-      setText(`#glass-room-${room}-label .availability`, "Unavailable");
-    } 
-  });
-}
-
-/**
- * Updates the Periods select box based on the date 
- * */
-function updatePeriodList() {
-  // remembers current selection. If this period is available in the new list,
-  const oldPeriodVal = valueOf("#period");
-  const dateVal = valueOf("#date");
-  if (dateVal === "") return;
-  const date = parseDateInput(dateVal);
-
-  try {
-    // clear previous options
-    clearOptions("#period");
-
-    // gets the data selected
-    const date = new Date(dateVal);
-    
-    // cycles through daily schedules...
-    DAILY_SCHEDULES.forEach(schedule => {
-      const schedDate = new Date(schedule.date);
-
-      // for a matching date, creates an option for each period
-      if (isSameDate(schedDate, date)) {
-        schedule.periods.forEach(period => {
-          const option = document.createElement("option");
-          option.value = period;
-          option.textContent = period;
-          appendOption("#period", period, period);
-        })
-      }
-    })
-
-    // console.log(date, wednesdayInterventions(date));
-    if (wednesdayInterventions(date)) {
-      appendOption("#period", "Wed. PM", "Wed. PM");
-    }
-
-    // reselects the previously selected period, if possible
-    if (oldPeriodVal !== null) {
-      setValue("#period", oldPeriodVal);
-    } else {
-      setValue("#period", valueOf("#period option") || "");
-    }
-  } catch (error) {
-    processError(error);
-  }
-}
-
-/**
- *  Updates the Subject select box based on the date and period selected 
- * */
-function updateSubjectList() {
-  // clears previous options
-   document.querySelector("#subject-int-select").replaceChildren();
-
-  // only proceeds if the select box is still here
-  if (INTERVENTION_TEACHERS === null) {
-    return;
-  }
-  
-  // gets the date and period selected, returning if blank
-  const dateStr = valueOf("#date");
-  if (dateStr.length === 0) {
-    return;
-  }
-  const date = new Date(dateStr);
-  
-  const period = valueOf("#period");
-  if (period === null) {
-    return;
-  }
-
-  if (period === "Wed. PM") {
-    showIntTeacherAltInput(true);
-    return;
-  }
-  showIntTeacherAltInput(false);
-
-  const today = new Date();
-  const s2Date = new Date(INTERVENTION_TEACHERS.s2Date);
-
-  let schedules;
-  if (today.getTime() < s2Date.getTime()) {
-    schedules = INTERVENTION_TEACHERS.s1;
-  } else {
-    schedules = INTERVENTION_TEACHERS.s2;
-  }
-  
-  // cycles through the schedules...
-  DAILY_SCHEDULES.forEach(sched => {
-    const schedDate = new Date(sched.date);
-
-    if (isSameDate(schedDate, date)) {
-      // if the date is in the schedule...
-      const day = sched.day;
-      
-      // if no teachers for this date/period, return
-      if ((typeof schedules[day] === "undefined") || (typeof schedules[day][period] === "undefined")) {
-        return;
-      }
-
-      // create options for each teacher for this date/period
-      const availableTeachers = schedules[day][period];
-      if (!availableTeachers) {
-        return;
-      }
-
-      availableTeachers.forEach(teacher => {
-        appendOption("#subject-int-select", teacher, teacher);
-      })
-    }
-  })
-}
-
-/**
- * Updates the Study Teacher select box based on the date and period selected 
- * */
-function updateStudyList() {
-   // clears previous options
-  document.querySelector("#study-teacher-select").replaceChildren();
-
-  // only proceeds if the select box is still here
-  if (STUDY_TEACHERS === null) {
-    return;
-  }
-  
-  // gets the date and period selected, returning if blank
-  const dateStr = valueOf("#date");
-  if (dateStr.length === 0) {
-    return;
-  }
-  const date = new Date(dateStr);
-
-  const period = valueOf("#period");
-  if (period === null) {
-    return;
-  }
-
-  setVisible("#study-div", true);
-  if (period === "Wed. PM") {
-    setVisible("#study-div", false);
-  }  
-
-  const today = new Date();
-  const s2Date = new Date(STUDY_TEACHERS.s2Date);
-
-  let schedules;
-  if (today.getTime() < s2Date.getTime()) {
-    schedules = STUDY_TEACHERS.s1;
-  } else {
-    schedules = STUDY_TEACHERS.s2;
-  }
-
-  const altSetting = valueOf("input[name='signup-type']:checked") === "Alt setting";
-  if (altSetting) {
-    appendOption("#study-teacher-select", "Directly from class", "Directly from class");
-    setAttribute("#study-teacher-select #from-class", "selected", true);
-  }
-
-  // cycles through the schedules...
-  DAILY_SCHEDULES.forEach(sched => {
-    const schedDate = new Date(sched.date);
-
-    if (isSameDate(schedDate, date)) {
-      // if the date is in the schedule...
-      const day = sched.day;
-
-      // if no teachers for this date/period, return
-      if ((typeof schedules[day] === "undefined") || (typeof schedules[day][period] === "undefined")) {
-        return;
-      }
-
-      // create options for each teacher for this date/period
-      const availableTeachers = schedules[day][period];
-      if (!availableTeachers) {
-        return;
-      }
-      
-      availableTeachers.forEach(teacher => {
-        appendOption("#study-teacher-select", teacher, teacher, false);
-      })
-    }
-  })
-}
-
-/**
- *  Updates the Type options is there is a special schedule that period 
- * */
-function updateTypeOptions() {
-  resetAllTypes();
-
-  toggleTutoringActive();
-  preventSignupForNoFly();
-  setSpecialScheduleAdjustments();
-}
-
-function resetAllTypes() {
-  setDisabled(`input[name='signup-type'], input[name='purpose']`, false);
-  setVisible('span.type-warning', false);
-
-}
-
-function toggleTutoringActive() {
-  const tutoringActive = valueOf('#tutoring-active') === "On";
-  if (!tutoringActive) {
-    markTutoringDisabled();
-  }
-}
-
-function setSpecialScheduleAdjustments() {
-  // returns if date or period are blank
-  const dateStr = valueOf("#date");
-  if (dateStr.length === 0) {
-    return;
-  }
-  const date = new Date(dateStr);
-
-  let period = valueOf("#period");
-  if (typeof period === "undefined") {
-    return;
-  }
-  
-  const isWednesdayInterventions = (period === "Wed. PM");
-  if (isWednesdayInterventions) {
-    showWednesdayInterventions();
-  }
-  
-  let special = {
-    allowInterventions: "",
-    allowAssessmentMakeups: "",
-    allowAltSetting: "",
-    allowTutoring: "",
-    allowNonInterventions: "",
-  };
-
-  // finds schedule matches with special schedules, returns if none
-  const match = DAILY_SCHEDULES.filter(sched => (isSameDate(new Date(sched.date), date) && (sched.specials !== null)));
-  if (match.length == 0) {
-    return;
-  }
-  
-  const specials = match[0].specials;
-  if (specials.hasOwnProperty(period)) {
-    special = specials[period];
-  } else {
-    // returns if no special schedule for this period
-    return;
-  }
-  
-  // for the IF statements below ANY text value counts as "not allowed".
-  // if not allowed, disables the check, unchecks, and adds a label warning
-  if (special.allowInterventions.length > 0) {
-    showInterventions();
-  }
-
-  if ((special.allowAssessmentMakeups.length > 0) || isWednesdayInterventions) {
-    showAssessmentMakeups();
-  }
-
-  if (special.allowAltSetting.length > 0) {
-    showAltSetting();
-  }
-
-  if ((special.allowTutoring.length > 0) || isWednesdayInterventions) {
-    showTutoring();
-  }
-
-  if ((special.allowNonInterventions.length > 0) && !isWednesdayInterventions) {
-    showNonInterventions();
-  }
-
-  checkMax(special.max);
-}
-
-function preventSignupForNoFly() {
-  const email = valueOf("input#email");
-  if (Array.isArray(NO_FLY) && (NO_FLY.includes(email))) {
-    setDisabled("input#non-intervention", true);
-    setChecked("input#non-intervention", false);
-    setVisible("label[for='non-intervention'] span.type-warning", true);
-    setText("label[for='non-intervention'] span.type-warning", "Not permitted");
-  }
-}
-
-function showInterventions() {
-  setDisabled("input#intervention", true);
-  setChecked("input#intervention", false);
-  setVisible("label[for='intervention'] span.type-warning", true);
-  setText("label[for='intervention'] span.type-warning", "Not available");
-}
-
-function showAssessmentMakeups() {
-  setDisabled("input#assessment", true);
-  setChecked("input#assessment", false);
-  setVisible("label[for='assessment'] span.type-warning", true);
-  setText("label[for='assessment'] span.type-warning", "Not available");
-}
-
-function showAltSetting() {
-  setDisabled("input#alt-setting", true);
-  setChecked("input#alt-setting", false);
-  setVisible("label[for='alt-setting'] span.type-warning", true);
-  setText("label[for='alt-setting'] span.type-warning", "Not available");
-}
-
-function showTutoring() {
-  setDisabled("input#tutoring", true);
-  setChecked("input#tutoring", false);
-  setVisible("label[for='tutoring'] span.type-warning", true);
-  setText("label[for='tutoring'] span.type-warning", "Not available");
-}
-
-function showWednesdayInterventions() {
-  setDisabled("input#non-intervention", true);
-  setChecked("input#non-intervention", false);
-  setVisible("label[for='non-intervention'] span.type-warning", true);
-  setText("label[for='non-intervention'] span.type-warning", "Not available");
-}
-
-function showNonInterventions() {
-  setDisabled("input#non-intervention", true);
-  setChecked("input#non-intervention", false);
-  setDisabled("input[name='purpose']", true);
-  setChecked("input[name='purpose']", false);
-  setVisible("label[for='purpose'] span.type-warning", true);
-  setText("label[for='purpose'] span.type-warning", "Not available");
-}
-
-// gets the max number of signsups for the date/period and checks if full
-function checkMax(specialMax) {
-  // gets the max number of signsups for the date/period and checks if full
-  setCurrentMax(specialMax);
-  if (Number.isNaN(CURRENT_MAX) && (CURRENT_MAX !== "")) {
-    setCurrentMax(parseInt(CURRENT_MAX));
-  } else {
-    setCurrentMax(DEFAULT_MAX);
-  }
-  checkFull();
-}
-
-function markTutoringDisabled() {
-  setDisabled("input#tutoring", true);
-  setChecked("input#tutoring", false);
-  showTutoring();
-}
 
 /**
  *  Checks fields to make sure not required data is missing 
@@ -1062,21 +421,7 @@ function validateForm() {
   return true;
 }
 
-/**
- * Determines if the Wednesday Interventions is active and should be shown.
- * 
- * param {Date} - the date to show
- * return {boolean} - True is should be shown
- */
-function wednesdayInterventions(date) {
-  const wednesday = 3;
-  const weekday = date.getDay();
-  const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = valueOf("#wed-int-active") === "true";
 
-  // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
-  return dateIsWednesday && wedIntActive;
-}
 
 /**
  *  Checks to see if the URL sent a row id. If so, this form is to update existing data 
@@ -1084,42 +429,34 @@ function wednesdayInterventions(date) {
  * */
 function setUpdateStatus() {
   // requires that user is an editor and that and update row was provided
-  setIsEditor(valueOf("#is-editor") === "true");
-  setUpdateRowId(valueOf("#update-row-id"));
+  state.isEditor = dom.valueOf("#is-editor") === "true";
+  state.updateRowId = dom.valueOf("#update-row-id");
   
   // allow editors to edit the email field
-  setDisabled("#email", !IS_EDITOR);
+  dom.setDisabled("#email", !state.isEditor);
 
   // hide any elements that aren't for editors
-  setVisible(".editors-only", IS_EDITOR);
+  dom.setVisible(".editors-only", state.isEditor);
 
-  if (!IS_EDITOR || (UPDATE_ROW_ID === "")) {
+  if (!state.isEditor || (state.updateRowId === "")) {
     return;
   }
   
   // swap the submit button for an update button
-  setVisible("#btn-submit", false);
-  setVisible("#btn-update", true);
+  dom.setVisible("#btn-submit", false);
+  dom.setVisible("#btn-update", true);
     
   // requests the signup data for this row id
   google.script.run
-    .withSuccessHandler(receiveUpdateStudent)
+    .withSuccessHandler(processUpdateData)
     .withFailureHandler(processError)
-    .getSignupByRow(UPDATE_ROW_ID);
+    .getSignupByRow(state.updateRowId);
 }
 
-/**
- *  Receives signup data from the server (if updating instead of creating new) 
- * */
-function receiveUpdateStudent(signupJson) {
-  if (signupJson === null) {
-    processError(new Error("Invalid URL parameters"));
-    return;
-  }
-  const signup = JSON.parse(signupJson);
-  // console.log("SIGNUP", signup);
-  UPDATE_DATA = signup;
+function processUpdateData(data) {
+  state.updateData = parseUpdateStudent(data);
 }
+
 
 /**
  *  Responds generically to a server error 
@@ -1134,21 +471,21 @@ function processError(error) {
  *  Shows an error (red) toast 
  * */
 function showErrorToast(errorMessage) {
-  setText("#error-toast .toast-body", errorMessage);
-  showBootstrapToast("#error-toast");
+  dom.setText("#error-toast .toast-body", errorMessage);
+  dom.showBootstrapToast("#error-toast");
 }
 
 /**
  *  Shows the loading modal, which waits until cleared 
  * */
 function showLoadingModal(text) {
-  setText("#loading-modal .loading-text", text);
-  showBootstrapModal("#loading-modal");
+  dom.setText("#loading-modal .loading-text", text);
+  dom.showBootstrapModal("#loading-modal");
 }
 
 /**
  *  Shows a successful (green) submission toast 
  * */
 function showSuccessToast(text) {
-  showBootstrapToast("#success-toast", text)
+  dom.showBootstrapToast("#success-toast", text)
 }
