@@ -1,34 +1,57 @@
 import * as dom from "./dom.js"
 import * as dates from "./dates.js"
 
-/**
- * Sets up the page based on whether the current user is student or staff
- */
-export const checkStaffStatus = (state) => {
-  state.isStaff = dom.valueOf("input#email")?.indexOf("@walpole.k12.ma.us") > 0;
-  dom.setVisible(".staff-only", state.isStaff);
-}
 
 /**
- * Sets up the page based on whether the current user is admin
- */
-export const checkAdminStatus = (state) => {
-  state.isAdmin = dom.valueOf("#is-admin") === "true";
-  dom.setVisible(".admin-only", state.isAdmin);
+ * Calculates if a given date/period is full (too many existing reservations) 
+ * */
+export const checkFull = (signups, currentMax) => {
+  // console.log("checking if full");
+  
+  // gets the date and period selected, returning if blank
+  const dateVal = dom.valueOf("#date");
+  if (dateVal === "") {
+    return;
+  }
+  const date = dates.parseDateInput(dateVal);
+  
+  const period = dom.valueOf("#period");
+  if (period === null) {
+    return;
+  }
+
+  // finding signups that match the date and period
+  let matching = signups.filter(su => (dates.isSameDate(new Date(su.date), date)) && (period == "" + su.period));
+
+  // filters for only non-intervention and tutoring
+  matching = matching.filter(su => (su.type === "Non-intervention") || (su.type === "Tutoring"));
+ 
+  if (matching.length >= currentMax) {
+    console.info("Over limit, max = " + currentMax);
+    
+    if (matching.length >= currentMax) {
+      ["#non-intervention", "#tutoring"].forEach(selector => {
+        dom.setDisabled(selector, true);
+        dom.setChecked(selector, false);
+        dom.setVisible(`${selector} label span.type-warning`, true);
+        dom.setText(`${selector} label span.type-warning`, "Full");
+      });
+    }
+  }
 }
 
-export const initUi = (state) => {
-// formats names for use in typeahed feature
-  const students = state.students;
-  
-  initializeStudentDatalist(state.studentNames);
-  
-  showIntTeacherAltInput(state.interventionTeachers?.length === 0); 
-  showStudyAltInput(state.studyTeachers?.length === 0);
-  
-  updatePeriodList();
-  updateSubjectList();
-  updateStudyList();
+// gets the max number of signsups for the date/period and checks if full
+export const checkMax = (state, specialMax) => {
+  // gets the max number of signsups for the date/period and checks if full
+  let newCurrentMax = state.defaultMax;
+  const g = Number.isNaN(specialMax);
+  if (typeof specialMax === 'number' && !Number.isNaN(specialMax)) {
+    newCurrentMax = specialMax;
+  } else if ((typeof specialMax === "string") && (specialMax.length > 0)) {
+    newCurrentMax = parseInt(specialMax);
+  }
+  state.currentMax = newCurrentMax;
+  checkFull(state.signups, state.currentMax);
 }
 
 export const preventSignupForNoFly = (noFlyList) => {
@@ -93,7 +116,7 @@ export const updateTypeOptions = (state) => {
 
   toggleTutoringActive();
   preventSignupForNoFly(state.noFlyList);
-  setSpecialScheduleAdjustments(state.dailySchedules, state.signups);
+  setSpecialScheduleAdjustments(state);
 }
 
 export const resetAllTypes = () => {
@@ -109,13 +132,16 @@ export const toggleTutoringActive = () => {
   }
 }
 
-export const setSpecialScheduleAdjustments = (dailySchedules, signups) => {
+export const setSpecialScheduleAdjustments = (state) => {
+  const dailySchedules = state.dailySchedules;
+  const signups = state.signups;
+
   // returns if date or period are blank
   const dateStr = dom.valueOf("#date");
   if (dateStr.length === 0) {
     return;
   }
-  const date = new Date(dateStr);
+  const date = dates.parseDateInput(dateStr);
 
   let period = dom.valueOf("#period");
   if (typeof period === "undefined") {
@@ -171,13 +197,16 @@ export const setSpecialScheduleAdjustments = (dailySchedules, signups) => {
     showNonInterventions();
   }
 
-  checkFull(signups, checkMax(special.max));
+  checkFull(signups, checkMax(state, special.max));
 }
 
 /**
  * Updates the Study Teacher select box based on the date and period selected 
  * */
-export const updateStudyList = (studyTeachers, dailySchedules) => {
+export const updateStudyList = (state) => {
+  const studyTeachers = state.studyTeachers;
+  const dailySchedules = state.dailySchedules;
+
    // clears previous options
   dom.clearOptions("#study-teacher-select");
 
@@ -191,7 +220,7 @@ export const updateStudyList = (studyTeachers, dailySchedules) => {
   if (dateStr.length === 0) {
     return;
   }
-  const date = new Date(dateStr);
+  const date = dates.parseDateInput(dateStr);
 
   const period = dom.valueOf("#period");
   if (period === null) {
@@ -262,7 +291,7 @@ export const updateSubjectList = (interventionTeachers, dailySchedules) => {
   if (dateStr.length === 0) {
     return;
   }
-  const date = new Date(dateStr);
+  const date = dates.parseDateInput(dateStr);
   
   const period = dom.valueOf("#period");
   if (period === null) {
@@ -313,17 +342,7 @@ export const updateSubjectList = (interventionTeachers, dailySchedules) => {
 
 
 
-// gets the max number of signsups for the date/period and checks if full
-export const checkMax = (specialMax) => {
-  // gets the max number of signsups for the date/period and checks if full
-  setCurrentMax(specialMax);
-  if (Number.isNaN(CURRENT_MAX) && (CURRENT_MAX !== "")) {
-    setCurrentMax(parseInt(CURRENT_MAX));
-  } else {
-    setCurrentMax(DEFAULT_MAX);
-  }
-  checkFull(state.signups, state.currentMax);
-}
+
 
 export const markTutoringDisabled = () => {
   dom.setDisabled("input#tutoring", true);
@@ -441,6 +460,7 @@ export const updatePeriodList = (dailySchedules) => {
   }
 }
 
+
 /**
  * Determines if the Wednesday Interventions is active and should be shown.
  * 
@@ -460,7 +480,7 @@ function wednesdayInterventions(date) {
 /**
  *  Shows the Details section for a particular Type 
  * */
-function showType(typeClass) {
+export const showType = (typeClass) => {
   // hides all panels by default
   hideTypes();
 
@@ -471,21 +491,106 @@ function showType(typeClass) {
 /**
  *  Hides all Details sections 
  * */
-function hideTypes() {
+export const hideTypes = () => {
    dom.setVisible(
     ".intervention-only, .assessment-only, .tutoring-only, .non-intervention-only, .alt-setting-only, .staff-reservation-only",
     false);
 }
 
-function showStudyAltInput(show) {
+export const showStudyAltInput = (show) => {
   dom.setVisible("#study-teacher-select", !show);
   dom.setVisible("#study-teacher-input", show);
 }
 
-function showIntTeacherAltInput(show) {
+export const showIntTeacherAltInput = (show) => {
   dom.setVisible("#subject-int-select", !show);
   dom.setVisible("#subject-int-input", show);
 }
+
+export const initializeStudentDatalist = (studentNames) => {
+  const input = dom.$(".student-autocomplete");
+  if (!input) return;
+  let list = dom.$("#student-suggestions");
+  if (!list) {
+    list = document.createElement("datalist");
+    list.id = "student-suggestions";
+    document.body.append(list);
+  }
+  input.setAttribute("list", list.id);
+  input.oninput = () => {
+    if (input.value.trim().length < 3) {
+      list.replaceChildren();
+      return;
+    }
+    list.replaceChildren(...(studentNames || []).map(name => {
+      const option = document.createElement("option");
+      option.value = name;
+      return option;
+    }));
+  };
+  list.replaceChildren();
+}
+
+export const configureDateInput = (selector, minDate, maxDate, initialDate) => {
+  const dateInput = dom.$(selector);
+  if (dateInput) {
+    dateInput.type = "date";
+    dateInput.min = minDate;
+    dateInput.max = maxDate;
+    dateInput.value = initialDate;
+  }
+}
+
+export const setTooltips = (selector) => {
+  const tooltipTriggerList = dom.$$(selector);
+  [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+};
+
+
+/**
+ * Resets the page for another submission 
+ * */
+ export const startOver = () => {
+  dom.setValue("#student", "");
+  dom.setValue("#purpose", "");
+  dom.setValue("#study-teacher-input", "");
+  dom.setValue("#acad-teacher", "");
+  dom.setValue("#topic-intervention", "");
+  dom.setValue("#subject-int-select", "");
+  dom.setVisible("#form", true);
+  dom.setVisible("#success-box", false);
+ }
+
+ /**
+  *  Responds to a change in the Date field 
+  * */
+ export const dateChanged = (state) => {
+   updatePeriodList(state.dailySchedules);
+   periodChanged(state);
+ }
+ 
+ /**
+  *  Responds to a change in the Period field 
+  * */
+ export const periodChanged = (state) => {
+   updateTypeOptions(state);
+   updateSubjectList(state.interventionTeachers, state.dailySchedules);
+   updateStudyList(state);
+   updateGlassRooms(state.signups);
+   checkFull(state.signups, state.currentMax);
+ }
+ 
+ /**
+  *  Responds to a change in the Type field 
+  * */
+ export const typeChanged = (state) => {
+   updateTypeOptions(state);
+   checkFull(state.signups, state.currentMax);
+   updateDetailsPanel(state.dailySchedules);
+   updateStudyList(state);
+   updateSubjectList(state.interventionTeachers, state.dailySchedules);
+ }
+ 
 
 
 

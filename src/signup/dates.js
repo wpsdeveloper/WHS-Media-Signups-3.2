@@ -24,3 +24,13 @@ export function parseDateInput(value) {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
 }
+
+ /**
+  * Formats a Date into MM/DD/YYYY
+  * 
+  * @param {Date} date The date to format
+  * @return {string} The formatted string
+  */
+ export const formatDateSlashes = (date) => {
+   return (date.getMonth()+1) +"/" + date.getDate() + "/" + date.getFullYear();
+ }
