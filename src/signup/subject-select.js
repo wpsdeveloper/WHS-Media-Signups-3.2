@@ -1,15 +1,17 @@
 import * as dom from "./dom.js"
 import { parseDateInput, isSameDate } from "./dates.js"
 import { toggleIntTeacherAltInput } from "./interventions-teacher-select.js";
-
+import { getState } from "./state.js";
 
 /**
  *  Updates the Subject select box based on the date and period selected 
  * */
-export const updateSubjectOptions = (interventionTeachers, dailySchedules) => {
+export const updateSubjectOptions = () => {
   // clears previous options
    dom.clearOptions("#subject-int-select");
 
+  
+  const interventionTeachers = getState().interventionTeachers; 
   // only proceeds if the select box is still here
   if (interventionTeachers === null) {
     return;
@@ -43,6 +45,7 @@ export const updateSubjectOptions = (interventionTeachers, dailySchedules) => {
     schedules = interventionTeachers.s2;
   }
   
+  const dailySchedules = getState().dailySchedules;
   // cycles through the schedules...
   dailySchedules.forEach(sched => {
     const schedDate = new Date(sched.date);

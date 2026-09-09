@@ -13,8 +13,6 @@ export const updateDetailsPanel = () => {
   else if (dom.isChecked("input#staff-reservation")) showType(".staff-reservation-only");
 }
 
-
-
 /**
  *  Shows the Details section for a particular Type 
  * */

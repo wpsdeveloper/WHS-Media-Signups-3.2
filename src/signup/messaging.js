@@ -3,10 +3,14 @@ import * as dom from "./dom.js"
 /**
  *  Responds generically to a server error 
  * */
-export const processError = (error) => {
+export const processError = (error, consoleMsg) => {
   hideLoadingModal();
   showErrorToast(error.message);
-  console.error(error);
+  if (consoleMsg) {
+    console.error(consoleMsg, error);
+  } else {
+    console.error(error);
+  }
 }
 
 /**

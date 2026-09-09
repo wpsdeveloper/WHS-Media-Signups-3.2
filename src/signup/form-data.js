@@ -1,4 +1,5 @@
 import * as dom from "./dom";
+import * as messaging from "./messaging";
 /**
  * Populates data into the form (useful for editing existing data)
  * 
@@ -72,18 +73,6 @@ export const preventFormSubmit = () => {
 };
 
 /**
- *  Responds to a successful submission notice from the server 
- * */
-function submitComplete(success) {
-  messaging.showSuccessToast("Submission complete");
-  messaging.hideLoadingModal();
-
-  // shows success panel, hides input fields
-  dom.setVisible("#form", false);
-  dom.setVisible("#success-box", true);
-}
-
-/**
  *  Sends the form data to the server for submission 
  * */
 export const submitForm = async () => {
@@ -96,32 +85,45 @@ export const submitForm = async () => {
   }
   messaging.showLoadingModal("Submitting");
 
-
   const url = window.location.href;
   const debug = (url.indexOf('localhost') >= 0 || url.indexOf('127.0.0.1') >= 0);
 
-  if (debug) {
-    await mockSubmit();
-    submitComplete();
-    return;
-  }
-  if ((UPDATE_ROW_ID === null) || (UPDATE_ROW_ID === "")) {
-    // new submission
-
-    google.script.run
-      .withSuccessHandler(submitComplete)
-      .withFailureHandler(messaging.processError)
-      .submitForm(data);
-  } else {
-    // updating existing records
-
-    data.rowId = UPDATE_ROW_ID;
-    google.script.run
-      .withSuccessHandler(updateComplete)
-      .withFailureHandler(messaging.processError)
-      .submitForm(data);
+  try {
+    if (debug) {
+      await mockSubmit(formData);
+      submitComplete();
+    } else if ((UPDATE_ROW_ID === null) || (UPDATE_ROW_ID === "")) {
+      // new submission
+      await submitNewFormData(formData);      
+      submitComplete();
+    } else {
+      // updating existing records
+      formData.rowId = UPDATE_ROW_ID;
+      await submitUpdatedFormData(formData);
+      updateComplete();
+    }
+  } catch (error) {
+    console.error("Error submiting form to server:", error);
   }
 }
+
+async function submitNewFormData(formData) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(reject)
+      .submitForm(formData);
+    });
+}
+
+async function submitUpdatedFormData(formData) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+    .withSuccessHandler(resolve)
+    .withFailureHandler(reject)
+    .submitForm(formData);
+  })
+};
 
 /**
  * Gathers all entered form data in prep for validation and submission 
@@ -244,9 +246,21 @@ function getInvalidFields(data) {
 }
 
 /**
+ *  Responds to a successful submission notice from the server 
+ * */
+function submitComplete() {
+  messaging.showSuccessToast("Submission complete");
+  messaging.hideLoadingModal();
+
+  // shows success panel, hides input fields
+  dom.setVisible("#form", false);
+  dom.setVisible("#success-box", true);
+}
+
+/**
  *  Responds to a successful update notice from the server 
  * */
-function updateComplete(success) {
+function updateComplete() {
   messaging.showSuccessToast("Update complete.");
   messaging.hideLoadingModal();
 
@@ -270,7 +284,7 @@ function updateComplete(success) {
  }
 
 
-async function mockSubmit() {
+async function mockSubmit(data) {
   console.log("Debug mode: Form data to submit:", data);
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);

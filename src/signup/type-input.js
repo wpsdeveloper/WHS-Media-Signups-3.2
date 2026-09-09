@@ -8,12 +8,12 @@ import * as subjectSelect from "./subject-select.js";
 /**
 *  Responds to a change in the Type field 
 * */
-export const typeChangeHandler = (state) => {
-  updateTypeOptions(state);
-  capacity.checkFull(state.signups, state.currentMax);
-  panels.updateDetailsPanel(state.dailySchedules);
-  studySelect.updateStudyOptions(state);
-  subjectSelect.updateSubjectOptions(state.interventionTeachers, state.dailySchedules);
+export const typeChangeHandler = () => {
+  updateTypeOptions();
+  capacity.checkFull();
+  panels.updateDetailsPanel();
+  studySelect.updateStudyOptions();
+  subjectSelect.updateSubjectOptions();
 }
 
 export const toggleInterventionsLink = () => {
@@ -30,12 +30,12 @@ export const toggleTutoringLink = () => {
 /**
 *  Updates the Type options is there is a special schedule that period 
 * */
-export const updateTypeOptions = (state) => {
+export const updateTypeOptions = () => {
   resetAllTypes();
 
   toggleTutoringActive();
-  capacity.preventSignupForNoFly(state.noFlyList);
-  scheduling.setSpecialScheduleAdjustments(state);
+  capacity.preventSignupForNoFly();
+  scheduling.setSpecialScheduleAdjustments();
 }
 
 export const resetAllTypes = () => {

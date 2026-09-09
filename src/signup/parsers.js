@@ -63,7 +63,7 @@ export const parseStudyTeachers = (studyTeachersJson) => {
  * */
 export const parseUpdateStudent = (signupJson) => {
   if (signupJson === null) {
-    processError(new Error("Invalid URL parameters"));
+    processError(new Error("Invalid URL parameters"), "Error parsing signup data:");
     return;
   }
   const signup = JSON.parse(signupJson);

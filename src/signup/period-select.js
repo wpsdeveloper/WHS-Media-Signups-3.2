@@ -5,21 +5,22 @@ import { updateSubjectOptions } from './subject-select';
 import { updateStudyOptions } from './study-select';
 import { updateGlassRooms } from './glass-rooms-input';
 import { checkFull } from './capacity-validation';
+import { getState } from './state.js';
  /**
   *  Responds to a change in the Period field 
   * */
- export const periodChangeHandler = (state) => {
-   updateTypeOptions(state);
-   updateSubjectOptions(state.interventionTeachers, state.dailySchedules);
-   updateStudyOptions(state);
-   updateGlassRooms(state.signups);
-   checkFull(state.signups, state.currentMax);
+ export const periodChangeHandler = () => {
+   updateTypeOptions();
+   updateSubjectOptions();
+   updateStudyOptions();
+   updateGlassRooms();
+   checkFull();
  }
 
  /**
   * Updates the Periods select box based on the date 
   * */
- export const updatePeriodOptions = (dailySchedules) => {
+ export const updatePeriodOptions = () => {
    // remembers current selection. If this period is available in the new list,
    const oldPeriodVal = dom.valueOf("#period");
    const dateVal = dom.valueOf("#date");
@@ -29,6 +30,7 @@ import { checkFull } from './capacity-validation';
    // clear previous options
    dom.clearOptions("#period");
    
+   const dailySchedules = getState().dailySchedules;
    // cycles through daily schedules...
    dailySchedules.forEach(schedule => {
      const schedDate = new Date(schedule.date);

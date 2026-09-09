@@ -1,8 +1,10 @@
 import * as dom from "./dom.js"
 import { parseDateInput, isSameDate } from "./dates.js";
 import { checkFull, checkMax } from "./capacity-validation.js";
+import { getState } from "./state.js";
 
-export const setSpecialScheduleAdjustments = (state) => {
+export const setSpecialScheduleAdjustments = () => {
+  const state = getState();
   const dailySchedules = state.dailySchedules;
   const signups = state.signups;
 
@@ -67,5 +69,5 @@ export const setSpecialScheduleAdjustments = (state) => {
     showNonInterventions();
   }
 
-  checkFull(signups, checkMax(state, special.max));
+  checkFull(signups, checkMax(special.max));
 }

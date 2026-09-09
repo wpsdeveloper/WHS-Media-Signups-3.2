@@ -1,12 +1,13 @@
 import * as dom from "./dom.js"
 import * as dates from "./dates.js"
+import { getState } from "./state.js";
 
 /**
  * Updates the Study Teacher select box based on the date and period selected 
  * */
-export const updateStudyOptions = (state) => {
-  const studyTeachers = state.studyTeachers;
-  const dailySchedules = state.dailySchedules;
+export const updateStudyOptions = () => {
+  const studyTeachers = getState().studyTeachers;
+  const dailySchedules = getState().dailySchedules;
 
    // clears previous options
   dom.clearOptions("#study-teacher-select");
@@ -75,7 +76,10 @@ export const updateStudyOptions = (state) => {
   })
 }
 
-export const showStudyAltInput = (show) => {
+export const showStudyAltInput = () => {
+  const studyTeachers = getState().studyTeachers;
+  const show = studyTeachers?.length === 0;
+
   dom.setVisible("#study-teacher-select", !show);
   dom.setVisible("#study-teacher-input", show);
 }

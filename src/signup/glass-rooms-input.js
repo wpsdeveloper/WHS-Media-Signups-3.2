@@ -1,11 +1,12 @@
 import * as dom from './dom.js';
-import { parseDateInput, isSameDate } from "./dates.js"
+import { parseDateInput, isSameDate } from "./dates.js";
+import { getState } from "./state.js";
 
 
 /**
  *  Updates the Glass Room labels if the rooms are already reserved or not 
  * */
-export const updateGlassRooms = (signups) => {
+export const updateGlassRooms = () => {
   // marks rooms as available by default
   dom.setVisible("#glass-room-1", true);
   dom.setVisible("#glass-room-2", true);
@@ -34,6 +35,7 @@ export const updateGlassRooms = (signups) => {
     return;
   }
 
+  const signups = getState().signups;
   // cycles through signup data
   signups.forEach(signup => {
     const suDate = new Date(signup.date);

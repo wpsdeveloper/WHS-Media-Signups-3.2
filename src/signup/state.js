@@ -17,4 +17,10 @@ class State {
   currentMax = 15;
 }
 
-export const state = new State();
+let currentState = new State();
+
+export const getState = () => currentState;
+
+export const setState = (updates) => {
+  currentState = { ...currentState, ...updates };
+}

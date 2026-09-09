@@ -1,6 +1,9 @@
 import * as dom from './dom.js';
+import { getState } from './state.js';
 
-export const initializeStudentDatalist = (studentNames) => {
+export const initializeStudentDatalist = () => {
+  const studentNames = getState().studentNames;
+
   const input = dom.$(".student-autocomplete");
   if (!input) return;
   let list = dom.$("#student-suggestions");

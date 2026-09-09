@@ -13,24 +13,32 @@ import * as studySelect from './study-select.js';
 import * as subjectSelect from './subject-select.js';
 import * as glassRoomsInput from './glass-rooms-input.js';
 import * as formData from './form-data.js';
+import { getState, setState } from './state.js';
 
-export const initializeApp = async (state) => {
+// builds page based on existing schedules and settings
+export const initializeApp = async () => {
   messaging.showLoadingModal('Retrieving data');
+  panels.updateDetailsPanel();
+
   try {
-    const rawData = await getInitialData();
-    parseInitialData(rawData, state);
-    initializeUi(state);
+    const rawData = await getServerData();
+    const parsedData = parseServerData(rawData);
+    setState(parsedData);
+    initializeUi(getState());
   } catch (error) {
-    console.error('Failed to initialize app:', error);
-    messaging.processError(error);
+    messaging.processError(error, 'Failed to initialize app:');
   }
+
   messaging.hideLoadingModal();
 }
 
-const getInitialData = async () => {
+const getServerData = async () => {
+  //assume debugging if page is served locally
   const url = window.location.href;
-  if (url.indexOf('localhost') >= 0 || url.indexOf('127.0.0.1') >= 0) {
-    return await setMockData(parseInitialData);
+  const debug = (url.indexOf('localhost') >= 0 || url.indexOf('127.0.0.1') >= 0);
+  
+  if (debug) {
+    return await setMockData(parseServerData);
   } else {
   return new Promise((resolve, reject) => {
     google.script.run
@@ -41,37 +49,40 @@ const getInitialData = async () => {
   }
 };
 
-function parseInitialData(data, state) {
-  // console.log(data);
-  state.students = parser.parseStudents(data.students);
-  state.studentNames = parser.parseStudentNames(state.students);
-  state.dailySchedules = parser.parseDailySchedules(data.dailySchedules);
-  state.signups = parser.parseSignups(data.signups);
-  state.interventionTeachers = parser.parseInterventionTeachers(
-    data.interventionTeachers,
-  );
-  state.studyTeachers = parser.parseStudyTeachers(data.studyTeachers);
-  state.noFlyList = parser.parseNoFlyList(data.noFlyList);
-  state.defaultMax = parser.parseMaxSignups(data.defaultMaxSignups);
-  state.currentMax = state.defaultMax;
-  state.isStaff = dom.valueOf('input#email')?.indexOf('@walpole.k12.ma.us') > 0;
-  state.isAdmin = dom.valueOf('#is-admin') === 'true';
-  state.isEditor = dom.valueOf('#is-editor') === 'true'; 
+function parseServerData(data) {
+  const students = parser.parseStudents(data.students)
+  const defaultMax = parser.parseMaxSignups(data.defaultMaxSignups);
+
+  return {
+    students,
+    studentNames: parser.parseStudentNames(  students),
+    dailySchedules: parser.parseDailySchedules(data.dailySchedules),
+    signups: parser.parseSignups(data.signups),
+    interventionTeachers: parser.parseInterventionTeachers(
+      data.interventionTeachers,
+    ),
+    studyTeachers: parser.parseStudyTeachers(data.studyTeachers),
+    noFlyList: parser.parseNoFlyList(data.noFlyList),
+    currentMax:  defaultMax,
+    isStaff: dom.valueOf('input#email')?.indexOf('@walpole.k12.ma.us') > 0,
+    isAdmin: dom.valueOf('#is-admin') === 'true',
+    isEditor: dom.valueOf('#is-editor') === 'true', 
+  };
 }
 
-export const initializeUi = (state) => {
+export const initializeUi = () => {
+  const state = getState();
+  setUpdateStatus(state);
   if (state.updateData !== null) {
     populateData(state.updateData);
   }
 
   formData.preventFormSubmit();
+  setTooltips('[data-bs-toggle="tooltip"]');
+  toggleStaffOnlyViews(state.isStaff);
+  toggleAdminOnlyViews(state.isAdmin);
 
-  // formats names for use in typeahed feature
-  studentInput.initializeStudentDatalist(state.studentNames);
-  
-  interventionTeacherSelect.toggleIntTeacherAltInput(state.interventionTeachers?.length === 0);
-  studySelect.showStudyAltInput(state.studyTeachers?.length === 0);
-  
+  // sets limits on dates allowed in Date field
   const today = new Date();
   dateSelect.configureDateSelect(
     '#date',
@@ -79,26 +90,27 @@ export const initializeUi = (state) => {
     dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
     dates.toDateInputValue(today),
   );
-
-  setTooltips('[data-bs-toggle="tooltip"]');
-  toggleStaffOnlyViews(state.isStaff);
-  toggleAdminOnlyViews(state.isAdmin);
-
-  setUpdateStatus(state);
   
+  // formats names for use in typeahead-like feature
+  studentInput.initializeStudentDatalist();
+  
+  // shows text inputs if no list of teachers is available
+  interventionTeacherSelect.toggleIntTeacherAltInput();
+  studySelect.showStudyAltInput();
+  
+  // show/hides url links based on whether sent from the server
   typeInput.toggleInterventionsLink();
   typeInput.toggleTutoringLink();
-  typeInput.updateTypeOptions(state);
 
-  panels.updateDetailsPanel(state.dailySchedules);
-
-  periodSelect.updatePeriodOptions(state.dailySchedules);
-  studySelect.updateStudyOptions(state);
-  subjectSelect.updateSubjectOptions(state.interventionTeachers, state.dailySchedules);
+  typeInput.updateTypeOptions();
+  panels.updateDetailsPanel();
   
-  glassRoomsInput.updateGlassRooms(state.signups);
+  periodSelect.updatePeriodOptions();
+  studySelect.updateStudyOptions();
+  subjectSelect.updateSubjectOptions();
+  glassRoomsInput.updateGlassRooms();
   
-  capacity.checkFull(state.signups, state.currentMax);
+  capacity.checkFull();
 };
 
 export const toggleStaffOnlyViews = (isStaff) => {
@@ -114,14 +126,14 @@ export const toggleEditorOnlyViews = (isEditor) => {
 };
 
 /**
- *  Checks to see if the URL sent a row id. If so, this form is to update existing data
+ * Checks to see if the URL sent a row id. If so, this form is to update existing data
  * rather than submit new data
  * */
-export const setUpdateStatus = (state, successCallback, errorCallback) => {
+export const setUpdateStatus = async () => {
+  const state = getState();
+
   // requires that user is an editor and that and update row was provided
-
   state.updateRowId = dom.valueOf('#update-row-id');
-
   if (!state.isEditor || state.updateRowId === '') {
     return;
   }
@@ -138,12 +150,17 @@ export const setUpdateStatus = (state, successCallback, errorCallback) => {
   dom.setVisible('#btn-update', true);
 
   // requests the signup data for this row id
-  google.script.run
-    .withSuccessHandler((serverData) =>
-      panels.updateDetailsPanel(serverData, state),
-    )
-    .withFailureHandler(messaging.processError)
-    .getSignupByRow(state.updateRowId);
+  try {
+    const serverData = await new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .getSignupByRow(state.updateRowId);
+      panels.updateDetailsPanel(serverData, state);
+    });
+  } catch (error) {
+    messaging.processError(error, "Failed to retrieve data for udpate:");
+  }
 };
 
 
@@ -155,9 +172,11 @@ export const setTooltips = (selector) => {
 
 async function setMockData() {
   dom.setValue('#email', 'wpsdeveloper@walpole.k12.ma.us');
+  // dom.setValue('#email', 'zzdemow23@wpsma.org');
   dom.setValue('#update-row-id', '');
-  dom.valueOf('#is-admin', 'true');
-  dom.valueOf('#is-editor', 'true'); 
+  dom.setValue('#is-admin', 'true');
+  dom.setValue('#is-editor', 'true'); 
+  dom.setValue("#wed-int-active", "true");
   toggleStaffOnlyViews(true);
   toggleAdminOnlyViews(true);
 
@@ -167,3 +186,5 @@ async function setMockData() {
 
   return sampleData.default;
 }
+
+
