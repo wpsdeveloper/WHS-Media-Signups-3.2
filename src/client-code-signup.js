@@ -14,19 +14,34 @@ import {
 } from "./signup/state.js";
 
 import * as init from "./signup/init.js";
-import * as ui from "./signup/ui.js";
+import * as dom from "./signup/dom.js";
+import { dateChangeHandler } from "./signup/date-select.js";
+import { periodChangeHandler } from "./signup/period-select.js";
+import { typeChangeHandler } from "./signup/type-input.js";
+import { submitForm, startOver } from "./signup/form-data.js";
 
 /* Initialization, after everything has loaded */
 document.addEventListener("DOMContentLoaded", () => {
-  const events = {
-    typeChanged: ui.typeChanged,
-    dateChanged: ui.dateChanged,
-    periodChanged: ui.periodChanged,
-    submitForm: ui.submitForm,
-    startOver: ui.startOver,
-  }
-  init.initializeApp(state, events);
+  init.initializeApp(state);
+
+  // Wire up event handlers to their respective modules:
+  dom.addEventListener("#date", "change", (e) => {
+    dateChangeHandler(state);
+  });
+  
+  dom.addEventListener("#period", "change", (e) => {
+    periodChangeHandler(state);
+  });
+  
+  dom.addEventListener("#type, .purpose", "change", (e) => {
+    typeChangeHandler(state);
+  });
+
+  dom.addEventListener('#btn-submit, #btn-update', 'click', () => submitForm(state));
+  // if (events.submitForm) dom.addEventListener('#btn-update', 'click', ui.submitForm);
+  dom.addEventListener('.success-box-start-over', 'click', startOver);
 });
+
 
 
 

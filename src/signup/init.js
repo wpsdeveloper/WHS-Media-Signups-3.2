@@ -1,30 +1,43 @@
 import * as dom from './dom.js';
 import * as messaging from './messaging.js';
-import * as ui from './ui.js';
 import * as parser from './parsers.js';
 import * as dates from './dates.js';
+import * as panels from './panels.js';
+import * as capacity from './capacity-validation.js';
+import * as dateSelect from './date-select.js';
+import * as periodSelect from './period-select.js';
+import * as typeInput from './type-input.js';
+import * as studentInput from './student-input.js';
+import * as interventionTeacherSelect from './interventions-teacher-select.js';
+import * as studySelect from './study-select.js';
+import * as subjectSelect from './subject-select.js';
+import * as glassRoomsInput from './glass-rooms-input.js';
+import * as formData from './form-data.js';
 
-export const initializeApp = (state) => {
-  bindEvents(state);
-  getInitialData(state);
+export const initializeApp = async (state) => {
+  messaging.showLoadingModal('Retrieving data');
+  try {
+    const rawData = await getInitialData();
+    parseInitialData(rawData, state);
+    initializeUi(state);
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+    messaging.processError(error);
+  }
+  messaging.hideLoadingModal();
 }
 
-const getInitialData = async (state) => {
-  messaging.showLoadingModal('Retrieving data');
-
+const getInitialData = async () => {
   const url = window.location.href;
   if (url.indexOf('localhost') >= 0 || url.indexOf('127.0.0.1') >= 0) {
-    try {
-      await setMockData(state, parseInitialData);
-    } catch (error) {
-      console.error(error);
-      messaging.processError(error);
-    }
+    return await setMockData(parseInitialData);
   } else {
+  return new Promise((resolve, reject) => {
     google.script.run
-      .withFailureHandler(messaging.processError)
-      .withSuccessHandler((serverData) => parseInitialData(serverData, state))
+      .withFailureHandler(reject)
+      .withSuccessHandler(resolve)
       .getInitialSignupFormData();
+    });
   }
 };
 
@@ -41,77 +54,63 @@ function parseInitialData(data, state) {
   state.noFlyList = parser.parseNoFlyList(data.noFlyList);
   state.defaultMax = parser.parseMaxSignups(data.defaultMaxSignups);
   state.currentMax = state.defaultMax;
+  state.isStaff = dom.valueOf('input#email')?.indexOf('@walpole.k12.ma.us') > 0;
+  state.isAdmin = dom.valueOf('#is-admin') === 'true';
+  state.isEditor = dom.valueOf('#is-editor') === 'true'; 
+}
 
-  messaging.hideLoadingModal();
-
-  
+export const initializeUi = (state) => {
   if (state.updateData !== null) {
     populateData(state.updateData);
   }
 
-  initializeUi(state);
-}
+  formData.preventFormSubmit();
 
-export const initializeUi = (state) => {
   // formats names for use in typeahed feature
-  ui.initializeStudentDatalist(state.studentNames);
-
-  ui.showIntTeacherAltInput(state.interventionTeachers?.length === 0);
-  ui.showStudyAltInput(state.studyTeachers?.length === 0);
-
+  studentInput.initializeStudentDatalist(state.studentNames);
+  
+  interventionTeacherSelect.toggleIntTeacherAltInput(state.interventionTeachers?.length === 0);
+  studySelect.showStudyAltInput(state.studyTeachers?.length === 0);
+  
   const today = new Date();
-  ui.configureDateInput(
+  dateSelect.configureDateSelect(
     '#date',
     dates.toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
     dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
     dates.toDateInputValue(today),
   );
 
-  ui.setTooltips('[data-bs-toggle="tooltip"]');
-
-  dom.setVisible(
-    '.int-link',
-    (dom.getAttribute('.int-link', 'href') || '').length > 58,
-  );
-  dom.setVisible('.tut-link', (dom.getAttribute('href') || '').length > 58);
-
-  checkStaffStatus(state);
-  checkAdminStatus(state);
+  setTooltips('[data-bs-toggle="tooltip"]');
+  toggleStaffOnlyViews(state.isStaff);
+  toggleAdminOnlyViews(state.isAdmin);
 
   setUpdateStatus(state);
+  
+  typeInput.toggleInterventionsLink();
+  typeInput.toggleTutoringLink();
+  typeInput.updateTypeOptions(state);
 
-  ui.updateTypeOptions(state);
-  ui.updateDetailsPanel(state.dailySchedules);
-  ui.updateStudyList(state);
-  ui.updateSubjectList(state.interventionTeachers, state.dailySchedules);
-  ui.updatePeriodList(state.dailySchedules);
-  ui.updateGlassRooms(state.signups);
-  ui.checkFull(state.signups, state.currentMax);
+  panels.updateDetailsPanel(state.dailySchedules);
+
+  periodSelect.updatePeriodOptions(state.dailySchedules);
+  studySelect.updateStudyOptions(state);
+  subjectSelect.updateSubjectOptions(state.interventionTeachers, state.dailySchedules);
+  
+  glassRoomsInput.updateGlassRooms(state.signups);
+  
+  capacity.checkFull(state.signups, state.currentMax);
 };
 
-export const bindEvents = (state) => {
-  dom.addEventListener('input[name="signup-type"]', 'change', () => ui.typeChanged(state));
-  dom.addEventListener('#date', 'change', () => ui.dateChanged(state));
-  dom.addEventListener('#period', 'change', () => ui.periodChanged(state));
-  dom.addEventListener('#btn-submit, #btn-update', 'click', () => ui.submitForm(state));
-  // if (events.submitForm) dom.addEventListener('#btn-update', 'click', ui.submitForm);
-  dom.addEventListener('.success-box-start-over', 'click',ui.startOver);
+export const toggleStaffOnlyViews = (isStaff) => {
+  dom.setVisible('.staff-only', isStaff);
 };
 
-/**
- * Sets up the page based on whether the current user is student or staff
- */
-export const checkStaffStatus = (state) => {
-  state.isStaff = dom.valueOf('input#email')?.indexOf('@walpole.k12.ma.us') > 0;
-  dom.setVisible('.staff-only', state.isStaff);
+export const toggleAdminOnlyViews = (isAdmin) => {
+  dom.setVisible('.admin-only', isAdmin);
 };
 
-/**
- * Sets up the page based on whether the current user is admin
- */
-export const checkAdminStatus = (state) => {
-  state.isAdmin = dom.valueOf('#is-admin') === 'true';
-  dom.setVisible('.admin-only', state.isAdmin);
+export const toggleEditorOnlyViews = (isEditor) => {
+  dom.setVisible('.editors-only', isEditor);
 };
 
 /**
@@ -120,18 +119,19 @@ export const checkAdminStatus = (state) => {
  * */
 export const setUpdateStatus = (state, successCallback, errorCallback) => {
   // requires that user is an editor and that and update row was provided
-  state.isEditor = dom.valueOf('#is-editor') === 'true';
+
   state.updateRowId = dom.valueOf('#update-row-id');
+
+  if (!state.isEditor || state.updateRowId === '') {
+    return;
+  }
 
   // allow editors to edit the email field
   dom.setDisabled('#email', !state.isEditor);
 
   // hide any elements that aren't for editors
-  dom.setVisible('.editors-only', state.isEditor);
+  toggleEditorOnlyViews(state.isEditor);
 
-  if (!state.isEditor || state.updateRowId === '') {
-    return;
-  }
 
   // swap the submit button for an update button
   dom.setVisible('#btn-submit', false);
@@ -140,24 +140,30 @@ export const setUpdateStatus = (state, successCallback, errorCallback) => {
   // requests the signup data for this row id
   google.script.run
     .withSuccessHandler((serverData) =>
-      ui.updateDetailsPanel(serverData, state),
+      panels.updateDetailsPanel(serverData, state),
     )
     .withFailureHandler(messaging.processError)
     .getSignupByRow(state.updateRowId);
 };
 
-async function setMockData(state, callback) {
+
+export const setTooltips = (selector) => {
+  const tooltipTriggerList = dom.$$(selector);
+  [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+};
+
+
+async function setMockData() {
   dom.setValue('#email', 'wpsdeveloper@walpole.k12.ma.us');
   dom.setValue('#update-row-id', '');
-  state.isStaff = true;
-  state.isEditor = true;
-  state.isAdmin = true;
-  checkStaffStatus(state);
-  checkAdminStatus(state);
+  dom.valueOf('#is-admin', 'true');
+  dom.valueOf('#is-editor', 'true'); 
+  toggleStaffOnlyViews(true);
+  toggleAdminOnlyViews(true);
 
   const sampleData = await import('../../sampledata.js');
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
-  callback(sampleData.default, state);
+  return sampleData.default;
 }

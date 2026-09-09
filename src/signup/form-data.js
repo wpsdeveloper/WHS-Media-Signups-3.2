@@ -1,3 +1,4 @@
+import * as dom from "./dom";
 /**
  * Populates data into the form (useful for editing existing data)
  * 
@@ -61,7 +62,7 @@ function populateTestData() {
 /**
  *  Prevents default HTML submission behavior (generally, prevent form submit if the user hits Enter) 
  * */
-function preventFormSubmit() {
+export const preventFormSubmit = () => {
   var forms = document.querySelectorAll('form');
   for (var i = 0; i < forms.length; i++) {
     forms[i].dom.addEventListener('submit', function(event) {
@@ -85,14 +86,25 @@ function submitComplete(success) {
 /**
  *  Sends the form data to the server for submission 
  * */
-function submitForm(){
+export const submitForm = async () => {
+  const formData = collectData();
+
   // returns if form is not validated (validation indicators occur in validateForm function)
-  if (!validateForm()) {
+  if (!validateForm(formData)) {
+    console.log("Invalid form data, submission aborted.");
     return;
   }
-  // gathers the form data
-  const data = collectData();
+  messaging.showLoadingModal("Submitting");
 
+
+  const url = window.location.href;
+  const debug = (url.indexOf('localhost') >= 0 || url.indexOf('127.0.0.1') >= 0);
+
+  if (debug) {
+    await mockSubmit();
+    submitComplete();
+    return;
+  }
   if ((UPDATE_ROW_ID === null) || (UPDATE_ROW_ID === "")) {
     // new submission
 
@@ -109,8 +121,6 @@ function submitForm(){
       .withFailureHandler(messaging.processError)
       .submitForm(data);
   }
-  
-  messaging.showLoadingModal("Submitting");
 }
 
 /**
@@ -156,8 +166,6 @@ function collectData() {
   data.teacherStudy = dom.valueOf(".study-teacher");
   data.teacherAcad = dom.valueOf("#acad-teacher");
   data.comments = dom.valueOf("#topic-intervention");
-
-  console.log(data);
   return data;
 }
 
@@ -165,12 +173,12 @@ function collectData() {
 /**
  *  Checks fields to make sure not required data is missing 
  * */
-function validateForm() {
-  setInvalid("input, select, textarea, div", false);
-  const invalidFields = getInvalidFields(); 
+function validateForm(formData) {
+  dom.setInvalid("input, select, textarea, div", false);
+  const invalidFields = getInvalidFields(formData); 
   // console.log(invalidFields);
   if (invalidFields.length > 0) {
-    setInvalid(invalidFields, true);
+    dom.setInvalid(invalidFields, true);
     return false;
   }
   return true;
@@ -181,11 +189,8 @@ function validateForm() {
  * 
  * @return {string[]} Array of class names to mark aas invalid
  * */
-function getInvalidFields() {
+function getInvalidFields(data) {
   const invalidFields = [];
-  
-  // gathers form data
-  const data = collectData();
 
   // requires student names if student is visible (teacher submission)
   if (dom.isVisible("#student")) {
@@ -238,7 +243,6 @@ function getInvalidFields() {
   return invalidFields;
 }
 
-
 /**
  *  Responds to a successful update notice from the server 
  * */
@@ -249,6 +253,28 @@ function updateComplete(success) {
   // shows success panel, hides input fields
   dom.setVisible("#form", false);
   dom.setVisible("#success-update-box", true);
+}
+
+/**
+ * Resets the page for another submission 
+ * */
+ export const startOver = () => {
+  dom.setValue("#student", "");
+  // dom.setValue("#purpose", "");
+  dom.setValue("#study-teacher-input", "");
+  dom.setValue("#acad-teacher", "");
+  dom.setValue("#topic-intervention", "");
+  dom.setValue("#subject-int-select", "");
+  dom.setVisible("#form", true);
+  dom.setVisible("#success-box", false);
+ }
+
+
+async function mockSubmit() {
+  console.log("Debug mode: Form data to submit:", data);
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  await delay(2000);
+  return;
 }
 
 
