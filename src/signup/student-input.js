@@ -1,11 +1,18 @@
 import * as dom from '../common/dom.js';
-import { getState } from './state.js';
+import { store } from './store.js';
 
-export const initializeStudentDatalist = () => {
-  const studentNames = getState().studentNames;
+/**
+ * Publisher: Listens to input changes in the student text field and updates store state.
+ */
+export const studentInputChangeHandler = (event) => {
+  const query = event.target.value;
+  store.setState({ currentStudentName: query });
+};
 
+export const renderStudentDatalist = (studentNames = [], currentQuery = '') => {
   const input = dom.qs(".student-autocomplete");
   if (!input) return;
+
   let list = dom.qs("#student-suggestions");
   if (!list) {
     list = document.createElement("datalist");
@@ -13,16 +20,27 @@ export const initializeStudentDatalist = () => {
     document.body.append(list);
   }
   input.setAttribute("list", list.id);
-  input.oninput = () => {
-    if (input.value.trim().length < 3) {
-      list.replaceChildren();
-      return;
-    }
-    list.replaceChildren(...(studentNames || []).map(name => {
-      const option = document.createElement("option");
-      option.value = name;
-      return option;
-    }));
-  };
-  list.replaceChildren();
-}
+
+  // Clear suggestions if query is under threshold
+  if (!currentQuery || currentQuery.trim().length < 3) {
+    list.replaceChildren();
+    return;
+  }
+
+  // Populate suggestion options from student names list
+  list.replaceChildren(...(studentNames || []).map(name => {
+    const option = document.createElement("option");
+    option.value = name;
+    return option;
+  }));
+};
+
+/**
+ * Subscriber: Updates suggestions when studentNames or current query change in store.
+ */
+export const setupStudentInputObserver = () => {
+  store.subscribe((state) => {
+    renderStudentDatalist(state.studentNames, state.currentStudentName);
+  }, ['studentNames', 'currentStudentName']);
+};
+

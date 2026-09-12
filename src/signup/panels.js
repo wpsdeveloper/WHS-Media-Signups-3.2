@@ -1,34 +1,45 @@
 import * as dom from "../common/dom.js"
-import * as dates from "../common/dates.js"
+import { store } from "./store.js";
+
+// Maps state.currentType values to their corresponding CSS class selectors
+const PANEL_MAP = {
+  'Intervention': '.intervention-only',
+  'Assessment': '.assessment-only',
+  'Tutoring': '.tutoring-only',
+  'Non-intervention': '.non-intervention-only',
+  'Alt setting': '.alt-setting-only',
+  'Staff reservation': '.staff-reservation-only'
+};
+
+/**
+ * Hides all type-specific detail panel containers.
+ */
+export const hideTypes = () => {
+  dom.setVisible(
+    ".intervention-only, .assessment-only, .tutoring-only, .non-intervention-only, .alt-setting-only, .staff-reservation-only",
+    false
+  );
+};
 
 /**
  *  Updates the Details section of the form based on which Type is selected 
  * */
-export const updateDetailsPanel = () => {
-  if (dom.isChecked("input#intervention")) showType(".intervention-only");
-  else if (dom.isChecked("input#assessment")) showType(".assessment-only");
-  else if (dom.isChecked("input#tutoring")) showType(".tutoring-only");
-  else if (dom.isChecked("input#non-intervention")) showType(".non-intervention-only");
-  else if (dom.isChecked("input#alt-setting")) showType(".alt-setting-only");
-  else if (dom.isChecked("input#staff-reservation")) showType(".staff-reservation-only");
-}
-
-/**
- *  Shows the Details section for a particular Type 
- * */
-export const showType = (typeClass) => {
-  // hides all panels by default
+export const updateDetailsPanel = (currentType) => {
   hideTypes();
 
-  // shows only the indicated panel
-  dom.setVisible(typeClass, true);
+  if (!currentType) return;
+
+  const targetSelector = PANEL_MAP[currentType];
+  if (targetSelector) {
+    dom.setVisible(targetSelector, true);
+  }
 }
 
 /**
- *  Hides all Details sections 
- * */
-export const hideTypes = () => {
-   dom.setVisible(
-    ".intervention-only, .assessment-only, .tutoring-only, .non-intervention-only, .alt-setting-only, .staff-reservation-only",
-    false);
-}
+ * Subscriber: Automatically updates panel visibilities when state.currentType changes.
+ */
+export const setupPanelsObserver = () => {
+  store.subscribe((state) => {
+    updateDetailsPanel(state.currentType);
+  }, ['currentType']);
+};

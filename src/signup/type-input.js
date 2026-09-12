@@ -1,19 +1,64 @@
 import * as dom from "../common/dom.js"
-import * as capacity from "./capacity-validation.js";
-import * as scheduling from "./schedule-rules.js";
-import * as panels from "./panels.js";
-import * as studySelect from "./study-select.js";
-import * as subjectSelect from "./subject-select.js";
+import { store } from "./store.js";
 
 /**
 *  Responds to a change in the Type field 
 * */
-export const typeChangeHandler = () => {
-  updateTypeOptions();
-  capacity.checkFull();
-  panels.updateDetailsPanel();
-  studySelect.updateStudyOptions();
-  subjectSelect.updateSubjectOptions();
+export const typeChangeHandler = (event) => {
+  const selectedType = event.target.value;
+  store.setState({ currentType: selectedType });
+};
+
+/**
+ * Helper Utilities: DOM UI resets and state indicators
+*/
+export const resetAllTypes = () => {
+  dom.setDisabled(`input[name='signup-type'], input[name='purpose']`, false);
+  dom.setVisible('span.type-warning', false);
+}
+
+export const disableInterventions = () => {
+  dom.setDisabled("input#intervention", true);
+  dom.setChecked("input#intervention", false);
+  dom.setVisible("label[for='intervention'] span.type-warning", true);
+  dom.setText("label[for='intervention'] span.type-warning", "Not available");
+}
+
+export const disableAssessmentMakeups = () => {
+  dom.setDisabled("input#assessment", true);
+  dom.setChecked("input#assessment", false);
+  dom.setVisible("label[for='assessment'] span.type-warning", true);
+  dom.setText("label[for='assessment'] span.type-warning", "Not available");
+}
+
+export const disableAltSetting = () => {
+  dom.setDisabled("input#alt-setting", true);
+  dom.setChecked("input#alt-setting", false);
+  dom.setVisible("label[for='alt-setting'] span.type-warning", true);
+  dom.setText("label[for='alt-setting'] span.type-warning", "Not available");
+}
+
+export const disableTutoring = () => {
+  dom.setDisabled("input#tutoring", true);
+  dom.setChecked("input#tutoring", false);
+  dom.setVisible("label[for='tutoring'] span.type-warning", true);
+  dom.setText("label[for='tutoring'] span.type-warning", "Not available");
+}
+
+export const disableWednesdayInterventions = () => {
+  dom.setDisabled("input#non-intervention", true);
+  dom.setChecked("input#non-intervention", false);
+  dom.setVisible("label[for='non-intervention'] span.type-warning", true);
+  dom.setText("label[for='non-intervention'] span.type-warning", "Not available");
+}
+
+export const disableNonInterventions = () => {
+  dom.setDisabled("input#non-intervention", true);
+  dom.setChecked("input#non-intervention", false);
+  dom.setDisabled("input[name='purpose']", true);
+  dom.setChecked("input[name='purpose']", false);
+  dom.setVisible("label[for='purpose'] span.type-warning", true);
+  dom.setText("label[for='purpose'] span.type-warning", "Not available");
 }
 
 export const toggleInterventionsLink = () => {
@@ -26,77 +71,20 @@ export const toggleTutoringLink = () => {
   dom.setVisible('.tut-link', isVisible);
 }
 
-
 /**
-*  Updates the Type options is there is a special schedule that period 
-* */
-export const updateTypeOptions = () => {
-  resetAllTypes();
+ * Subscriber: Keeps input selections synchronized with state.currentType.
+ */
+export const setupTypeInputObserver = () => {
+  store.subscribe((state) => {
+    if (state.currentType) {
+      const radio = dom.qs(`input[name='signup-type'][value='${state.currentType}']`);
+      if (radio) {
+        dom.setChecked(radio, true);
+      }
+    }
+  }, ['currentType']);
+};
 
-  toggleTutoringActive();
-  capacity.preventSignupForNoFly();
-  scheduling.setSpecialScheduleAdjustments();
-}
-
-export const resetAllTypes = () => {
-  dom.setDisabled(`input[name='signup-type'], input[name='purpose']`, false);
-  dom.setVisible('span.type-warning', false);
-}
 
  
-export const markTutoringDisabled = () => {
-  dom.setDisabled("input#tutoring", true);
-  dom.setChecked("input#tutoring", false);
-  showTutoring();
-}
 
-export const showInterventions = () => {
-  dom.setDisabled("input#intervention", true);
-  dom.setChecked("input#intervention", false);
-  dom.setVisible("label[for='intervention'] span.type-warning", true);
-  dom.setText("label[for='intervention'] span.type-warning", "Not available");
-}
-
-export const showAssessmentMakeups = () => {
-  dom.setDisabled("input#assessment", true);
-  dom.setChecked("input#assessment", false);
-  dom.setVisible("label[for='assessment'] span.type-warning", true);
-  dom.setText("label[for='assessment'] span.type-warning", "Not available");
-}
-
-export const showAltSetting = () => {
-  dom.setDisabled("input#alt-setting", true);
-  dom.setChecked("input#alt-setting", false);
-  dom.setVisible("label[for='alt-setting'] span.type-warning", true);
-  dom.setText("label[for='alt-setting'] span.type-warning", "Not available");
-}
-
-export const showTutoring = () => {
-  dom.setDisabled("input#tutoring", true);
-  dom.setChecked("input#tutoring", false);
-  dom.setVisible("label[for='tutoring'] span.type-warning", true);
-  dom.setText("label[for='tutoring'] span.type-warning", "Not available");
-}
-
-export const showWednesdayInterventions = () => {
-  dom.setDisabled("input#non-intervention", true);
-  dom.setChecked("input#non-intervention", false);
-  dom.setVisible("label[for='non-intervention'] span.type-warning", true);
-  dom.setText("label[for='non-intervention'] span.type-warning", "Not available");
-}
-
-export const showNonInterventions = () => {
-  dom.setDisabled("input#non-intervention", true);
-  dom.setChecked("input#non-intervention", false);
-  dom.setDisabled("input[name='purpose']", true);
-  dom.setChecked("input[name='purpose']", false);
-  dom.setVisible("label[for='purpose'] span.type-warning", true);
-  dom.setText("label[for='purpose'] span.type-warning", "Not available");
-}
-
-export const toggleTutoringActive = () => {
-  const tutoringActive = dom.valueOf('#tutoring-active') === "On";
-  if (!tutoringActive) {
-    markTutoringDisabled();
-  }
-}

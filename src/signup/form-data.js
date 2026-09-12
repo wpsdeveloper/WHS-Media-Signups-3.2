@@ -1,63 +1,26 @@
 import * as dom from "../common/dom";
 import * as messaging from '../common/messaging.js';
-/**
- * Populates data into the form (useful for editing existing data)
- * 
- * @param {SignupData} signup A record of signup date to enter into fields
- */
+import { store } from './store.js';
+import { DEBUG } from "../common/debug.js";
+
 function populateData(signup) {
-  dom.setValue("#student", `${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
-  dom.setValue("#date", formatDateSlashes(new Date(signup.date)));
-  dateChanged();
-  
-  dom.setValue("#period", "" + signup.period);
-  periodChanged();
-  
-  dom.setValue("#subject").val(signup.subject);
-  dom.setValue("#study-teacher", signup.teacherStudy);
-  dom.setValue("#acad-teacher", signup.teacherAcad);
+  if (!signup) return;
 
-  // unchecks Types, and check the correct one
-  dom.setValue("#type input").prop("checked", "false");
-  dom.setValue(`#type input[value="${signup.type}"]`).prop("checked", "true");
-  typeChanged();
+  // Update store state first to propagate selection rules cleanly
+  store.setState({
+    currentDate: signup.date ? formatDateSlashes(new Date(signup.date)) : null,
+    currentPeriod: signup.period ? String(signup.period) : null,
+    currentType: signup.type || null,
+    currentSubject: signup.subject || null,
+    currentStudyTeacher: signup.teacherStudy || null,
+  });
 
-  // unchecks all Purposes and then checks the correct one 
-  dom.setChecked("#purpose input", false);
-  dom.setChecked(`#purpose input[value="${signup.purpose}"]`, true);
+  if (signup.lastname && signup.firstname) dom.setValue("#student", `${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
+  dom.setValue("#acad-teacher", signup.teacherAcad || "");
 
-  // unchecks all Glass Rooms and then checks the correct one 
-  dom.setChecked("#glass-room input", false);
-  dom.setChecked(`#glass-room input[value="${signup.room}"]`, true);
-
-  // fills the topic/comments
+  if (signup.purpose) dom.setChecked(`#purpose input[value="${signup.purpose}"]`, true);
+  if (signup.room) dom.setChecked(`#glass-room input[value="${signup.room}"]`, true);
   dom.setValue("#topic-intervention", signup.comments);
-}
-
-/**
- *  For testing the form only 
- * */
-function populateTestData() {
-  populateData({
-    comments: "",
-    date: "3/6/2024",
-    email: "demowhs@wpsma.org",
-    firstname: "Belinda",
-    lastname: "Zzdemo",
-    mediaIn: "",
-    mediaOut: "",
-    period: "8",
-    purpose: "Group-project",
-    room: 1,
-    rowId: "",
-    studyIn1: "",
-    studyIn2: "",
-    subject: "",
-    teacherAcad: "Hahn",
-    teacherStudy: "Reeve",
-    timestamp: "3/1/2024",
-    type: "Non-intervention",
-  })
 }
 
 /**
@@ -83,22 +46,22 @@ export const submitForm = async () => {
     console.log("Invalid form data, submission aborted.");
     return;
   }
+
   messaging.showLoadingModal("Submitting");
 
-  const url = window.location.href;
-  const debug = (url.indexOf('localhost') >= 0 || url.indexOf('127.0.0.1') >= 0);
+  const updateRowId = store.getState().updateRowId;
 
   try {
-    if (debug) {
+    if (DEBUG) {
       await mockSubmit(formData);
       submitComplete();
-    } else if ((UPDATE_ROW_ID === null) || (UPDATE_ROW_ID === "")) {
+    } else if (!updateRowId) {
       // new submission
       await submitNewFormData(formData);      
       submitComplete();
     } else {
       // updating existing records
-      formData.rowId = UPDATE_ROW_ID;
+      formData.rowId = updateRowId;
       await submitUpdatedFormData(formData);
       updateComplete();
     }
@@ -130,17 +93,14 @@ async function submitUpdatedFormData(formData) {
  * @return {SignupData}
  * */
 function collectData() {
+  const state = store.getState();
   const data = {};
   
   data.email = dom.valueOf("#email");
-  
-  // sets at least blanks for the names
   data.firstname = "";
   data.lastname = "";
 
   if (dom.isVisible("#student")) {
-    // this is a teacher submission
-    // breaks apart the line selected in the typeahead
     const student = dom.valueOf("#student");
     const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
     const names = (brackets.length > 0) ? brackets[0].split(", ") : [];
@@ -149,12 +109,12 @@ function collectData() {
     data.lastname = names.length > 0 ? names[0] : "";
     data.emailStudent = (brackets.length == 2) ? brackets[1].trim().substring(0, brackets[1].length-1) : "";
   } else {
-    // this is a student submission
     data.emailStudent = data.email;
   }
-  data.date = dom.valueOf("#date");
-  data.period = dom.valueOf("#period");
-  data.type = dom.valueOf("input[name='signup-type']:checked");
+
+  data.date = state.currentDate || dom.valueOf("#date");
+  data.period = state.currentPeriod || dom.valueOf("#period");
+  data.type = state.currentType || dom.valueOf("input[name='signup-type']:checked");
   
   // gets subject from whichever is visible
   if (dom.isVisible(".subject-int")) {
@@ -168,6 +128,7 @@ function collectData() {
   data.teacherStudy = dom.valueOf(".study-teacher");
   data.teacherAcad = dom.valueOf("#acad-teacher");
   data.comments = dom.valueOf("#topic-intervention");
+
   return data;
 }
 
@@ -178,7 +139,7 @@ function collectData() {
 function validateForm(formData) {
   dom.setInvalid("input, select, textarea, div", false);
   const invalidFields = getInvalidFields(formData); 
-  // console.log(invalidFields);
+
   if (invalidFields.length > 0) {
     dom.setInvalid(invalidFields, true);
     return false;
@@ -196,49 +157,31 @@ function getInvalidFields(data) {
 
   // requires student names if student is visible (teacher submission)
   if (dom.isVisible("#student")) {
-    if (data.firstname.length <= 0) {
-      invalidFields.push("#student");
-    }
-    if (data.lastname.length <= 0) {
-      invalidFields.push("#student");
-    }
+    if (!data.firstname) invalidFields.push("#student");
+    if (!data.lastname) invalidFields.push("#student");
   }
 
-  // why is this here?
-  const now = new Date();
-  
-  // requires valid date
-  let dateReq = null;
   try {
-    if (data.date.length <= 0) {
+    if (!data.date) {
       invalidFields.push("#date");
+    } else {
+      new Date(data.date);
     }
-    dateReq = new Date(data.date);
-    const month = dateReq.getMonth();
-  } catch(error) {
+  } catch (error) {
     invalidFields.push("#date");
   }
-
-  // requires period is selected
-  if (data.period.length <=0) {
-    invalidFields.push("#period");
-  }
+  if (!data.period) invalidFields.push("#period");
 
   // requires study teacher is selected/input
-  if (dom.isVisible("#study-teacher") && (data.teacherStudy.length <= 0)) {
+  if (dom.isVisible("#study-teacher") && !data.teacherStudy) {
     invalidFields.push("#study-teacher");
   }
 
   // requires type is selected
-  if (data.type.length <=0) {
-    invalidFields.push("#type");
-  }
+  if (!data.type) invalidFields.push("#type");
 
-  // if one of these types, requires academic teacher is input
-  if ((data.type === "Non-intervention") || (data.type === "Assessment") || (data.type === "Alt setting")){
-    if (data.teacherAcad.length <=0) {
-      invalidFields.push("#acad-teacher");
-    }
+  if (["Non-intervention", "Assessment", "Alt setting"].includes(data.type) && !data.teacherAcad) {
+    invalidFields.push("#acad-teacher");
   }
 
   // sends invalid class names back
@@ -273,6 +216,13 @@ function updateComplete() {
  * Resets the page for another submission 
  * */
  export const startOver = () => {
+  store.setState({
+    currentType: null,
+    currentStudyTeacher: null,
+    currentSubject: null,
+    currentStudentName: '',
+  });
+  
   dom.setValue("#student", "");
   // dom.setValue("#purpose", "");
   dom.setValue("#study-teacher-input", "");

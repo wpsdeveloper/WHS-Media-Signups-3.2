@@ -1,7 +1,7 @@
 class Store {
   state = {
     students: [],
-    studentNames,
+    studentNames: [],
     dailySchedules: [],
     interventionTeachers: {},
     studyTeachers: {},
@@ -15,6 +15,15 @@ class Store {
     updateData: null,
     defaultMax: 15,
     currentMax: 15,
+
+    currentDate: null,
+    currentPeriod: null,
+    currentType: null,
+    currentStudyTeacher: null,
+    currentSubject: null,
+    currentStudentName: "",
+    currentMax: null,
+    currentEmail: "",
   };
 
   constructor() {

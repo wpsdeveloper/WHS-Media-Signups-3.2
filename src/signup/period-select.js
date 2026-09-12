@@ -1,69 +1,75 @@
 import * as dom from '../common/dom.js';
 import { parseDateInput, isSameDate } from '../common/dates.js';
-import { updateTypeOptions } from './type-input';
-import { updateSubjectOptions } from './subject-select';
-import { updateStudyOptions } from './study-select';
-import { updateGlassRooms } from './glass-rooms-input';
-import { checkFull } from './capacity-validation';
-import { getState } from './state.js';
+import { store } from './store.js';
+
  /**
   *  Responds to a change in the Period field 
   * */
  export const periodChangeHandler = () => {
-   updateTypeOptions();
-   updateSubjectOptions();
-   updateStudyOptions();
-   updateGlassRooms();
-   checkFull();
+  const selectedPeriod = event.target.value;
+  store.setState({ currentPeriod: selectedPeriod });
  }
 
  /**
   * Updates the Periods select box based on the date 
   * */
- export const updatePeriodOptions = () => {
+ export const updatePeriodOptions = (currentDateStr, dailySchedules) => {
    // remembers current selection. If this period is available in the new list,
    const oldPeriodVal = dom.valueOf("#period");
-   const dateVal = dom.valueOf("#date");
-   if (dateVal === "") return;
-   const date = parseDateInput(dateVal);
- 
-   // clear previous options
+   if (!currentDateStr) return;
+
+   const date = parseDateInput(currentDateStr);
    dom.clearOptions("#period");
-   
-   const dailySchedules = getState().dailySchedules;
-   // cycles through daily schedules...
-   dailySchedules.forEach(schedule => {
-     const schedDate = new Date(schedule.date);
- 
-     // for a matching date, creates an option for each period
-     if (isSameDate(schedDate, date)) {
-       schedule.periods.forEach(period => {
-         const option = document.createElement("option");
-         option.value = period;
-         option.textContent = period;
-         dom.appendOption("#period", period, period);
-       })
-     }
-   })
- 
-   // console.log(date, wednesdayInterventions(date));
-   if (wednesdayInterventions(date)) {
-     dom.appendOption("#period", "Wed. PM", "Wed. PM");
-   }
- 
-   // reselects the previously selected period, if possible
-   if (oldPeriodVal !== null) {
-     dom.setValue("#period", oldPeriodVal);
-   } else {
-     dom.setValue("#period", dom.valueOf("#period option") || "");
-   }
+
+   if (Array.isArray(dailySchedules)) {
+    dailySchedules.forEach(schedule => {
+      const schedDate = new Date(schedule.date);  
+      if (isSameDate(schedDate, date)) {
+        schedule.periods.forEach(period => {
+          dom.appendOption("#period", period, period);
+        })
+      }
+    })
+  }
+
+  if (wednesdayInterventions(date)) {
+    dom.appendOption("#period", "Wed. PM", "Wed. PM");
+  }
+
+  // Restore existing selection if valid
+  const selectElem = dom.qs("#period");
+  const firstAvailableValue = selectElem?.options[0]?.value || "";
+
+  if (oldPeriodVal && [...(selectElem?.options || [])].some(opt => opt.value === oldPeriodVal)) {
+    dom.setValue("#period", oldPeriodVal);
+  } else {
+    dom.setValue("#period", firstAvailableValue);
+  }
  }
 
  /**
- * Determines if the Wednesday Interventions is active and should be shown.
- * 
- * param {Date} - the date to show
- * return {boolean} - True is should be shown
+ * Subscriber: Re-renders available options when date or schedule data changes.
+ */
+export const setupPeriodOptionsObserver = () => {
+  store.subscribe((state) => {
+    updatePeriodOptions(state.currentDate, state.dailySchedules);
+  }, ['currentDate', 'dailySchedules']);
+};
+
+/**
+ * Subscriber: Keeps the select element state synchronized with store.currentPeriod.
+ */
+export const setupPeriodValueObserver = () => {
+  store.subscribe((state) => {
+    const periodSelect = dom.qs("#period");
+    if (periodSelect && state.currentPeriod && periodSelect.value !== state.currentPeriod) {
+      dom.setValue("#period", state.currentPeriod);
+    }
+  }, ['currentPeriod']);
+};
+
+/**
+ * Helper: Determines if Wednesday Interventions should be shown.
  */
 function wednesdayInterventions(date) {
   const wednesday = 3;

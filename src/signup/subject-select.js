@@ -1,39 +1,31 @@
 import * as dom from "../common/dom.js"
 import { parseDateInput, isSameDate } from "../common/dates.js"
-import { toggleIntTeacherAltInput } from "./interventions-teacher-select.js";
-import { getState } from "./state.js";
+import { store } from "./store.js";
+
+/**
+ * Publisher: Responds to user subject selection changes.
+ * Updates store state only.
+ */
+export const subjectChangeHandler = (event) => {
+  const selectedSubject = event.target.value;
+  store.setState({ currentSubject: selectedSubject });
+};
 
 /**
  *  Updates the Subject select box based on the date and period selected 
  * */
-export const updateSubjectOptions = () => {
+export const updateSubjectOptions = (
+  currentDateStr,
+  currentPeriod,
+  interventionTeachers,
+  dailySchedules = []
+) => {
   // clears previous options
    dom.clearOptions("#subject-int-select");
 
-  
-  const interventionTeachers = getState().interventionTeachers; 
-  // only proceeds if the select box is still here
-  if (interventionTeachers === null) {
-    return;
-  }
-  
-  // gets the date and period selected, returning if blank
-  const dateStr = dom.valueOf("#date");
-  if (dateStr.length === 0) {
-    return;
-  }
-  const date = parseDateInput(dateStr);
-  
-  const period = dom.valueOf("#period");
-  if (period === null) {
-    return;
-  }
+  if (!interventionTeachers || !currentDateStr || !currentPeriod) return;
 
-  if (period === "Wed. PM") {
-    toggleIntTeacherAltInput(true);
-    return;
-  }
-  toggleIntTeacherAltInput(false);
+  const date = parseDateInput(currentDateStr);
 
   const today = new Date();
   const s2Date = new Date(interventionTeachers.s2Date);
@@ -44,30 +36,53 @@ export const updateSubjectOptions = () => {
   } else {
     schedules = interventionTeachers.s2;
   }
-  
-  const dailySchedules = getState().dailySchedules;
+
   // cycles through the schedules...
-  dailySchedules.forEach(sched => {
-    const schedDate = new Date(sched.date);
-
-    if (isSameDate(schedDate, date)) {
-      // if the date is in the schedule...
-      const day = sched.day;
+  if (Array.isArray(dailySchedules)) {
+    dailySchedules.forEach(sched => {
+      const schedDate = new Date(sched.date);
       
-      // if no teachers for this date/period, return
-      if ((typeof schedules[day] === "undefined") || (typeof schedules[day][period] === "undefined")) {
-        return;
+      if (isSameDate(schedDate, date)) {
+        const day = sched.day;
+        
+        if (!schedules?.[day] || !schedules[day][currentPeriod]) return;
+        
+        // create options for each teacher for this date/period
+        const availableTeachers = schedules[day][currentPeriod];
+        if (!availableTeachers) {
+          return;
+        }
+        
+        availableTeachers.forEach(teacher => {
+          dom.appendOption("#subject-int-select", teacher, teacher);
+        })
       }
-
-      // create options for each teacher for this date/period
-      const availableTeachers = schedules[day][period];
-      if (!availableTeachers) {
-        return;
-      }
-
-      availableTeachers.forEach(teacher => {
-        dom.appendOption("#subject-int-select", teacher, teacher);
-      })
-    }
-  })
+    })
+  }
 }
+
+/**
+ * Subscriber: Re-calculates and populates subject options when dependencies change.
+ */
+export const setupSubjectOptionsObserver = () => {
+  store.subscribe((state) => {
+    updateSubjectOptions(
+      state.currentDate,
+      state.currentPeriod,
+      state.interventionTeachers,
+      state.dailySchedules
+    );
+  }, ['currentDate', 'currentPeriod', 'interventionTeachers', 'dailySchedules']);
+};
+
+/**
+ * Subscriber: Synchronizes DOM selection with state.currentSubject.
+ */
+export const setupSubjectValueObserver = () => {
+  store.subscribe((state) => {
+    const selectElem = dom.qs("#subject-int-select");
+    if (selectElem && state.currentSubject && selectElem.value !== state.currentSubject) {
+      dom.setValue("#subject-int-select", state.currentSubject);
+    }
+  }, ['currentSubject']);
+};
