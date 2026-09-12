@@ -1,4 +1,4 @@
-import * as dom from "./dom.js"
+import * as dom from "../common/dom.js"
 import * as capacity from "./capacity-validation.js";
 import * as scheduling from "./schedule-rules.js";
 import * as panels from "./panels.js";

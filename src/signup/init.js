@@ -1,7 +1,7 @@
-import * as dom from './dom.js';
-import * as messaging from './messaging.js';
+import * as dom from '../common/dom.js';
+import * as messaging from '../common/messaging.js';
 import * as parser from './parsers.js';
-import * as dates from './dates.js';
+import * as dates from '../common/dates.js';
 import * as panels from './panels.js';
 import * as capacity from './capacity-validation.js';
 import * as dateSelect from './date-select.js';
@@ -25,6 +25,7 @@ export const initializeApp = async () => {
     const parsedData = parseServerData(rawData);
     setState(parsedData);
     initializeUi(getState());
+    bindEvents();
   } catch (error) {
     messaging.processError(error, 'Failed to initialize app:');
   }
@@ -113,6 +114,14 @@ export const initializeUi = () => {
   capacity.checkFull();
 };
 
+function bindEvents() {
+  dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler());
+  dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler());
+  dom.addEventListener("#type, .purpose", "change", (e) => typeInput.typeChangeHandler());
+  dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
+  dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
+}
+
 export const toggleStaffOnlyViews = (isStaff) => {
   dom.setVisible('.staff-only', isStaff);
 };
@@ -165,7 +174,7 @@ export const setUpdateStatus = async () => {
 
 
 export const setTooltips = (selector) => {
-  const tooltipTriggerList = dom.$$(selector);
+  const tooltipTriggerList = dom.qs(selector);
   [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 };
 
@@ -184,7 +193,7 @@ async function setMockData() {
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
-  return sampleData.default;
+  return sampleData.signupData;
 }
 
 

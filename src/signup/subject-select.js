@@ -1,5 +1,5 @@
-import * as dom from "./dom.js"
-import { parseDateInput, isSameDate } from "./dates.js"
+import * as dom from "../common/dom.js"
+import { parseDateInput, isSameDate } from "../common/dates.js"
 import { toggleIntTeacherAltInput } from "./interventions-teacher-select.js";
 import { getState } from "./state.js";
 

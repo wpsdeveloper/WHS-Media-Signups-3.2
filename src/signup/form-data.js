@@ -1,5 +1,5 @@
-import * as dom from "./dom";
-import * as messaging from "./messaging";
+import * as dom from "../common/dom";
+import * as messaging from '../common/messaging.js';
 /**
  * Populates data into the form (useful for editing existing data)
  * 

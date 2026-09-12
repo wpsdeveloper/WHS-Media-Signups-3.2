@@ -1,4 +1,4 @@
-import * as dom from './dom.js';
+import * as dom from '../common/dom.js';
 import { updatePeriodOptions, periodChangeHandler } from './period-select.js';
 /**
   *  Responds to a change in the Date field 
@@ -9,7 +9,7 @@ import { updatePeriodOptions, periodChangeHandler } from './period-select.js';
  }
 
  export const configureDateSelect = (selector, minDate, maxDate, initialDate) => {
-   const dateInput = dom.$(selector);
+   const dateInput = dom.qs(selector);
    if (dateInput) {
      dateInput.type = "date";
      dateInput.min = minDate;

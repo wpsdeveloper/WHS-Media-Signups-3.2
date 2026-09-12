@@ -1,5 +1,5 @@
-import * as dom from './dom';
-import { parseDateInput, isSameDate } from './dates';
+import * as dom from '../common/dom.js';
+import { parseDateInput, isSameDate } from '../common/dates.js';
 import { updateTypeOptions } from './type-input';
 import { updateSubjectOptions } from './subject-select';
 import { updateStudyOptions } from './study-select';

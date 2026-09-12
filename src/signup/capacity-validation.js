@@ -1,5 +1,5 @@
-import * as dom from "./dom.js";
-import * as dates from "./dates.js";
+import * as dom from "../common/dom.js";
+import * as dates from "../common/dates.js";
 import { getState, setState } from "./state.js";
 
 /**
