@@ -79,7 +79,10 @@ export class DataRow {
       dom.setVisible(editIcons, true);
       if (isEditor) {
         const editLink = editIcons.querySelector('a.edit-link');
-        if (editLink) editLink.href = `${editLink.href}&id=${signup.rowId}`;
+        if (editLink) {
+          const editUrl = `${editLink.href}&id=${signup.rowId}`
+          dom.setAttribute(editLink, "href", editUrl);
+        }
       }
     }
     
@@ -118,6 +121,18 @@ export class DataRow {
       }
     });
   }
+
+  handleEditClick() {
+
+  }
+
+  handleSaveClick(){
+
+  }
+
+  handleCancelClick(){}
+
+  handleDeleteClick(){}
 }
 
 // =====================================================================

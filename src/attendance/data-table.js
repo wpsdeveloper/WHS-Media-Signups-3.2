@@ -95,7 +95,7 @@ export const initObservers = () => {
 
     // if no current date/time data for students, shows the "No records" row
     const activeStudentRows = dom.qsa(".student-row.current-period.current-date");
-    const activeStaffRows = dom.qsa(".student-row.current-period.current-date");
+    const activeStaffRows = dom.qsa(".staff-row.current-period.current-date");
     
     const hasStudentRows = Array.isArray(activeStudentRows) && activeStudentRows.length > 0;
     const hasStaffRows = Array.isArray(activeStaffRows) && activeStaffRows.length > 0;

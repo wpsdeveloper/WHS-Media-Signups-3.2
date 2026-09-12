@@ -6,7 +6,6 @@ import { DEBUG } from '../common/debug.js';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  messaging.showLoadingModal('Retrieving data');
   
   try {
     dataTable.initObservers();
@@ -15,9 +14,8 @@ export const initializeApp = async () => {
     await refreshData();
   } catch (error) {
     messaging.processError(error, 'Failed to initialize app:');
+    messaging.hideLoadingModal();
   }
-
-  messaging.hideLoadingModal();
 }
 
 const getServerData = async () => {
@@ -64,11 +62,12 @@ function bindEvents() {
   dom.addEventListener("#period", "change", (e) => dataTable.periodChangeHandler());
   dom.addEventListener("#attendance-link", "click", (e) => dataTable.showAttendance());
   dom.addEventListener("#details-link", "click", (e) => dataTable.showSignupInfo());
-  dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
-  dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
+  dom.addEventListener('#refresh-data-btn', 'click', () => refreshData());
 }
 
 export const refreshData = async () => {
+  messaging.showLoadingModal('Retrieving data');
+
   const rawData = await getServerData();
   const parsedData = parseServerData(rawData);
   initDateInput();
@@ -83,6 +82,8 @@ export const refreshData = async () => {
 
   toggleEditorOnlyViews(parsedData.isEditor);
   toggleAdminOnlyViews(parsedData.isAdmin);
+  
+  messaging.hideLoadingModal();
 };
 
 export const toggleAdminOnlyViews = (isAdmin) => {
