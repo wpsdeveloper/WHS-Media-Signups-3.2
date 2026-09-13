@@ -5,7 +5,7 @@ import { store } from './store.js';
  /**
   *  Responds to a change in the Period field 
   * */
- export const periodChangeHandler = () => {
+ export const periodChangeHandler = (event) => {
   const selectedPeriod = event.target.value;
   store.setState({ currentPeriod: selectedPeriod });
  }
@@ -44,6 +44,7 @@ import { store } from './store.js';
     dom.setValue("#period", oldPeriodVal);
   } else {
     dom.setValue("#period", firstAvailableValue);
+    store.setState({currentPeriod: firstAvailableValue});
   }
  }
 

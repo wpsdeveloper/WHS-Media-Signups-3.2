@@ -32,5 +32,16 @@ export const setupDateSelectObserver = (selector) => {
     }
   }, ['currentDate']);
 };
+
+export const chooseSemester = (currentDate, rolloverDate) => {
+  if (!(currentDate instanceof Date) || !(rolloverDate instanceof Date)) {
+    return null;
+  }
+  if (currentDate.getTime() >= rolloverDate.getTime()) {
+    return '2';
+  } else {
+    return '1';
+  }
+}
  
 

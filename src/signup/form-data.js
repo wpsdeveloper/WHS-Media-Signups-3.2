@@ -24,18 +24,6 @@ function populateData(signup) {
 }
 
 /**
- *  Prevents default HTML submission behavior (generally, prevent form submit if the user hits Enter) 
- * */
-export const preventFormSubmit = () => {
-  var forms = document.querySelectorAll('form');
-  for (var i = 0; i < forms.length; i++) {
-    forms[i].dom.addEventListener('submit', function(event) {
-      event.preventDefault();
-    });
-  }
-};
-
-/**
  *  Sends the form data to the server for submission 
  * */
 export const submitForm = async () => {
@@ -141,7 +129,8 @@ function validateForm(formData) {
   const invalidFields = getInvalidFields(formData); 
 
   if (invalidFields.length > 0) {
-    dom.setInvalid(invalidFields, true);
+    const invalidIds = invalidFields.join(", ");
+    dom.setInvalid(invalidIds, true);
     return false;
   }
   return true;

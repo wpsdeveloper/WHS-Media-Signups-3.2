@@ -20,7 +20,7 @@ export const initializeApp = async () => {
 
 const getServerData = async () => {
   if (DEBUG) {
-    return await setMockData(parseServerData);
+    return await setMockData();
   } 
 
   return new Promise((resolve, reject) => {
@@ -75,7 +75,7 @@ export const refreshData = async () => {
   store.setState({
     ...parsedData,
     currentDatePeriod : {
-      date: dom.valueOf("#date") || dom.qs(".date-input").value,
+      date: dom.valueOf("#date"),
       period: null,
     }
   });

@@ -31,7 +31,7 @@ export const updateGlassRooms = (currentDateStr, currentPeriod, signups = []) =>
       return;
     }
     const suPeriod = "" + signup.period;
-    if (suPeriod !== period) {
+    if (suPeriod !== currentPeriod) {
       return;
     }
 

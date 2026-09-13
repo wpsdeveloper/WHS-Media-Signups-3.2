@@ -38,11 +38,11 @@ export const evaluateScheduleRules = (currentDateStr, currentPeriod, dailySchedu
   
   // for the IF statements below ANY text value counts as "not allowed".
   // if not allowed, disables the check, unchecks, and adds a label warning
-  if (special.allowInterventions.length > 0) disableInterventions();
-  if ((special.allowAssessmentMakeups.length > 0) || isWednesdayInterventions) disableAssessmentMakeups();
-  if (special.allowAltSetting.length > 0) disableAltSetting();
-  if ((special.allowTutoring.length > 0) || isWednesdayInterventions) disableTutoring();
-  if ((special.allowNonInterventions.length > 0) && !isWednesdayInterventions) disableNonInterventions();
+  if (special.allowInterventions?.length > 0) disableInterventions();
+  if ((special.allowAssessmentMakeups?.length > 0) || isWednesdayInterventions) disableAssessmentMakeups();
+  if (special.allowAltSetting?.length > 0) disableAltSetting();
+  if ((special.allowTutoring?.length > 0) || isWednesdayInterventions) disableTutoring();
+  if ((special.allowNonInterventions?.length > 0) && !isWednesdayInterventions) disableNonInterventions();
 
   return special?.max ? Number(special.max) : 0;
 };

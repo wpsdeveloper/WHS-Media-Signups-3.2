@@ -1,5 +1,6 @@
 import * as dom from '../common/dom.js';
 import * as dates from "../common/dates.js";
+import * as messaging from "../common/messaging.js";
 import { DEBUG } from '../common/debug.js';
 
 // matches the type with a div class
@@ -187,7 +188,7 @@ export const setCheckin = (type, id, value) => {
 
   google.script.run
     .withSuccessHandler(checkinSuccess)
-    .withFailureHandler(processError)
+    .withFailureHandler(messaging.processError)
     .setCheckin(type, id, value);
 }
 

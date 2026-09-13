@@ -102,7 +102,6 @@ export const initializeUi = async () => {
   const state = store.getState();
   await setUpdateStatus();
 
-  formData.preventFormSubmit();
   setTooltips('[data-bs-toggle="tooltip"]');
   toggleStaffOnlyViews(state.isStaff);
   toggleAdminOnlyViews(state.isAdmin);

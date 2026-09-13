@@ -1,10 +1,9 @@
-import * as dom from "../common/dom.js"
-import * as dates from "../common/dates.js"
+import * as dom from "../common/dom.js";
+import * as dates from "../common/dates.js";
 import { store } from "./store.js";
 
 /**
  * Publisher: Responds to user changes in the study teacher select element.
- * Updates store state only.
  */
 export const studyTeacherChangeHandler = (event) => {
   const selectedTeacher = event.target.value;
@@ -12,75 +11,62 @@ export const studyTeacherChangeHandler = (event) => {
 };
 
 /**
- * Updates the Study Teacher select box based on the date and period selected 
- * */
+ * Pure UI View: Calculates options from state and renders select dropdown/input elements.
+ */
 export const updateStudyOptions = (
   currentDateStr, 
-  currentPeriod, 
-  currentType, 
+  currentPeriod,  
+  currentType,
   studyTeachers, 
   dailySchedules = []
 ) => {
-  // clears previous options
- dom.clearOptions("#study-teacher-select");
+  dom.clearOptions("#study-teacher-select");
   
-  if (!studyTeachers) return;
-  
-  // gets the date and period selected, returning if blank
-  if (!currentDateStr || !currentPeriod) return;
+  if (!studyTeachers || !currentDateStr || !currentPeriod) {
+    toggleStudyInputVisibility(false);
+    return;
+  }
+
+  // Toggle outer section visibility for Wed. PM
+  dom.setVisible("#study-div", currentPeriod !== "Wed. PM");
 
   const date = dates.parseDateInput(currentDateStr);
-
-  dom.setVisible("#study-div", true);
-  if (currentPeriod === "Wed. PM") {
-    dom.setVisible("#study-div", false);
-  }  
-
   const today = new Date();
   const s2Date = new Date(studyTeachers.s2Date);
+  const schedules = dates.chooseSemester(today, s2Date) === "2" ? studyTeachers.s2 : studyTeachers.s1;
 
-  let schedules;
-  if (today.getTime() < s2Date.getTime()) {
-    schedules = studyTeachers.s1;
-  } else {
-    schedules = studyTeachers.s2;
+  const availableTeachers = [];
+
+  if (currentType === "Alt setting") {
+    availableTeachers.push("Directly from class");
   }
 
-  const altSetting = dom.valueOf("input[name='signup-type']") === "Alt setting";
-  if (altSetting) {
-    dom.appendOption("#study-teacher-select", "Directly from class", "Directly from class");
-    dom.setAttribute("#study-teacher-select #from-class", "selected", true);
-  }
-
-  // cycles through the schedules...
-  if(Array.isArray(dailySchedules)) {
-    dailySchedules.forEach(sched => {
-      const schedDate = new Date(sched.date);
-      
-      if (dates.isSameDate(schedDate, date)) {
-        const day = sched.day;
-        
-        // if no teachers for this date/period, return
-        if (!schedules?.[day] || !schedules[day][currentPeriod]) return;
-        
-        // create options for each teacher for this date/period
-        const availableTeachers = schedules[day][currentPeriod];
-        if (!availableTeachers) return;
-        
-        availableTeachers.forEach(teacher => {
-          dom.appendOption("#study-teacher-select", teacher, teacher, false);
-        })
+  if (Array.isArray(dailySchedules)) {
+    const matchingSched = dailySchedules.find(sched => dates.isSameDate(new Date(sched.date), date));
+    if (matchingSched && schedules?.[matchingSched.day]?.[currentPeriod]) {
+      const teachers = schedules[matchingSched.day][currentPeriod];
+      if (Array.isArray(teachers)) {
+        availableTeachers.push(...teachers);
       }
-    })
+    }
   }
-}
-  
-  export const showStudyAltInput = (studyTeachers) => {
-    const show = studyTeachers?.length === 0;
-    
-    dom.setVisible("#study-teacher-select", !show);
-    dom.setVisible("#study-teacher-input", show);
-}
+
+  // Render options
+  availableTeachers.forEach(teacher => {
+    dom.appendOption("#study-teacher-select", teacher, teacher, false);
+  });
+
+  // State-driven UI toggle
+  toggleStudyInputVisibility(availableTeachers.length > 0);
+};
+
+/**
+ * Pure UI Helper: Toggles visibility based on computed options state.
+ */
+export const toggleStudyInputVisibility = (hasOptions) => {
+  dom.setVisible("#study-teacher-select", hasOptions);
+  dom.setVisible("#study-teacher-input", !hasOptions);
+};
 
 /**
  * Subscriber: Re-calculates and re-populates options when key state items change.
@@ -94,7 +80,6 @@ export const setupStudyOptionsObserver = () => {
       state.studyTeachers,
       state.dailySchedules
     );
-    showStudyAltInput(state.studyTeachers);
   }, ['currentDate', 'currentPeriod', 'currentType', 'studyTeachers', 'dailySchedules']);
 };
 

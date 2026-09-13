@@ -107,7 +107,7 @@ export const initObservers = () => {
   // updates the sort header ui
   store.subscribe((state) => {
     const { currentSort } = state;
-    dom.qs(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
+    dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 
     const activeHeader = currentSort.field === "student" ? ".sort-student" : ".sort-study";
     dom.qs(activeHeader)?.classList.add("active");

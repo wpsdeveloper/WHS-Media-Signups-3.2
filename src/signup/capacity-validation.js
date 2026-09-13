@@ -12,7 +12,7 @@ export const checkFull = (currentDateStr, currentPeriod, signups = [], currentMa
   
   // finding signups that match the date and period
   let matching = signups.filter(su => (
-    dates.isSameDate(new Date(su.date), date)) && (period == "" + su.period)
+    dates.isSameDate(new Date(su.date), date)) && (currentPeriod == "" + su.period)
   );
 
   // filters for only non-intervention and tutoring

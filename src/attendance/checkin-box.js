@@ -146,15 +146,15 @@ export class CheckinBox {
     store.setState({signups: updatedSignups});
     this.setComponentState("hasData");
   }
-
+  
   handleEditStartClick() {
     this.setComponentState("editing");
     dom.setTimeInputValue(this.timeEditInput, this.timeValue);
   }
-
+  
   handleEditSaveClick() {
     const inputtedValue = dom.valueOf(this.timeEditInput);
-
+    
     dom.qs(".validation-error", this.element)?.remove();
     if (!dates.isValidTime24Hr(inputtedValue)) {
       const error = document.createElement("span");
@@ -163,10 +163,11 @@ export class CheckinBox {
       this.element.append(error);
       return;
     }
-
     this.timeValue = dates.convert24HrTo12Hr(inputtedValue);
-
-    checkin.checkin(this.timeValue, this);
+    checkin.checkin(this, this.timeValue);
+    
+    const updatedSignups = this.updateSignups(this.rowId, this.timeValue);   
+    store.setState({signups: updatedSignups});
     this.setComponentState("hasData");
   }
 

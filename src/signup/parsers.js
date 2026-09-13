@@ -51,8 +51,12 @@ export const parseNoFlyList = (emails) => {
  *  parses max signups from the server 
  * */
 export const parseMaxSignups = (maxValue) => {
- const parsed = Number(maxValue);
-  return Number.isNaN(parsed) ? 15 : parsed;
+  try {
+    const parsed = Number(maxValue);
+    return Number.isNaN(parsed) || parsed === 0 ? 10 : parsed;
+  } catch (error) {
+    return 10;
+  }
 }
 
 /**

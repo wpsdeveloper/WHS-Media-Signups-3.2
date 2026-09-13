@@ -67,7 +67,7 @@ export const toggleInterventionsLink = () => {
 }
 
 export const toggleTutoringLink = () => {
-  const isVisible = (dom.getAttribute('href') || '').length > 58;
+  const isVisible = (dom.getAttribute('.tut-link', 'href') || '').length > 58;
   dom.setVisible('.tut-link', isVisible);
 }
 

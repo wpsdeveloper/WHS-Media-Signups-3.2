@@ -31,10 +31,10 @@ export class DataRow {
   render() {
     switch (this.state) {
       case 'attendance':
-        renderAttendance();
+        this.renderAttendance();
         break;
       case 'details':
-        renderDetails();
+        this.renderDetails();
         break;
       default:
         console.error('Unknown dataRow state: ', this.state);
@@ -74,7 +74,7 @@ export class DataRow {
 
     // render editor links/icons
     const { isEditor } = store.getState();
-    const editIcons = element.querySelector('.edit-icons');
+    const editIcons = element.querySelector('.edit-icons', element);
     if (editIcons) {
       dom.setVisible(editIcons, true);
       if (isEditor) {

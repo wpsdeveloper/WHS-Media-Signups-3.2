@@ -1,20 +1,21 @@
-// vite.config.js (updated)
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { ViteNodeResolvePlugin, createVitePlugins } from 'vite-plugin-node-polyfills';
+import { viteSingleFile } from 'vite-plugin-singlefile';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig(({ command, mode }) => {
   const isTest = mode === 'test';
 
   return {
     plugins: [
-      // Production build plugin (only in prod mode)
-      ...(command === 'build' && command !== 'serve' 
-        ? [viteSingleFile()] 
-        : []),
+      // Production single file bundle
+      ...(command === 'build' ? [viteSingleFile()] : []),
 
-      // GAS scriptlet injector for production builds
+      // GAS scriptlet injector
       {
         name: 'gas-scriptlet-injector',
         transformIndexHtml(html) {
@@ -22,12 +23,9 @@ export default defineConfig(({ command, mode }) => {
         }
       },
 
-      // Vitest plugin (only in test mode)
-      ...(isTest ? [createVitePlugins(['vitest'])] : []),
-
-      // GAS API polyfills for testing
-      ViteNodeResolvePlugin({
-        include: ['googleapis', 'drive', 'sheets']
+      // Node Polyfills (handles Node built-in modules)
+      nodePolyfills({
+        include: ['buffer', 'process', 'util', 'stream']
       })
     ],
 
@@ -36,28 +34,23 @@ export default defineConfig(({ command, mode }) => {
       outDir: resolve(__dirname, 'dist/ui'),
     },
 
-    // Test-specific configuration
     test: {
-      globals: true,                    // Enable global test APIs (beforeEach, it, etc.)
-      environment: 'jsdom',             // Browser-like DOM for HTML elements
-      setupFiles: ['./tests/setup.js'], // Global test setup
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./tests/setup.js'],
       coverage: {
-        provider: 'istanbul',           // Coverage reporter
+        provider: 'istanbul',
         reporter: ['text', 'json', 'lcov'],
         exclude: [
-          '**/*.test.js',              // Exclude test files from coverage
+          '**/*.test.js',
           '**/tests/**/*.js'
         ]
       },
-
-      // Environment variables for tests
       env: {
-        ...process.env,                // Inherit environment
-        VITE_ENV_MODE: 'test'          // Mark as test mode
+        ...process.env,
+        VITE_ENV_MODE: 'test'
       },
-
-      // Handle GAS-specific setup
-      includeSource: ['**/*.{js,ts,html}'],
+      includeSource: ['**/*.{js,ts,html}']
     }
   };
 });

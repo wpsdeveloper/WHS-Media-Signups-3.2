@@ -31,12 +31,10 @@ class Store {
   setState(newState) {
     let hasChanges = false;
     const changedKeys = [];
-    const updatedState = { ...this.state };
 
     for (const key in newState) {
       // Use the deep equality check instead of standard !==
       if (!isDeepEqual(newState[key], this.state[key])) {
-        updatedState[key] = newState[key];
         changedKeys.push(key);
         hasChanges = true;
       }
@@ -78,6 +76,7 @@ function isDeepEqual(obj1, obj2) {
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
   
+  if ((keys1.length === 0) || (keys2.length === 0)) return false;
   if (keys1.length !== keys2.length) return false;
   
   for (const key of keys1) {
@@ -89,5 +88,5 @@ function isDeepEqual(obj1, obj2) {
   return true;
 }
 
-export const store = new Store;
+export const store = new Store();
 

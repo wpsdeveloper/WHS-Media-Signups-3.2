@@ -125,3 +125,15 @@ export const convert24HrTo12Hr = (time24Str) => {
   
   return `${hours}:${minutesStr2} ${period}`;
 };
+
+
+export const chooseSemester = (currentDate, rolloverDate) => {
+  if (!(currentDate instanceof Date) || !(rolloverDate instanceof Date)) {
+    return null;
+  }
+  if (currentDate.getTime() >= rolloverDate.getTime()) {
+    return '2';
+  } else {
+    return '1';
+  }
+}

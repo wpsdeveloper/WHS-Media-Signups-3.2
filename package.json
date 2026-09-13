@@ -22,5 +22,8 @@
     "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^3.0.0",
     "vitest-mock-extended": "^3.0.0"
+  },
+  "dependencies": {
+    "vite-plugin-node-polyfills": "^0.28.0"
   }
 }
