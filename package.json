@@ -7,11 +7,20 @@
     "dev": "vite",
     "build": "vite build",
     "push": "vite build && clasp push",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.5.0",
     "@types/google-apps-script": "^2.0.8",
+    "@vitest/ui": "^3.2.7",
+    "jsdom": "^30.0.1",
     "vite": "^8.0.10",
-    "vite-plugin-singlefile": "^2.3.3"
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^3.0.0",
+    "vitest-mock-extended": "^3.0.0"
   }
 }

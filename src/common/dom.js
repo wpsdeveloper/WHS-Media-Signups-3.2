@@ -1,12 +1,18 @@
 export const qs = selector => document.querySelector(selector);
 export const qsa = selector => [...document.querySelectorAll(selector)];
 
-export const isVisible = selector => qs(selector) && !qs(selector).classList.contains("d-none") && qs(selector).offsetParent !== null;
-export const isChecked = selector => qs(selector) && qs(selector).checked;
+export const isVisible = (selector) => !!(qs(selector) && !qs(selector).classList.contains("d-none") && !qs(selector).classList.contains("hidden") && (qs(selector).style.display !== 'none'));
+export const isChecked = (selector) => !!(qs(selector) && qs(selector).checked);
 export const getAttribute = (selector, attrName) => qs(selector)?.getAttribute(attrName);
 
 export const valueOf = (param) => {
-  const get = (element) => element.value; 
+  const get = (element) => {
+    let value = element.value; 
+    if (element.type === "number") {
+      return Number(element.value); 
+    } 
+    return value;
+  }
   return getterFunction(get, param);
 }
 
@@ -55,7 +61,7 @@ export const setInvalid = (param, isInvalid) => {
   setterFunction(set, param, isInvalid);
 }
 
-export const parseJsonValue = value => typeof value === "string" ? JSON.parse(value) : value;
+// export const parseJsonValue = value => typeof value === "string" ? JSON.parse(value) : value;
 
 export const appendOption = (param, value, text, selected = false) => {
   const set = (element, value, text, selected) => {

@@ -22,6 +22,9 @@ export const isSameDate = (date1, date2) => {
 
 export function parseDateInput(value) {
   const [year, month, day] = value.split("-").map(Number);
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+    throw new Error("Invalid date format");
+  }
   return new Date(year, month - 1, day);
 }
 
@@ -31,8 +34,12 @@ export function parseDateInput(value) {
   * @param {Date} date The date to format
   * @return {string} The formatted string
   */
- export const formatDateSlashes = (date) => {
-   return (date.getMonth()+1) +"/" + date.getDate() + "/" + date.getFullYear();
+export const formatDateSlashes = (date) => {
+  const month = date.getMonth() + 1 ;
+  const day = date.getDate() ;
+  const year = date.getFullYear(); 
+
+  return month +"/" + day + "/" + year;
  }
 
  
@@ -46,7 +53,7 @@ export const isValidTime12Hr = (timeStr) => {
   // (am|pm)        : The meridian (case-insensitive via 'i' flag)
   // $              : End of the string
   
-  const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm)$/i;
+  const regex = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(am|pm|AM|PM)$/i;
   return regex.test(timeStr);
 
 }
@@ -70,41 +77,51 @@ export const isValidTime24Hr = (timeStr) => {
  * @return {string} The formatted time
  * */
 export const formatTime = (date) => {
-  if (isValidTime12Hr(date)) {
-    return date;
-  }
+  try {
+    if (isValidTime12Hr(date)) {
+      return date;
+    }
+    if (!(date instanceof Date)) {
+      date = new Date(date);
+    }
+    
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    let ampm = "AM";
 
-  if (!(date instanceof Date)) {
-    date = new Date(date);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+      throw new Error("Invalid time");
+    }
+    
+    if (hours >= 12) {
+      ampm = "PM";
+    }
+    if (hours > 12) {
+      hours = hours - 12;
+    }
+    if (hours === 0) {
+      hours = 12;
+    }
+    
+    if (minutes < 10) {
+      minutes = "0" + minutes
+    }
+    
+    return `${hours}:${minutes} ${ampm}`;
+  } catch (error) {
+    return "12:00 am";
   }
-
-  let hours = date.getHours();
-  let minutes = date.getMinutes();
-  let ampm = "AM";
-
-  if (hours >= 12) {
-    ampm = "PM";
-  }
-  if (hours > 12) {
-    hours = hours - 12;
-  }
-
-  if (minutes < 10) {
-    minutes = "0" + minutes
-  }
-
-  return `${hours}:${minutes} ${ampm}`;
 }
 
 export const convert24HrTo12Hr = (time24Str) => {
   const [hoursStr, minutesStr] = time24Str.split(':');
   let hours = parseInt(hoursStr, 10);
-  
   // Determine AM or PM
   const period = hours >= 12 ? 'PM' : 'AM';
   
   // Convert 0 (midnight) and 12 (noon) to 12, otherwise use modulo 12
   hours = hours % 12 || 12;
+  const minutesStr2 = minutesStr.length < 2 ? "0" + minutesStr : minutesStr ;
   
-  return `${hours}:${minutesStr} ${period}`;
+  return `${hours}:${minutesStr2} ${period}`;
 };
