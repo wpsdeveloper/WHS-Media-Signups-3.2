@@ -3,26 +3,6 @@ import * as messaging from '../common/messaging.js';
 import { store } from './store.js';
 import { DEBUG } from "../common/debug.js";
 
-function populateData(signup) {
-  if (!signup) return;
-
-  // Update store state first to propagate selection rules cleanly
-  store.setState({
-    currentDate: signup.date ? formatDateSlashes(new Date(signup.date)) : null,
-    currentPeriod: signup.period ? String(signup.period) : null,
-    currentType: signup.type || null,
-    currentSubject: signup.subject || null,
-    currentStudyTeacher: signup.teacherStudy || null,
-  });
-
-  if (signup.lastname && signup.firstname) dom.setValue("#student", `${signup.lastname}, ${signup.firstname} <${signup.emailStudent}`);
-  dom.setValue("#acad-teacher", signup.teacherAcad || "");
-
-  if (signup.purpose) dom.setChecked(`#purpose input[value="${signup.purpose}"]`, true);
-  if (signup.room) dom.setChecked(`#glass-room input[value="${signup.room}"]`, true);
-  dom.setValue("#topic-intervention", signup.comments);
-}
-
 /**
  *  Sends the form data to the server for submission 
  * */

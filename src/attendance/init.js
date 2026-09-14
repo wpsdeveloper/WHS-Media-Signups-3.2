@@ -80,20 +80,10 @@ export const refreshData = async () => {
     }
   });
 
-  toggleEditorOnlyViews(parsedData.isEditor);
-  toggleAdminOnlyViews(parsedData.isAdmin);
+  dom.toggleEditorOnlyViews(parsedData.isEditor);
+  dom.toggleAdminOnlyViews(parsedData.isAdmin);
   
   messaging.hideLoadingModal();
-};
-
-export const toggleAdminOnlyViews = (isAdmin) => {
-  const isVisible = typeof isAdmin !== "undefined" ? isAdmin : store.getState().isAdmin;
-  dom.setVisible('.admin-only', isVisible);
-};
-
-export const toggleEditorOnlyViews = (isEditor) => {
-  const isVisible = typeof isEditor !== "undefined" ? isEditor : store.getState().isEditor;
-  dom.setVisible('.editors-only', isVisible);
 };
 
 async function setMockData() {
@@ -103,8 +93,8 @@ async function setMockData() {
   dom.setValue('#is-admin', 'true');
   dom.setValue('#is-editor', 'true'); 
   dom.setValue("#wed-int-active", "true");
-  toggleEditorOnlyViews(true);
-  toggleAdminOnlyViews(true);
+  dom.toggleEditorOnlyViews(true);
+  dom.toggleAdminOnlyViews(true);
 
   const sampleData = await import('../../sampledata.js');
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

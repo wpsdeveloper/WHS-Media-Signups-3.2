@@ -116,22 +116,4 @@ describe('init.js', () => {
       expect(dom.setVisible).toHaveBeenCalledWith('.editors-only', false);
     });
   });
-
-  describe('View Toggles', () => {
-    it('toggleAdminOnlyViews toggles based on argument', () => {
-      init.toggleAdminOnlyViews(true);
-      expect(dom.setVisible).toHaveBeenCalledWith('.admin-only', true);
-    });
-
-    it('toggleAdminOnlyViews toggles based on store state if argument is undefined', () => {
-      store.getState.mockReturnValue({ isAdmin: false });
-      init.toggleAdminOnlyViews();
-      expect(dom.setVisible).toHaveBeenCalledWith('.admin-only', false);
-    });
-
-    it('toggleEditorOnlyViews toggles based on argument', () => {
-      init.toggleEditorOnlyViews(false);
-      expect(dom.setVisible).toHaveBeenCalledWith('.editors-only', false);
-    });
-  });
 });

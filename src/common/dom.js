@@ -146,3 +146,16 @@ export const setTimeInputValue = (element, timeString) => {
   // Set the input value
   setValue(element, finalTimeValue);
 }
+
+
+export const toggleStaffOnlyViews = (isStaff) => {
+  setVisible('.staff-only', isStaff);
+};
+
+export const toggleAdminOnlyViews = (isAdmin) => {
+  setVisible('.admin-only', isAdmin);
+};
+
+export const toggleEditorOnlyViews = (isEditor) => {
+  setVisible('.editors-only', isEditor);
+};

@@ -80,3 +80,28 @@ export const parseStudyTeachers = (studyTeachersJson) => {
 export const parseUpdateStudent = (signupJson) => {
   return safeJsonParse(signupJson, null);
 }
+
+/**
+ *  parses settings from the server (if updating instead of creating new) 
+ * */
+export const parseSettings = (settingsJson) => {
+  const settings = [];
+  try {
+    const settingsDBRows = safeJsonParse(settingsJson, []);
+    settingsDBRows.forEach(row => {
+      if (row && Array.isArray(row) && row.length === 5) {
+        settings.push({
+          key: row[0],
+          value: row[1],
+          description: row[2],
+          comments: row[3],
+          type: row[4],
+        });
+      }
+    });
+  } catch (error) {
+    return [];
+  }
+  return settings;
+
+}

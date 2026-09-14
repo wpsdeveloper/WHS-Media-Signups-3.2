@@ -1,6 +1,6 @@
 import * as dom from '../common/dom.js';
 import * as messaging from '../common/messaging.js';
-import * as parser from './parsers.js';
+import * as parser from '../common/parsers.js';
 import * as dates from '../common/dates.js';
 import * as panels from './panels.js';
 import * as capacity from './capacity-validation.js';
@@ -103,8 +103,8 @@ export const initializeUi = async () => {
   await setUpdateStatus();
 
   setTooltips('[data-bs-toggle="tooltip"]');
-  toggleStaffOnlyViews(state.isStaff);
-  toggleAdminOnlyViews(state.isAdmin);
+  dom.toggleStaffOnlyViews(state.isStaff);
+  dom.toggleAdminOnlyViews(state.isAdmin);
 
   // sets limits on dates allowed in Date field
   const today = new Date();
@@ -131,18 +131,6 @@ function bindEvents() {
   dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
 }
 
-export const toggleStaffOnlyViews = (isStaff) => {
-  dom.setVisible('.staff-only', isStaff);
-};
-
-export const toggleAdminOnlyViews = (isAdmin) => {
-  dom.setVisible('.admin-only', isAdmin);
-};
-
-export const toggleEditorOnlyViews = (isEditor) => {
-  dom.setVisible('.editors-only', isEditor);
-};
-
 /**
  * Checks to see if the URL sent a row id. If so, this form is to update existing data
  * rather than submit new data
@@ -159,7 +147,7 @@ export const setUpdateStatus = async () => {
   store.setState({ updateRowId });
 
   dom.setDisabled('#email', !state.isEditor);
-  toggleEditorOnlyViews(state.isEditor);
+  dom.toggleEditorOnlyViews(state.isEditor);
   dom.setVisible('#btn-submit', false);
   dom.setVisible('#btn-update', true);
 
@@ -190,8 +178,8 @@ async function setMockData() {
   dom.setValue('#is-admin', 'true');
   dom.setValue('#is-editor', 'true'); 
   dom.setValue("#wed-int-active", "true");
-  toggleStaffOnlyViews(true);
-  toggleAdminOnlyViews(true);
+  dom.toggleStaffOnlyViews(true);
+  dom.toggleAdminOnlyViews(true);
 
   const sampleData = await import('../../sampledata.js');
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

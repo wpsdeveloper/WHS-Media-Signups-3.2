@@ -26,7 +26,7 @@
 
         <!-- Logo image -->
         <div class="logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center">
-          <img src="https://lh3.googleusercontent.com/d/<?!= LOGO_ID ?>">
+          <img id="logo-image" src="https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc" data-logo-id="<?!= LOGO_ID ?>" alt="Walpole Public Schools">
           <div class="ms-3 d-none d-lg-inline">
             <span class="d-inline d-md-block">Walpole </span><span class="public-schools d-inline d-md-block">Public Schools</span>
           </div>
@@ -50,10 +50,10 @@
   <!-- Tab navigation  -->
   <ul class="subheader nav nav-tabs pt-3 ">
     <li class="nav-item">
-      <a class="nav-link active" href="#" data-target="student-panel">Student Audit</a>
+      <a id="#student-panel-btn" class="nav-link active" href="#" data-target="student-panel">Student Audit</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="#" data-target="settings-panel">App Settings</a>
+      <a id="settings-panel-btn" class="nav-link" href="#" data-target="settings-panel">App Settings</a>
     </li>
   </ul>
 
@@ -64,20 +64,19 @@
     <div id="student-panel" class="tab-panel mt-3 active">
 
       <!-- Table selector -->
-      
-          <div class="d-flex flex-row mb-3">
-            <button class="btn btn-primary me-2" onclick="getStudentAudit()">Get Audit</button>
-            <div class="flex-grow-1">
-              <input type="text" class="form-control disabled student-autocomplete flex-grow" id="student-name" placeholder="Begin typing a name"></input>
-            </div>
-          </div>
+      <div class="d-flex flex-row mb-3">
+        <button id="get-audit-btn" class="btn btn-primary me-2">Get Audit</button>
+        <div id="student-input-div" class="flex-grow-1">
+          <input type="text" class="form-control disabled student-autocomplete flex-grow" id="student-name" placeholder="Begin typing a name"></input>
+        </div>
+      </div>
 
       <!-- Table header row  -->
       <div class="row header-row mb-2">
 
         <!-- Date header  -->
         <div class="col col-12 col-lg-3 d-none d-lg-flex">
-          <h4 class="sortable" onclick="resort('date')">Date 
+          <h4 id="date-header" class="sortable">Date 
             <span class="sort-icon">
               <i class="sort-study fa-solid fa-caret-down direction active"></i>
             </span>
@@ -86,7 +85,7 @@
 
         <!-- Period header  -->
         <div class="col col-12 col-lg-2 d-none d-lg-flex">
-          <h4 class="sortable" onclick="resort('period')">Period 
+          <h4 id="period-header" class="sortable">Period 
             <span class="sort-icon">
               <i class="sort-date fa-solid"></i>
             </span>
@@ -97,12 +96,12 @@
         <div class="col col-12 col-lg-7 attendance-info ">
           <div class="row">
             <div class="col col-8">
-              <h4>Attendance  |  <a href="#" onclick="showSignupInfo()">Details</a></h4>
+              <h4>Attendance  |  <a id="details-link" href="#" >Details</a></h4>
             </div>
 
             <!-- Data refresh button -->
             <div class="col col-4 text-end">
-              <button class="btn btn-primary" onclick="refreshData()">Refresh</button>
+              <button class="btn btn-primary">Refresh</button>
             </div>
           </div>
         </div>
@@ -111,12 +110,12 @@
         <div class="col col-12 col-lg-7 signup-info d-none">
           <div class="row">
             <div class="col col-8">
-              <h4><a href="#" onclick="showAttendance()">Attendance</a> | Details</h4>
+              <h4><a id="attendance-link" href="#">Attendance</a> | Details</h4>
             </div>
 
             <!-- Data refresh button -->
             <div class="col col-4 text-end">
-              <button class="btn btn-primary" onclick="refreshData()">Refresh</button>
+              <button class="btn btn-primary">Refresh</button>
             </div>
           </div>
         </div>
@@ -126,11 +125,13 @@
       <div class="row student-row-empty d-none">
         <div class="col">No records found</div>
       </div>
+
+      
     </div>
 
     <!-- App settings table  -->
     <div id="settings-panel" class="tab-panel mt-3">
-      <button class="btn btn-success mb-2" onclick="saveSettings()">Save</button>
+      <button class="btn btn-success mb-2">Save</button>
 
       <!-- Table header row  -->
       <div class="row header-row mb-2">
@@ -157,133 +158,96 @@
   <section id="templates" style="display:none">
     
     <!-- Student row of data  -->
-    <div id="student-row-template" class="row data-row student-row mb-2">
-      
-      <!-- Column 1  -->
-      <div class="col col-12 col-lg-3 mb-2">
+    <template id="student-row-template" >
+      <div class="row data-row student-row mb-2">
 
-        <!-- Edit icons (shown to editors only) -->
-        <div class="edit-icons d-none me-1 text-secondary">
-          <a class="edit-link" href="<?!= SCRIPT_URL ?>?page=update" target="_top"><i class="fas fa-edit"></i></a> 
-        </div>
-
-        <!-- Date  -->
-        <div class="date d-inline">
-        </div>
-      </div>
-
-      <!-- Column 2  -->
-      <div class="col col-12 col-lg-2 mb-1">
-        <!-- Period  -->
-        <div class="period col col-12 mb-1"></div>
-        <!-- Study hall teacher  -->
-        <div class="study-teacher col col-12 mb-2"></div>
-      </div>
-
-      <!-- Column 3  -->
-      <div id="slider-wrapper" class="col col-12 col-lg-7 mb-2" data-items="2">
-
-        <div class="slider">
+        <!-- Column 1  -->
+        <div class="col col-12 col-lg-3 mb-2">
           
-          <!-- Panel: Attendance  -->
-          <div class="panel attendance-info">
-            <div class="row">
-
-              <!-- Study Check In  -->
-              <div class="study-checkin col-6 col-xl-3 order-1 text-center">
-                <div>
-                  <label class="not-wed-int">Study Check In</label>
-                  <label class="wed-int">In Class Reminder</label>
-                </div>
-
-                <!-- UI elements  -->
-                <button class="btn btn-light" onclick="checkin('studyIn1', this)">Check in</button>
-                <div class="time d-none"><span class="time-value text-success"></span> 
-                <i class="cancel fa-solid fa-xmark text-danger" onclick="cancelCheckin('studyIn1', this)"></i></div>
-                <div class="spinner d-none">
-                  <div class="spinner-border spinner-border-sm text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Media Check In  -->
-              <div class="media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center">
-                <div>
-                  <label class="not-wed-int">Destination Check In</label>
-                  <label class="wed-int">Interventions Check In</label>
-                </div>
-
-                <!-- UI elements  -->
-                <button class="btn btn-light" onclick="checkin('mediaIn', this)">Check in</button>
-                <div class="time d-none"><span class="time-value text-success"></span> 
-                <i class="cancel fa-solid fa-xmark text-danger" onclick="cancelCheckin('mediaIn', this)"></i></div>
-                <div class="spinner d-none">
-                  <div class="spinner-border spinner-border-sm text-primary " role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Media Check Out  -->
-              <div class="media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center">
-                <div>
-                  <label>Destination Check Out</label>
-                </div>
-
-                <!-- UI elements  -->
-                <button class="btn btn-light" onclick="checkin('mediaOut', this)">Check out</button>
-                <div class="time d-none"><span class="time-value text-success"></span> 
-                <i class="cancel fa-solid fa-xmark text-danger" onclick="cancelCheckin('mediaOut', this)"></i></div>
-                <div class="spinner d-none">
-                  <div class="spinner-border spinner-border-sm text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Study Return  -->
-              <div class="study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center">
-                <div>
-                  <label>Study Return</label>
-                </div>
-
-                <!-- UI elements  -->
-                <button class="btn btn-light" onclick="checkin('studyIn2', this)">Return</button>
-                <div class="time d-none"><span class="time-value text-success"></span> 
-                <i class="cancel fa-solid fa-xmark text-danger" onclick="cancelCheckin('studyIn2', this)"></i></div>
-                <div class="spinner d-none">
-                  <div class="spinner-border spinner-border-sm text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                </div>
+          <!-- Edit icons (shown to editors only) -->
+          <div class="edit-icons d-none me-1 text-secondary">
+            <a class="edit-link" href="<?!= SCRIPT_URL ?>?page=update" target="_top"><i class="fas fa-edit"></i></a> 
+          </div>
+          
+          <!-- Date  -->
+          <div class="d-inline">
+            <div class="signup-date"></div>
+          </div>
+        </div>
+        
+        <!-- Column 2  -->
+        <!-- Period  -->
+        <div class="signup-period col col-12 col-lg-2 mb-2"></div>
+        
+        <!-- Column 3  -->
+        <div id="slider-wrapper" class="col col-12 col-lg-7 mb-2" data-items="2">
+          <div class="slider">
+            
+            <!-- Panel: Attendance  -->
+            <div class="panel attendance-info">
+              <div class="row">
+                <div data-type="study-checkin" class="checkin-box study-checkin col-6 col-xl-3 order-1 text-center"></div>
+                <div data-type="media-checkin" class="checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center"></div>
+                <div data-type="media-checkout" class="checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center"></div>
+                <div data-type="study-return" class="checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Panel: Details  -->
-          <div class="panel signup-info">
-            <div class="row">
-              <div class="type col-12 col-lg-6"></div>
-              <div class="room col-12 col-lg-6"></div>
-              <div class="comments col-12"></div>
+            
+            <!-- Panel: Details  -->
+            <div class="panel details-info">
+              <div class="row">
+                <div class="study-teacher col-12"></div>
+                <div class="type col-12 col-lg-6"></div>
+                <div class="room col-12 col-lg-6"></div>
+                <div class="comments col-12"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
+    
+    <template id="checkin-box">
+      <div>
+        <label class="checkin-box-label">Study Return</label>
+      </div>
+
+      <!-- UI elements  -->
+      <button class="checkin-btn btn btn-light" >Return</button>
+      <div class="time d-none">
+        <span class="time-value text-success"></span>
+        <span class="time-edit d-none">
+          <input class="text-center" type="time"></input> 
+          <i class="save-btn edit fa-solid fa-check text-success" ></i>
+          <i class="cancel-btn edit fa-solid fa-ban text-danger" ></i>
+          <i class="delete-btn cancel fa-solid fa-trash text-danger"></i>
+        </span>
+        <span class="primary-buttons ms-1">
+          <i class="edit-start-btn edit fa-solid fa-edit text-primary" ></i>
+        </span>
+      </div>
+      <div class="spinner d-none">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </template>
+
 
     <!-- Settings template  -->
-    <div id="settings-row-template" class="row data-row settings-row mb-2">
-      <div class="key d-none"></div>
-      <div class="col col-lg-2 description"></div>
-      <div class="col col-lg-3 value">
+    <template id="settings-row-template">
+
+      <div class="row data-row settings-row mb-2">
+        <div class="key d-none"></div>
+        <div class="col col-lg-2 description"></div>
+        <div class="col col-lg-3 value">
         <input class="form-control"></input>
       </div>
       <div class="col col-lg-7 comments">
       </div>
       
     </div>
+  </template>
   </section>
 
   <!-- Modal: Loading -->

@@ -14,7 +14,7 @@ import adminHtml from './admin/admin.html?raw';
 import signupHtml from './signup/signup-form.html?raw';
 
 import { initializeApp as initializeSignup } from "./signup/init.js";
-// import { initializeApp as initializeAdmin } from "./admin/init.js";
+import { initializeApp as initializeAdmin } from "./admin/init.js";
 import { initializeApp as initializeAttendance } from "./attendance/init.js";
 
 const appDiv = document.getElementById('app');
@@ -31,7 +31,7 @@ function getServerInjection() {
   if (DEBUG) {
     return {
       viewState: { 
-        view: 'signup', 
+        view: 'admin', 
         data: {} 
       },
       globals: {

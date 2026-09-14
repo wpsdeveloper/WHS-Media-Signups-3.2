@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { 
   initObservers, 
   initializeApp, 
-  toggleStaffOnlyViews, 
-  toggleAdminOnlyViews, 
-  toggleEditorOnlyViews,
   setUpdateStatus,
   setTooltips 
 } from '../../signup/init.js';
@@ -112,19 +109,6 @@ describe('Init Module', () => {
       expect(store.setState).toHaveBeenCalled();
       expect(dom.addEventListener).toHaveBeenCalledWith('#date', 'change', expect.any(Function));
       expect(messaging.hideLoadingModal).toHaveBeenCalled();
-    });
-  });
-
-  describe('View Toggles', () => {
-    it('should toggle staff, admin, and editor views based on boolean input', () => {
-      toggleStaffOnlyViews(true);
-      expect(dom.setVisible).toHaveBeenCalledWith('.staff-only', true);
-
-      toggleAdminOnlyViews(false);
-      expect(dom.setVisible).toHaveBeenCalledWith('.admin-only', false);
-
-      toggleEditorOnlyViews(true);
-      expect(dom.setVisible).toHaveBeenCalledWith('.editors-only', true);
     });
   });
 
