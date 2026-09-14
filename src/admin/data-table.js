@@ -1,7 +1,5 @@
-import * as dom from "../common/dom";
-import { parseDateInput, isSameDate } from "../common/dates";
+import * as dom from "../common/dom.js";
 import { store } from "./store.js";
-import * as messaging from "../common/messaging.js";
 import { DataRow } from "./data-row.js";
 
 // =====================================================================

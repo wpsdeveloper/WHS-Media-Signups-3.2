@@ -1,3 +1,4 @@
+import * as dates from '../common/dates.js';
 import * as dom from '../common/dom.js';
 
 export class SettingsRow {
@@ -51,8 +52,7 @@ export class SettingsRow {
         input.checked = on;
         break;
       case "date":
-        console.log(new Date(value));
-        const date = new Date(value);
+        const date = dates.parseDateInput(value);
         // Format date to YYYY-MM-DD (handling timezone offset issues)
         const day = ("0" + date.getDate()).slice(-2);
         const month = ("0" + (date.getMonth() + 1)).slice(-2);

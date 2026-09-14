@@ -64,7 +64,7 @@ export class DataRow {
 
     // render editor links/icons
     const { isEditor } = store.getState();
-    const editIcons = element.querySelector('.edit-icons', element);
+    const editIcons = element.querySelector('.edit-icons');
     if (editIcons) {
       dom.setVisible(editIcons, true);
       if (isEditor) {
@@ -128,17 +128,6 @@ export class DataRow {
 // =====================================================================
 // PURE HELPER FUNCTIONS
 // =====================================================================
-
-function getRoomBadge(room) {
-  const roomNum = String(room);
-  if (roomNum === '1') {
-    return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
-  }
-  if (roomNum === '2') {
-    return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
-  }
-  return '';
-}
 
 function getSignupTypeLabel(signup) {
   switch (signup.type) {
