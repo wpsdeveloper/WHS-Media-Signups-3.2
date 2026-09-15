@@ -1,5 +1,5 @@
 import * as dom from "../common/dom.js"
-import { store } from "./store.js";
+import { store } from "../common/store";
 
 /**
  * Pure UI View: Toggles between select dropdown and text input depending on state.

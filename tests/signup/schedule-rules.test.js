@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { evaluateScheduleRules, setupScheduleRulesObserver } from '../../src/signup/schedule-rules.js';
 import * as dates from '../../src/common/dates.js';
-import { store } from '../../src/signup/store.js';
+import { store } from '../../src/common/store.js';
 import * as typeInput from '../../src/signup/type-input.js';
 
 // Mock dependencies
@@ -10,7 +10,7 @@ vi.mock('../../src/common/dates.js', () => ({
   isSameDate: vi.fn((d1, d2) => d1.toDateString() === d2.toDateString()),
 }));
 
-vi.mock('../../src/signup/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: { 
     subscribe: vi.fn(),
     setState: vi.fn()

@@ -1,7 +1,7 @@
 import * as dom from '../common/dom.js';
 import * as dates from '../common/dates.js';
-import { store } from "./store.js";
-import { CheckinBox } from './checkin-box.js';
+import { store } from "../common/store";
+import { CheckinBox } from '../common/checkin-box.js';
 
 export class DataRow {
   element = null;

@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DataRow } from '../../src/attendance/data-row.js';
 import * as dom from '../../src/common/dom.js';
 import * as dates from '../../src/common/dates.js';
-import { store } from '../../src/attendance/store.js';
-import { CheckinBox } from '../../src/attendance/checkin-box.js';
+import { store } from '../../src/common/store.js';
+import { CheckinBox } from '../../src/common/checkin-box.js';
 
 vi.mock('../../src/common/dom.js');
 vi.mock('../../src/common/dates.js');
-vi.mock('../../src/attendance/store.js');
+vi.mock('../../src/common/store.js');
 
-vi.mock('../../src/attendance/checkin-box.js', () => {
+vi.mock('../../src/common/checkin-box.js', () => {
   return {
     CheckinBox: class {
       static CHECKIN_TYPES = ['study-checkin', 'media-checkin'];

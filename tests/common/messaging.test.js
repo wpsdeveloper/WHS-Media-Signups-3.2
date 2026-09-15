@@ -29,11 +29,14 @@ describe('Messaging Utilities', () => {
     test('shows error toast, hides loading modal, and calls console.error with error object', () => {
       processError(mockError, undefined);
 
-      // Fix 3: hideLoadingModal IS called inside processError
+      // calls functions in hideLoadingModal
       expect(dom.hideBootstrapModal).toHaveBeenCalledWith('#loading-modal');
+
+      // calls funcions in showErrorToast
       expect(dom.showBootstrapToast).toHaveBeenCalledWith('#error-toast');
       expect(dom.setText).toHaveBeenCalledWith('#error-toast .toast-body', mockError.message);
 
+      // console logs the error
       expect(console.error).toHaveBeenCalledWith(mockError);
     });
 

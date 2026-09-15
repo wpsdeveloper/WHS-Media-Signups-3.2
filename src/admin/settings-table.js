@@ -1,5 +1,5 @@
 import * as dom from "../common/dom.js";
-import { store } from "./store.js";
+import { store } from "../common/store";
 import { SettingsRow } from "./settings-row.js";
 
 // =====================================================================
@@ -28,33 +28,7 @@ export const initObservers = () => {
       newRows.push(settingsRow);
     });
   }, ["settings"]);
-
-  // updates the sort header ui
-  store.subscribe((state) => {
-    const { currentSortField, currentSortOrder } = state;
-    dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
-
-    const activeHeader = currentSortField === "student" ? ".sort-student" : ".sort-study";
-    dom.qs(activeHeader)?.classList.add("active");
-
-    const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
-    dom.qs(".sort-icon i.active")?.classList.add(directionIcon);
-  }, ["currentSortField" , "currentSortOrder"]);
-};
-
-// =====================================================================
-// 2. DOM EVENT HANDLERS (The "Pub" in Pub/Sub)
-// These functions are called by user clicks/inputs. 
-// Notice how they ONLY write to the store, and touch NO DOM elements.
-// =====================================================================
-
-export const resort = (field) => {
-  const { currentSortField, currentSortOrder } = store.getState();
-  
-  const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
-  
-  store.setState({ currentSortField: field, currentSortOrder: newOrder });
-};
+}
 
 // =====================================================================
 // PURE UTILITIES & VISUAL TOGGLES

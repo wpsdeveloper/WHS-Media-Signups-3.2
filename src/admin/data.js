@@ -1,7 +1,7 @@
 import * as dom from '../common/dom.js';
 import * as messaging from '../common/messaging.js';
 import * as parser from '../common/parsers.js';
-import { store } from './store.js';
+import { store } from '../common/store';
 import { DEBUG } from "../common/debug.js"; 
 
 export const getAuditHandler = async () => {

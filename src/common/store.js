@@ -1,48 +1,24 @@
-class Store {
-  state = {
-    students: [],
-    studentNames: [],
-    dailySchedules: [],
-    interventionTeachers: {},
-    studyTeachers: {},
-    signups: [],
-    noFlyList: [],
-
-    isStaff: false,
-    isEditor: false,
-    isAdmin: false,
-    updateRowId: null,
-    updateData: null,
-    defaultMax: 15,
-    currentMax: 15,
-
-    currentDate: null,
-    currentPeriod: null,
-    currentType: null,
-    currentStudyTeacher: null,
-    currentSubject: null,
-    currentStudentName: "",
-    currentMax: null,
-    currentEmail: "",
-  };
-
+// Store.js
+export class Store {
   constructor() {
+    this.state = {};
     this.listeners = [];
   }
 
+  initialize(initialState = {}) {
+    this.state = { ...initialState };
+  }
+
   getState() {
-    return this.state;
+    return { ...this.state };
   }
 
   setState(newState) {
     let hasChanges = false;
     const changedKeys = [];
-    const updatedState = { ...this.state };
 
     for (const key in newState) {
-      // Use the deep equality check instead of standard !==
       if (!isDeepEqual(newState[key], this.state[key])) {
-        updatedState[key] = newState[key];
         changedKeys.push(key);
         hasChanges = true;
       }
@@ -52,16 +28,19 @@ class Store {
       this.state = { ...this.state, ...newState };
       this.notify(changedKeys);
     }
-  };
+  }
 
   subscribe(callback, dependencies = null) {
     this.listeners.push({ callback, dependencies });
+    
+    // Unsubscribe helper
+    return () => {
+      this.listeners = this.listeners.filter(l => l.callback !== callback);
+    };
   }
 
   notify(changedKeys) {
     this.listeners.forEach(({ callback, dependencies }) => {
-      // If no dependencies were provided, always trigger the callback.
-      // Otherwise, only trigger if one of the changed keys is in the dependencies list.
       if (!dependencies || dependencies.some(dep => changedKeys.includes(dep))) {
         callback(this.state);
       }
@@ -69,18 +48,11 @@ class Store {
   }
 }
 
-/**
- * Helper function to deeply compare two objects or arrays.
- * This prevents the store from triggering updates when the new state 
- * is structurally identical to the old state.
- */
 function isDeepEqual(obj1, obj2) {
   if (obj1 === obj2) return true;
-  
   if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
     return false;
   }
-  
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
   
@@ -91,9 +63,7 @@ function isDeepEqual(obj1, obj2) {
       return false;
     }
   }
-  
   return true;
 }
 
-export const store = new Store;
-
+export const store = new Store();

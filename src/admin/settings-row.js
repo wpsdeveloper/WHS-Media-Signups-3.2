@@ -52,7 +52,10 @@ export class SettingsRow {
         input.checked = on;
         break;
       case "date":
-        const date = dates.parseDateInput(value);
+        let date = value;
+        if (!(value instanceof Date)) {
+          date = new Date(value);
+        }
         // Format date to YYYY-MM-DD (handling timezone offset issues)
         const day = ("0" + date.getDate()).slice(-2);
         const month = ("0" + (date.getMonth() + 1)).slice(-2);

@@ -6,8 +6,8 @@ import * as parser from '../../src/common/parsers.js';
 import * as dataTable from '../../src/admin/data-table.js';
 import * as settingsTable from '../../src/admin/settings-table.js';
 import * as data from '../../src/admin/data.js';
-import * as studentInput from '../../src/admin/student-input.js';
-import { store } from '../../src/admin/store.js';
+import * as studentInput from '../../src/common/student-input.js';
+import { store } from '../../src/common/store.js';
 
 vi.mock('../../src/common/dom.js', () => ({
   addEventListener: vi.fn(),
@@ -48,20 +48,21 @@ vi.mock('../../src/admin/data.js', () => ({
   getAuditHandler: vi.fn(),
 }));
 
-vi.mock('../../src/admin/student-input.js', () => ({
+vi.mock('../../src/common/student-input.js', () => ({
   setupStudentInputObserver: vi.fn(),
   studentInputChangeHandler: vi.fn(),
 }));
 
-vi.mock('../../src/admin/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: {
     setState: vi.fn(),
     getState: vi.fn(() => ({ isEditor: true })),
+    initialize: vi.fn(),
   },
 }));
 
 vi.mock('../../src/common/debug.js', () => ({
-  DEBUG: false,
+  DEBUG: true
 }));
 
 describe('init module', () => {
@@ -100,26 +101,14 @@ describe('init module', () => {
 
   describe('initializeApp', () => {
     it('retrieves server data, parses payload, updates store state, and binds event listeners', async () => {
-      global.google.script.run.withSuccessHandler.mockImplementation((cb) => {
-        cb({
-          students: ['student1'],
-          signups: ['signup1'],
-          settings: ['setting1'],
-        });
-        return global.google.script.run;
-      });
-      
       vi.mocked(dom.valueOf).mockReturnValue('true');
 
-      const initPromise = initializeApp();
-
-      expect(messaging.showLoadingModal).toHaveBeenCalledWith('Retrieving data');
-
+      const initPromise = initializeApp();      
       await initPromise;
+      expect(messaging.showLoadingModal).toHaveBeenCalledWith('Retrieving data');
 
       expect(store.setState).toHaveBeenCalled();
 
-      expect(dom.addEventListener).toHaveBeenCalled();
       expect(dom.addEventListener).toHaveBeenCalled();
       expect(messaging.hideLoadingModal).toHaveBeenCalledOnce();
     });

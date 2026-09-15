@@ -7,7 +7,7 @@ import {
 } from '../../src/signup/init.js';
 import * as dom from '../../src/common/dom.js';
 import * as messaging from '../../src/common/messaging.js';
-import { store } from '../../src/signup/store.js';
+import { store } from '../../src/common/store.js';
 import * as dateSelect from '../../src/signup/date-select.js';
 
 // 1. Mock all UI and Orchestration Dependencies
@@ -37,10 +37,11 @@ vi.mock('../../src/signup/parsers.js', () => ({
   parseNoFlyList: vi.fn(),
 }));
 
-vi.mock('../../src/signup/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: { 
     setState: vi.fn(),
-    getState: vi.fn(() => ({ isEditor: true, isStaff: true, isAdmin: true })) 
+    getState: vi.fn(() => ({ isEditor: true, isStaff: true, isAdmin: true })) ,
+    initialize: vi.fn(),
   }
 }));
 
@@ -60,7 +61,7 @@ vi.mock('../../src/signup/glass-rooms-input.js', () => ({ setupGlassRoomsObserve
 vi.mock('../../src/signup/study-select.js', () => ({ setupStudyOptionsObserver: vi.fn(), setupStudySelectValueObserver: vi.fn(), studyTeacherChangeHandler: vi.fn() }));
 vi.mock('../../src/signup/subject-select.js', () => ({ setupSubjectOptionsObserver: vi.fn(), setupSubjectValueObserver: vi.fn(), subjectChangeHandler: vi.fn() }));
 vi.mock('../../src/signup/interventions-teacher-select.js', () => ({ setupInterventionTeacherObserver: vi.fn() }));
-vi.mock('../../src/signup/student-input.js', () => ({ setupStudentInputObserver: vi.fn(), studentInputChangeHandler: vi.fn() }));
+vi.mock('../../src/common/student-input.js', () => ({ setupStudentInputObserver: vi.fn(), studentInputChangeHandler: vi.fn() }));
 vi.mock('../../src/signup/schedule-rules.js', () => ({ setupScheduleRulesObserver: vi.fn() }));
 vi.mock('../../src/signup/capacity-validation.js', () => ({ setupCapacityValidationObserver: vi.fn() }));
 vi.mock('../../src/signup/form-data.js', () => ({ preventFormSubmit: vi.fn(), submitForm: vi.fn(), startOver: vi.fn() }));

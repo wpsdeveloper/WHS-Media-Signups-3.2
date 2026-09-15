@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { hideTypes, updateDetailsPanel, setupPanelsObserver } from '../../src/signup/panels.js';
 import * as dom from '../../src/common/dom.js';
-import { store } from '../../src/signup/store.js';
+import { store } from '../../src/common/store.js';
 
 // Mock dependencies
 vi.mock('../../src/common/dom.js', () => ({
   setVisible: vi.fn(),
 }));
 
-vi.mock('../../src/signup/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: { subscribe: vi.fn() }
 }));
 

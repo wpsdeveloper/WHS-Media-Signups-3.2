@@ -1,13 +1,13 @@
 import * as dom from '../common/dom.js';
 import * as messaging from '../common/messaging.js';
 import * as dataTable from "./data-table.js";
-import { store } from "./store.js";
+import { store } from "../common/store.js";
 import { DEBUG } from '../common/debug.js';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  
   try {
+    store.initialize(storeInitialData);
     dataTable.initObservers();
     bindEvents();
     
@@ -102,5 +102,26 @@ async function setMockData() {
 
   return sampleData.attendanceData;
 }
+
+const storeInitialData = {
+  dailySchedules: [],
+  signups: [],
+  
+  isStaff: false,
+  isEditor: false,
+  isAdmin: false,
+  
+  currentSort: {
+    field: "study",
+    order: "asc",
+  },
+  
+  dataRows: [],
+
+  currentDatePeriod: {
+    date: null,
+    period: null,
+    },
+  };
 
 

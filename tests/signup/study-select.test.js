@@ -9,7 +9,7 @@ import {
 } from '../../src/signup/study-select.js';
 import * as dom from '../../src/common/dom.js';
 import * as dates from '../../src/common/dates.js';
-import { store } from '../../src/signup/store.js';
+import { store } from '../../src/common/store.js';
 
 // Mock dependencies
 vi.mock('../../src/common/dom.js', () => ({
@@ -29,7 +29,7 @@ vi.mock('../../src/common/dates.js', () => ({
   chooseSemester: vi.fn(),
 }));
 
-vi.mock('../../src/signup/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: { 
     setState: vi.fn(),
     subscribe: vi.fn() 

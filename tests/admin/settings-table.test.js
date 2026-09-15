@@ -7,7 +7,7 @@ import {
   showSignupInfo,
 } from '../../src/admin/settings-table.js';
 import * as dom from '../../src/common/dom.js';
-import { store } from '../../src/admin/store.js';
+import { store } from '../../src/common/store.js';
 import { SettingsRow } from '../../src/admin/settings-row.js';
 
 vi.mock('../../src/common/dom.js', () => ({
@@ -16,7 +16,7 @@ vi.mock('../../src/common/dom.js', () => ({
   setVisible: vi.fn(),
 }));
 
-vi.mock('../../src/admin/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: {
     subscribe: vi.fn(),
     getState: vi.fn(),

@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { CheckinBox } from '../../src/attendance/checkin-box.js';
+import { CheckinBox } from '../../src/common/checkin-box.js';
 import * as dom from '../../src/common/dom.js';
-import * as checkin from '../../src/attendance/checkin.js';
+import * as checkin from '../../src/common/checkin.js';
 import * as dates from '../../src/common/dates.js';
-import { store } from '../../src/attendance/store.js';
+import { store } from '../../src/common/store.js';
 
 vi.mock('../../src/common/dom.js');
-vi.mock('../../src/attendance/checkin.js');
+vi.mock('../../src/common/checkin.js');
 vi.mock('../../src/common/dates.js');
-vi.mock('../../src/attendance/store.js');
+vi.mock('../../src/common/store.js');
 
 describe('CheckinBox', () => {
   let mockTemplate;

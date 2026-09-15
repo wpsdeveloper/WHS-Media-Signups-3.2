@@ -1,6 +1,6 @@
 import * as dom from "../common/dom";
 import * as messaging from '../common/messaging.js';
-import { store } from './store.js';
+import { store } from '../common/store';
 import { DEBUG } from "../common/debug.js";
 
 /**

@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DataRow } from '../../src/admin/data-row.js';
 import * as dom from '../../src/common/dom.js';
 import * as dates from '../../src/common/dates.js';
-import { store } from '../../src/admin/store.js';
-import { CheckinBox } from '../../src/admin/checkin-box.js';
+import { store } from '../../src/common/store.js';
+import { CheckinBox } from '../../src/common/checkin-box.js';
 
 vi.mock('../../src/common/dom.js', () => ({
   qs: vi.fn(),
@@ -17,13 +17,13 @@ vi.mock('../../src/common/dates.js', () => ({
   formatDateSlashes: vi.fn(() => '10/24/2026'),
 }));
 
-vi.mock('../../src/admin/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: {
     getState: vi.fn(() => ({ isEditor: false })),
   },
 }));
 
-vi.mock('../../src/admin/checkin-box.js', () => {
+vi.mock('../../src/common/checkin-box.js', () => {
   const MockCheckinBox = vi.fn().mockImplementation(() => ({
     element: document.createElement('div'),
     render: vi.fn(),

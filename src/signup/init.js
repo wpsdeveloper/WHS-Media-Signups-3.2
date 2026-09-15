@@ -7,15 +7,37 @@ import * as capacity from './capacity-validation.js';
 import * as dateSelect from './date-select.js';
 import * as periodSelect from './period-select.js';
 import * as typeInput from './type-input.js';
-import * as studentInput from './student-input.js';
+import * as studentInput from '../common/student-input.js';
 import * as interventionTeacherSelect from './interventions-teacher-select.js';
 import * as studySelect from './study-select.js';
 import * as subjectSelect from './subject-select.js';
 import * as glassRoomsInput from './glass-rooms-input.js';
 import * as scheduleRules from './schedule-rules.js';
 import * as formData from './form-data.js';
-import { store } from './store.js';
+import { store } from '../common/store.js';
 import { DEBUG } from "../common/debug.js";
+
+
+// builds page based on existing schedules and settings
+export const initializeApp = async () => {
+  messaging.showLoadingModal('Retrieving data');
+  store.initialize(storeInitialData);
+  initObservers();
+
+  try {
+    const rawData = await getServerData();
+    const parsedData = parseServerData(rawData);
+
+    store.setState(parsedData);
+
+    await initializeUi();
+    bindEvents();
+  } catch (error) {
+    messaging.processError(error, 'Failed to initialize app:');
+  }
+
+  messaging.hideLoadingModal();
+}
 
 /**
  * Registers all UI observers/subscribers to listen to store updates.
@@ -37,25 +59,6 @@ export const initObservers = () => {
   capacity.setupCapacityValidationObserver();
 };
 
-// builds page based on existing schedules and settings
-export const initializeApp = async () => {
-  messaging.showLoadingModal('Retrieving data');
-  initObservers();
-
-  try {
-    const rawData = await getServerData();
-    const parsedData = parseServerData(rawData);
-
-    store.setState(parsedData);
-
-    await initializeUi();
-    bindEvents();
-  } catch (error) {
-    messaging.processError(error, 'Failed to initialize app:');
-  }
-
-  messaging.hideLoadingModal();
-}
 
 const getServerData = async () => {
   if (DEBUG) {
@@ -187,5 +190,32 @@ async function setMockData() {
 
   return sampleData.signupData;
 }
+
+const storeInitialData = {
+  students: [],
+  studentNames: [],
+  dailySchedules: [],
+  interventionTeachers: {},
+  studyTeachers: {},
+  signups: [],
+  noFlyList: [],
+
+  isStaff: false,
+  isEditor: false,
+  isAdmin: false,
+  updateRowId: null,
+  updateData: null,
+  defaultMax: 15,
+  currentMax: 15,
+
+  currentDate: null,
+  currentPeriod: null,
+  currentType: null,
+  currentStudyTeacher: null,
+  currentSubject: null,
+  currentStudentName: "",
+  currentMax: null,
+  currentEmail: "",
+};
 
 

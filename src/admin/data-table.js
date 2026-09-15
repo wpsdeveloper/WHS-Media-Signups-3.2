@@ -1,5 +1,5 @@
 import * as dom from "../common/dom.js";
-import { store } from "./store.js";
+import { store } from "../common/store";
 import { DataRow } from "./data-row.js";
 
 // =====================================================================
@@ -40,11 +40,12 @@ export const initObservers = () => {
     const { currentSortField, currentSortOrder } = state;
     dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 
-    const activeHeader = currentSortField === "student" ? ".sort-student" : ".sort-study";
-    dom.qs(activeHeader)?.classList.add("active");
+    const activeHeader = currentSortField === "date" ? ".sort-date" : ".sort-period";
+    const sortIcon = dom.qs(`.sort-${currentSortField}`)
+    sortIcon.classList.add("active");
 
     const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
-    dom.qs(".sort-icon i.active")?.classList.add(directionIcon);
+    sortIcon.classList.add(directionIcon);
   }, ["currentSortField" , "currentSortOrder"]);
 };
 

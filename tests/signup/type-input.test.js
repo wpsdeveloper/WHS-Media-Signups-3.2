@@ -13,7 +13,7 @@ import {
   setupTypeInputObserver 
 } from '../../src/signup/type-input.js';
 import * as dom from '../../src/common/dom.js';
-import { store } from '../../src/signup/store.js';
+import { store } from '../../src/common/store.js';
 
 // Mock dependencies
 vi.mock('../../src/common/dom.js', () => ({
@@ -25,7 +25,7 @@ vi.mock('../../src/common/dom.js', () => ({
   qs: vi.fn(),
 }));
 
-vi.mock('../../src/signup/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: { 
     setState: vi.fn(),
     subscribe: vi.fn() 

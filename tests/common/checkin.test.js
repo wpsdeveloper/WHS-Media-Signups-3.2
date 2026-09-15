@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as checkin from '../../src/attendance/checkin.js';
+import * as checkin from '../../src/common/checkin.js';
 import * as dom from '../../src/common/dom.js';
 import * as dates from '../../src/common/dates.js';
 

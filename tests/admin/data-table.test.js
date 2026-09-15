@@ -7,7 +7,7 @@ import {
   showSignupInfo,
 } from '../../src/admin/data-table.js';
 import * as dom from '../../src/common/dom.js';
-import { store } from '../../src/admin/store.js';
+import { store } from '../../src/common/store.js';
 import { DataRow } from '../../src/admin/data-row.js';
 
 vi.mock('../../src/common/dom.js', () => ({
@@ -23,7 +23,7 @@ vi.mock('../../src/common/dates.js', () => ({
 
 vi.mock('../../src/common/messaging.js', () => ({}));
 
-vi.mock('../../src/admin/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: {
     subscribe: vi.fn(),
     getState: vi.fn(),

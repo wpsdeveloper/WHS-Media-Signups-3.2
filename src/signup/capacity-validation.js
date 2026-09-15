@@ -1,6 +1,6 @@
 import * as dom from "../common/dom.js";
 import * as dates from "../common/dates.js";
-import { store } from "./store.js";
+import { store } from "../common/store";
 
 /**
  * Calculates if a given date/period is full (too many existing reservations) 

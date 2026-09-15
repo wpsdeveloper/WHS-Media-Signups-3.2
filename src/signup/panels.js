@@ -1,5 +1,5 @@
 import * as dom from "../common/dom.js"
-import { store } from "./store.js";
+import { store } from "../common/store";
 
 // Maps state.currentType values to their corresponding CSS class selectors
 const PANEL_MAP = {

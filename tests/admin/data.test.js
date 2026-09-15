@@ -3,7 +3,7 @@ import { getAuditHandler, getStudentAudit, setupAuditObserver } from '../../src/
 import * as dom from '../../src/common/dom.js';
 import * as messaging from '../../src/common/messaging.js';
 import * as parser from '../../src/common/parsers.js';
-import { store } from '../../src/admin/store.js';
+import { store } from '../../src/common/store.js';
 
 vi.mock('../../src/common/dom.js', () => ({
   qs: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('../../src/common/parsers.js', () => ({
   parseSignups: vi.fn(),
 }));
 
-vi.mock('../../src/admin/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: {
     getState: vi.fn(),
     setState: vi.fn(),

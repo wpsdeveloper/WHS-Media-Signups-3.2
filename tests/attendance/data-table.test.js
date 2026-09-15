@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as dataTable from '../../src/attendance/data-table.js';
 import * as dom from '../../src/common/dom.js';
 import * as dates from '../../src/common/dates.js';
-import { store } from '../../src/attendance/store.js';
+import { store } from '../../src/common/store.js';
 import * as messaging from '../../src/common/messaging.js';
 import { DataRow } from '../../src/attendance/data-row.js';
 
@@ -22,7 +22,7 @@ vi.mock('../../src/common/dates.js', () => ({
   isSameDate: vi.fn(),
 }));
 
-vi.mock('../../src/attendance/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: {
     subscribe: vi.fn(),
     getState: vi.fn(),

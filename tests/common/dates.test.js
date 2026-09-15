@@ -18,6 +18,11 @@ test('toDateInputValue', () => {
   // Current date
   const today = new Date();
   expect(toDateInputValue(today)).toMatch(/\d{4}-\d{2}-\d{2}/); // YYYY-MM-DD pattern
+
+  // Invalid parameters
+  expect(() => toDateInputValue('2026-10-15')).toThrow();
+  expect(() => toDateInputValue('')).toThrow();
+  expect(() => toDateInputValue(null)).toThrow();
 });
 
 /* isSameDate(date1, date2) */
@@ -27,17 +32,21 @@ test('isSameDate', () => {
 
   // Different days in same month
   expect(isSameDate(new Date(2024, 0, 15), new Date(2024, 0, 16))).toBe(false);
-
+  
   // Different months
   expect(isSameDate(new Date(2024, 0, 15), new Date(2024, 1, 15))).toBe(false);
-
+  
   // Different years
   expect(isSameDate(new Date(2023, 0, 15), new Date(2024, 0, 15))).toBe(false);
-
+  
   // With different times (should still match)
   expect(
     isSameDate(new Date(2024, 0, 15, 9, 0), new Date(2024, 0, 15, 21, 30)),
   ).toBe(true);
+  
+  expect(() => isSameDate(new Date(2024, 0, 15), "2024-01-15")).toThrow();
+  expect(() => isSameDate( "2024-01-15", new Date(2024, 0, 15))).toThrow();
+
 });
 
 /* parseDateInput(value) */
@@ -53,6 +62,7 @@ test('parseDateInput', () => {
 
   // Invalid inputs
   expect(() => parseDateInput('invalid')).toThrow(); // returns-invalid-date;
+  expect(() => parseDateInput('')).toThrow(); // returns-invalid-date;
 });
 
 /* formatDateSlashes(date) */
@@ -66,17 +76,19 @@ test('formatDateSlashes', () => {
   // Edge cases - year boundaries
   expect(formatDateSlashes(new Date(2000, 0, 1))).toBe('1/1/2000');
   expect(formatDateSlashes(new Date(9999, 11, 31))).toBe('12/31/9999');
+});
 
   /* isValidTime12Hr(timeStr) */
+test('isValidTime12Hr', () => {
   // Valid times
   expect(isValidTime12Hr('9:00 AM')).toBe(true);
   expect(isValidTime12Hr('9:00 am')).toBe(true); // case-insensitive
   expect(isValidTime12Hr('12:30 PM')).toBe(true);
-
+  
   // With space variations
   expect(isValidTime12Hr('9:00 AM')).toBe(true);
   expect(isValidTime12Hr('11:00 pm')).toBe(true); // with space instead of colon
-
+  
   // Invalid times
   expect(isValidTime12Hr('13:00 PM')).toBe(false); // hour > 12
   expect(isValidTime12Hr('9:60 AM')).toBe(false); // invalid minutes
@@ -111,6 +123,7 @@ test('formatTime', () => {
 
   // Invalid inputs
   expect(() => formatTime('invalid')).not.toThrow(); // Should handle gracefully
+  expect(() => formatTime('')).not.toThrow(); // Should handle gracefully
 });
 
 /* convert24HrTo12Hr(timeStr) */

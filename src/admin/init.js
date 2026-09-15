@@ -4,9 +4,29 @@ import * as parser from '../common/parsers.js';
 import * as dataTable from "./data-table.js";
 import * as settingsTable from "./settings-table.js";
 import * as data from './data.js';
-import * as studentInput from './student-input.js';
-import { store } from './store.js';
+import * as studentInput from '../common/student-input.js';
+import { store } from '../common/store.js';
 import { DEBUG } from "../common/debug.js";
+
+// builds page based on existing schedules and settings
+export const initializeApp = async () => {
+  messaging.showLoadingModal('Retrieving data');
+  try {
+    store.initialize(storeInitialData);
+    initObservers();
+    
+    const rawData = await getServerData();
+    const parsedData = parseServerData(rawData);
+    store.setState(parsedData);
+    
+    await initializeUi();
+    bindEvents();
+  } catch (error) {
+    messaging.processError(error, 'Failed to initialize app:');
+  }
+  
+  messaging.hideLoadingModal();
+}
 
 /**
  * Registers all UI observers/subscribers to listen to store updates.
@@ -17,25 +37,6 @@ export const initObservers = () => {
   dataTable.initObservers();
   settingsTable.initObservers();
 };
-
-// builds page based on existing schedules and settings
-export const initializeApp = async () => {
-  messaging.showLoadingModal('Retrieving data');
-  try {
-    initObservers();
-
-    const rawData = await getServerData();
-    const parsedData = parseServerData(rawData);
-    store.setState(parsedData);
-
-    await initializeUi();
-    bindEvents();
-  } catch (error) {
-    messaging.processError(error, 'Failed to initialize app:');
-  }
-
-  messaging.hideLoadingModal();
-}
 
 const getServerData = async () => {
   if (DEBUG) {
@@ -124,4 +125,20 @@ async function setMockData() {
 
   return sampleData.adminData;
 }
+
+const storeInitialData = {
+  students: [],
+  studentNames: [],
+  dailySchedules: [],
+  signups: [],
+  settings: [],
+
+  isEditor: false,
+  
+  currentSortField: "date",
+  currentSortOrder: "desc",
+
+  currentStudentName: null,
+  requestedStudentEmail: null,
+};
 

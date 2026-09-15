@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { studentInputChangeHandler, renderStudentDatalist, setupStudentInputObserver } from '../../src/signup/student-input.js';
+import { studentInputChangeHandler, renderStudentDatalist, setupStudentInputObserver } from '../../src/common/student-input.js';
 import * as dom from '../../src/common/dom.js';
-import { store } from '../../src/signup/store.js';
+import { store } from '../../src/common/store.js';
 
 // Mock dependencies
 vi.mock('../../src/common/dom.js', () => ({
   qs: vi.fn(),
 }));
 
-vi.mock('../../src/signup/store.js', () => ({
+vi.mock('../../src/common/store.js', () => ({
   store: { 
     setState: vi.fn(), 
     subscribe: vi.fn() 
@@ -37,7 +37,6 @@ describe('Student Input Module', () => {
   describe('studentInputChangeHandler', () => {
     it('should update the store with the current student name query', () => {
       const mockEvent = { target: { value: 'Smi' } };
-      
       studentInputChangeHandler(mockEvent);
       
       expect(store.setState).toHaveBeenCalledWith({ currentStudentName: 'Smi' });
@@ -47,7 +46,6 @@ describe('Student Input Module', () => {
   describe('renderStudentDatalist', () => {
     it('should return early if the input element is not found', () => {
       dom.qs.mockReturnValue(null);
-      
       renderStudentDatalist(['Smith, John'], 'Smi');
       
       expect(document.createElement).not.toHaveBeenCalled();
