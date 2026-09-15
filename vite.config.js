@@ -15,13 +15,27 @@ export default defineConfig(({ command, mode }) => {
       // Production single file bundle
       ...(command === 'build' ? [viteSingleFile()] : []),
 
+      // GAS scriptlet injector
+      {
+        name: 'gas-scriptlet-injector',
+        transformIndexHtml(html) {
+          return html.replace(
+            '"INJECT_SERVER_DATA_HERE"',
+            '<?!= SERVER_DATA ?>',
+          );
+        },
+      },
+
       // Node Polyfills (handles Node built-in modules)
       nodePolyfills({
-        include: ['buffer', 'process', 'util', 'stream']
-      })
+        include: ['buffer', 'process', 'util', 'stream'],
+      }),
     ],
 
     build: {
+      target: 'es2015',
+      cssCodeSplit: false,
+      inlineDynamicImports: true,
       minify: true,
       outDir: resolve(__dirname, 'dist/ui'),
     },
@@ -33,16 +47,13 @@ export default defineConfig(({ command, mode }) => {
       coverage: {
         provider: 'istanbul',
         reporter: ['text', 'json', 'lcov'],
-        exclude: [
-          '**/*.test.js',
-          '**/tests/**/*.js'
-        ]
+        exclude: ['**/*.test.js', '**/tests/**/*.js'],
       },
       env: {
         ...process.env,
-        VITE_ENV_MODE: 'test'
+        VITE_ENV_MODE: 'test',
       },
-      includeSource: ['**/*.{js,ts,html}']
-    }
+      includeSource: ['**/*.{js,ts,html}'],
+    },
   };
 });

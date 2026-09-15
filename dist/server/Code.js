@@ -9,7 +9,7 @@
  */
 
 const SPREADSHEET_ID = '1LbVD6PYDns60osOfsRtUea3xyHr5BPyfAkhum0-eC5k'; // Google Sheet that holds the signup data
-
+let email;
 /**
  * Creates HTML and client-side script to serve to the user
  * 
@@ -19,12 +19,24 @@ const SPREADSHEET_ID = '1LbVD6PYDns60osOfsRtUea3xyHr5BPyfAkhum0-eC5k'; // Google
 function doGet(event) {
   const template = createTemplateFromParameters(event);
 
-  // sends the HTML to the client
-  return template.evaluate()
-    .setTitle("WHS Intervention & Media Center Sign Up")
+  const appConfig = {
+    view: "signup",
+    isEditor: mayEdit(),
+    isAdmin: mayViewAdmin(),
+    isStaff: isStaff(),
+    email: getEmail()
+  };
+  // adds meta data so tha page reformats nicely on mobile devices
+  template.addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  template.setTitle("WHS Intervention & Media Center Sign Up");
+  template.append(`
+    <script>
+      window.APP_CONFIG = ${JSON.stringify(appConfig)};
+    </script>
+  `);
 
-    // adds meta data so tha page reformats nicely on mobile devices
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  // sends the HTML to the client
+  return template
 }
 
 /**
@@ -49,13 +61,13 @@ function createTemplateFromParameters(event) {
   const page = getUrlParameter(event, "page");
 
   if ((page === "attendance") && (mayViewAttendance())) {
-    template = createAttendanceTemplate();
+    template = createIndexTemplate();
 
   } else if ((page === "admin") && (mayViewAdmin())) {
-    template = createAdminTemplate();
+    template = createIndexTemplate();
 
   } else if (maySubmit()) {
-    template = createSignupTemplate();
+    template = createIndexTemplate();
 
     if ((page === "update") && mayEdit()) {
       //get the url parament id to identify the row to edit
@@ -68,9 +80,6 @@ function createTemplateFromParameters(event) {
   }
 
   // adds basic variables to send with the HTML
-  template.LOGO_ID = LOGO_ID;
-  template.SCRIPT_URL = getScriptUrl();
-  template.WED_INT_ACTIVE = wednesdayInterventionsActive(); 
   return template;
 }
 
@@ -102,7 +111,7 @@ function createSignupTemplate() {
 }
 
 function createIndexTemplate() {
-  const template = HtmlService.createTemplateFromFile('ui.index.html');
+  const template = HtmlService.createHtmlOutputFromFile('ui/index.html');
   return template;
 }
 
@@ -302,7 +311,8 @@ function parseDataEditors(csvString) {
  * @return {string} The user email address or "" if out of domain
  */
 function getEmail() {
-  return Session.getActiveUser().getEmail();
+  if (!email) email = Session.getActiveUser().getEmail();
+  return email;
 }
 
 /**
@@ -588,6 +598,7 @@ function getTutoringStatus() {
  * return {string} The value from the URL
  */
 function getUrlParameter(e, parameterName) {
+  if (!e) return "";
   const parameters = e.parameters;
   if (parameters.hasOwnProperty(parameterName)) {
     return parameters[parameterName][0];
@@ -625,6 +636,10 @@ function isSameDate(date1, date2) {
   return monthMatch && yearMatch && dateMatch;
 }
 
+function isStaff() {
+  const userEmail = getEmail();
+  return userEmail && userEmail.indexOf("@walpole.k12.ma.us") >0;
+}
 /**
  * Returns whether the current user may edit signup records
  * 
