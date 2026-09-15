@@ -15,14 +15,6 @@ export default defineConfig(({ command, mode }) => {
       // Production single file bundle
       ...(command === 'build' ? [viteSingleFile()] : []),
 
-      // GAS scriptlet injector
-      {
-        name: 'gas-scriptlet-injector',
-        transformIndexHtml(html) {
-          return html.replace('"INJECT_SERVER_DATA_HERE"', '<?!= SERVER_DATA ?>');
-        }
-      },
-
       // Node Polyfills (handles Node built-in modules)
       nodePolyfills({
         include: ['buffer', 'process', 'util', 'stream']

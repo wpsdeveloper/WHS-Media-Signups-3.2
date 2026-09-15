@@ -127,39 +127,39 @@ describe('data-table', () => {
     });
 
     describe('Sort Header UI Observer', () => {
-      let studentHeaderIcon, studyHeaderIcon, activeSortIcon;
+      let dateHeaderIcon, periodHeaderIcon, activeSortIcon;
 
       beforeEach(() => {
-        studentHeaderIcon = document.createElement('div');
-        studyHeaderIcon = document.createElement('div');
+        dateHeaderIcon = document.createElement('div');
+        periodHeaderIcon = document.createElement('div');
         activeSortIcon = document.createElement('i');
 
         vi.mocked(dom.qsa).mockReturnValue([activeSortIcon]);
         vi.mocked(dom.qs).mockImplementation((selector) => {
-          if (selector === '.sort-student') return studentHeaderIcon;
-          if (selector === '.sort-study') return studyHeaderIcon;
+          if (selector === '.sort-date') return dateHeaderIcon;
+          if (selector === '.sort-period') return periodHeaderIcon;
           if (selector === '.sort-icon i.active') return activeSortIcon;
           return null;
         });
       });
 
-      it('activates student header and sets down caret for ascending order', () => {
+      it('activates date header and sets down caret for ascending order', () => {
         initObservers();
         const sortObserver = observerCallbacks[1];
 
-        sortObserver({ currentSortField: 'student', currentSortOrder: 'asc' });
+        sortObserver({ currentSortField: 'date', currentSortOrder: 'asc' });
 
-        expect(studentHeaderIcon.classList.contains('active')).toBe(true);
-        expect(activeSortIcon.classList.contains('fa-caret-down')).toBe(true);
+        expect(dateHeaderIcon.classList.contains('active')).toBe(true);
+        expect(activeSortIcon.classList.contains('fa-caret-downp')).toBe(true);
       });
 
-      it('activates study header and sets up caret for descending order', () => {
+      it('activates period header and sets up caret for descending order', () => {
         initObservers();
         const sortObserver = observerCallbacks[1];
 
-        sortObserver({ currentSortField: 'study', currentSortOrder: 'desc' });
+        sortObserver({ currentSortField: 'period', currentSortOrder: 'desc' });
 
-        expect(studyHeaderIcon.classList.contains('active')).toBe(true);
+        expect(periodHeaderIcon.classList.contains('active')).toBe(true);
         expect(activeSortIcon.classList.contains('fa-caret-up')).toBe(true);
       });
     });
@@ -168,28 +168,28 @@ describe('data-table', () => {
   describe('resort', () => {
     it('toggles sort order from asc to desc when same field is selected', () => {
       vi.mocked(store.getState).mockReturnValue({
-        currentSortField: 'student',
+        currentSortField: 'date',
         currentSortOrder: 'asc',
       });
 
-      resort('student');
+      resort('date');
 
       expect(store.setState).toHaveBeenCalledWith({
-        currentSortField: 'student',
+        currentSortField: 'date',
         currentSortOrder: 'desc',
       });
     });
 
     it('defaults to asc order when a new field is selected', () => {
       vi.mocked(store.getState).mockReturnValue({
-        currentSortField: 'student',
+        currentSortField: 'date',
         currentSortOrder: 'desc',
       });
 
-      resort('study');
+      resort('period');
 
       expect(store.setState).toHaveBeenCalledWith({
-        currentSortField: 'study',
+        currentSortField: 'period',
         currentSortOrder: 'asc',
       });
     });

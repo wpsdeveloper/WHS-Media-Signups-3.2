@@ -101,6 +101,11 @@ function createSignupTemplate() {
   return template;
 }
 
+function createIndexTemplate() {
+  const template = HtmlService.createTemplateFromFile('ui.index.html');
+  return template;
+}
+
 /**
  * Gets apps settings in stringified Json format
  */
