@@ -35,8 +35,10 @@ function parseServerData(data) {
   return {
     signups: JSON.parse(data.signups),
     dailySchedules: JSON.parse(data.dailySchedules),
-    isAdmin: dom.valueOf('#is-admin') === 'true',
-    isEditor: dom.valueOf('#is-editor') === 'true', 
+    currentEmail: APP_CONFIG.email,
+    isStaff: APP_CONFIG.isStaff,
+    isAdmin: APP_CONFIG.isAdmin,
+    isEditor: APP_CONFIG.isEditor, 
   };
 }
 

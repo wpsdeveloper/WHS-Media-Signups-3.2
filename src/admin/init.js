@@ -65,7 +65,10 @@ function parseServerData(data) {
     signups,
     settings,
     currentStudentName: '',
-    isEditor: dom.valueOf('#is-editor') === 'true', 
+    currentEmail: APP_CONFIG.email,
+    isStaff: APP_CONFIG.isStaff,
+    isAdmin: APP_CONFIG.isAdmin,
+    isEditor: APP_CONFIG.isEditor, 
   };
 }
 

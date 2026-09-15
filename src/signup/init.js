@@ -29,6 +29,7 @@ export const initializeApp = async () => {
     const parsedData = parseServerData(rawData);
 
     store.setState(parsedData);
+    console.log(store.getState());
 
     await initializeUi();
     bindEvents();
@@ -94,20 +95,20 @@ function parseServerData(data) {
     currentStudyTeacher: null,
     currentSubject: null,
     currentStudentName: '',
-    currentEmail: dom.valueOf('input#email') || '',
-    isStaff: dom.valueOf('input#email')?.indexOf('@walpole.k12.ma.us') > 0,
-    isAdmin: dom.valueOf('#is-admin') === 'true',
-    isEditor: dom.valueOf('#is-editor') === 'true', 
+    currentEmail: APP_CONFIG.email,
+    isStaff: APP_CONFIG.isStaff,
+    isAdmin: APP_CONFIG.isAdmin,
+    isEditor: APP_CONFIG.isEditor, 
   };
 }
 
 export const initializeUi = async () => {
-  const state = store.getState();
+  const { isStaff, isAdmin, currentDate, currentEmail } = store.getState();
   await setUpdateStatus();
 
   setTooltips('[data-bs-toggle="tooltip"]');
-  dom.toggleStaffOnlyViews(state.isStaff);
-  dom.toggleAdminOnlyViews(state.isAdmin);
+  dom.toggleStaffOnlyViews(isStaff);
+  dom.toggleAdminOnlyViews(isAdmin);
 
   // sets limits on dates allowed in Date field
   const today = new Date();
@@ -115,8 +116,10 @@ export const initializeUi = async () => {
     '#date',
     dates.toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
     dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
-    state.currentDate
+    currentDate
   );
+
+  dom.setValue("#email", currentEmail);
 
   // Toggle static URL links
   typeInput.toggleInterventionsLink();

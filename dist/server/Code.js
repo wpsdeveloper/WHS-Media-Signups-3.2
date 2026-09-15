@@ -18,9 +18,10 @@ let email;
  */
 function doGet(event) {
   const template = createTemplateFromParameters(event);
-
+  const page = getUrlParameter(event, "page");
+  
   const appConfig = {
-    view: "signup",
+    view: page ? page : "signup",
     isEditor: mayEdit(),
     isAdmin: mayViewAdmin(),
     isStaff: isStaff(),
