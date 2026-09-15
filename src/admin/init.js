@@ -21,9 +21,9 @@ export const initObservers = () => {
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
   messaging.showLoadingModal('Retrieving data');
-  initObservers();
-
   try {
+    initObservers();
+
     const rawData = await getServerData();
     const parsedData = parseServerData(rawData);
     store.setState(parsedData);
@@ -76,11 +76,9 @@ export const initializeUi = async () => {
 
 function bindEvents() {
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
-  dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
   dom.addEventListener('#get-audit-btn', 'click', () => data.getAuditHandler());
   dom.addEventListener("#attendance-link", "click", (e) => dataTable.showAttendance());
   dom.addEventListener("#details-link", "click", (e) => dataTable.showSignupInfo());
-  dom.addEventListener('#refresh-data-btn', 'click', () => refreshData());
   dom.addEventListener('#date-header', 'click', () => dataTable.resort("date"));
   dom.addEventListener('#period-header', 'click', () => dataTable.resort("period"));
 }
@@ -92,6 +90,7 @@ function bindEvents() {
   const tabContainer = document.querySelector(".nav-tabs");
   const tabs = document.querySelectorAll(".nav-link");
   const panels = document.querySelectorAll(".tab-panel");
+  if (!tabContainer) return;
 
   tabContainer.addEventListener("click", (e) => {
     const targetId = e.target.dataset.target;

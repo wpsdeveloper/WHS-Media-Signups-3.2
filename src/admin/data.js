@@ -5,13 +5,13 @@ import { store } from './store.js';
 import { DEBUG } from "../common/debug.js"; 
 
 export const getAuditHandler = async () => {
-  if (dom.qs("#student-name").value.length < 3) {
-    return;
-  }
-  // this is a teacher submission
-  // breaks apart the line selected in the student datalist
   try {
-    const student = dom.qs("#student-name").value || "";
+    if (dom.qs("#student-name").value.length < 3) {
+      return;
+    }
+    // this is a teacher submission
+    // breaks apart the line selected in the student datalist
+    const student = dom.qs("#student-name").value.trim() || "";
     const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
 
     const emailStudent = (brackets.length == 2) ? brackets[1].trim().substring(0, brackets[1].length-1) : "";
@@ -46,7 +46,7 @@ export const getStudentAudit = async () => {
     });
   } catch (error) {
     messaging.processError(error, "Error getting audit data:");
-    messaging.hideLoadingModal;
+    messaging.hideLoadingModal();
   }
 }
 

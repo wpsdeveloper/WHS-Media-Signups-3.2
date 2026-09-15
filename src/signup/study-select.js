@@ -21,12 +21,11 @@ export const updateStudyOptions = (
   dailySchedules = []
 ) => {
   dom.clearOptions("#study-teacher-select");
-  
   if (!studyTeachers || !currentDateStr || !currentPeriod) {
-    toggleStudyInputVisibility(false);
     return;
   }
-
+  toggleStudyInputVisibility(false);
+  
   // Toggle outer section visibility for Wed. PM
   dom.setVisible("#study-div", currentPeriod !== "Wed. PM");
 

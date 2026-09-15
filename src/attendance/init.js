@@ -25,8 +25,8 @@ const getServerData = async () => {
 
   return new Promise((resolve, reject) => {
     google.script.run
-      .withFailureHandler(reject)
       .withSuccessHandler(resolve)
+      .withFailureHandler(reject)
       .getInitialAttendanceData();
   });
 };

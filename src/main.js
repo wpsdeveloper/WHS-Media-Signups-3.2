@@ -31,7 +31,7 @@ function getServerInjection() {
   if (DEBUG) {
     return {
       viewState: { 
-        view: 'admin', 
+        view: 'attendance', 
         data: {} 
       },
       globals: {
