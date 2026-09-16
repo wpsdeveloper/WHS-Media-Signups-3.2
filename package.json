@@ -20,6 +20,7 @@
     "jsdom": "^30.0.1",
     "vite": "^8.0.10",
     "vite-plugin-singlefile": "^2.3.3",
+    "vite-plugin-static-copy": "^4.1.1",
     "vitest": "^3.0.0",
     "vitest-mock-extended": "^3.0.0"
   },

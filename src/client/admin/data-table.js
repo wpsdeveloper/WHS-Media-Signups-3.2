@@ -1,0 +1,110 @@
+import * as dom from "../common/dom.js";
+import { store } from "../common/store";
+import { DataRow } from "./data-row.js";
+
+// =====================================================================
+// STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
+// These functions automatically update the UI whenever the store changes.
+// Call initObservers() once when your app loads.
+// =====================================================================
+
+export const initObservers = () => {
+  // Rebuild the data table with date, signups or sort changes
+  store.subscribe((state) => {
+    const { signups, currentSortField, currentSortOrder, requestedStudentEmail } = state;
+    if (!requestedStudentEmail) return;
+    
+    const sortedSignups = sortSignups(signups, currentSortField, currentSortOrder);
+    const currentSignups = sortedSignups.filter(su => su.emailStudent === requestedStudentEmail);
+    
+    dom.qsa("#student-panel .student-row").forEach(row => row.remove());
+
+    // render new rows
+    const targetTable = dom.qs("#student-panel");
+    const newRows = [];
+
+    currentSignups.forEach(signup => {
+      // adds a new empty student row
+      const dataRow = new DataRow(signup.rowId, signup);
+      targetTable.append(dataRow.element);
+      dataRow.populate();
+      newRows.push(dataRow);
+    });
+
+    // Update state with new rows
+    store.setState({ dataRows: newRows });
+  }, ["signups", "currentSortField", "currentSortOrder", "requestedStudentEmail"]);
+
+  // updates the sort header ui
+  store.subscribe((state) => {
+    const { currentSortField, currentSortOrder } = state;
+    dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
+
+    const activeHeader = currentSortField === "date" ? ".sort-date" : ".sort-period";
+    const sortIcon = dom.qs(`.sort-${currentSortField}`)
+    sortIcon.classList.add("active");
+
+    const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
+    sortIcon.classList.add(directionIcon);
+  }, ["currentSortField" , "currentSortOrder"]);
+};
+
+// =====================================================================
+// 2. DOM EVENT HANDLERS (The "Pub" in Pub/Sub)
+// These functions are called by user clicks/inputs. 
+// Notice how they ONLY write to the store, and touch NO DOM elements.
+// =====================================================================
+
+export const resort = (field) => {
+  const { currentSortField, currentSortOrder } = store.getState();
+  
+  const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
+  
+  store.setState({ currentSortField: field, currentSortOrder: newOrder });
+};
+
+// =====================================================================
+// PURE UTILITIES & VISUAL TOGGLES
+// =====================================================================
+
+
+export const sortSignups = (signups, field, order) => {
+  const modifier = (order === "asc" ? 1 : -1);
+  const targetField = field === "student" ? "lastname" : "teacherStudy";
+  
+  return [...signups].sort((a, b) => {
+    if (a[targetField] < b[targetField]) return -1 * modifier;
+    if (a[targetField] > b[targetField]) return 1 * modifier;
+    return 0;
+  });
+}
+
+/**
+ * Shows the attendance panel 
+ * */
+export const showAttendance = () => {
+  // slide animation back to "original" position
+  dom.qsa(".panel").forEach(panel => panel.style.transform = "translate(0, 0)");
+
+  // updates the header
+  dom.setVisible(dom.qs(".header-row .signup-info"), false);
+  dom.setVisible(dom.qs(".header-row .attendance-info"), true);
+}
+
+/**
+ *  Shows the signup info panel
+ * */
+export const showSignupInfo =() => {
+  // gets the width of the panel. Note: uses the header, because width
+  // calculations work best if the element is visible
+  const width = dom.qs(".header-row .attendance-info").getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
+
+  // animates the panel
+  dom.qsa(".panel").forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
+
+  // updates the header
+  dom.setVisible(dom.qs(".header-row .signup-info"), true);
+  dom.setVisible(dom.qs(".header-row .attendance-info"), false);
+}
+
+

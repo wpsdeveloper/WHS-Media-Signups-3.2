@@ -3,6 +3,8 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { normalizePath } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,29 +17,35 @@ export default defineConfig(({ command, mode }) => {
       // Production single file bundle
       ...(command === 'build' ? [viteSingleFile()] : []),
 
-      // GAS scriptlet injector
-      {
-        name: 'gas-scriptlet-injector',
-        transformIndexHtml(html) {
-          return html.replace(
-            '"INJECT_SERVER_DATA_HERE"',
-            '<?!= SERVER_DATA ?>',
-          );
-        },
-      },
-
       // Node Polyfills (handles Node built-in modules)
       nodePolyfills({
         include: ['buffer', 'process', 'util', 'stream'],
       }),
+      // Copies uncompiled server files directly into dist/ on build
+      viteStaticCopy({
+        targets: [
+          {
+            src: normalizePath(resolve(__dirname, 'src/server/*.js')),
+            dest: '.'
+          },
+          {
+            src: normalizePath(resolve(__dirname, 'appsscript.json')),
+            dest: 'dist'
+          }
+        ]
+      })
     ],
 
     build: {
       target: 'es2015',
       cssCodeSplit: false,
       inlineDynamicImports: true,
-      minify: true,
-      outDir: resolve(__dirname, 'dist/ui'),
+      minify: false,
+      outDir: resolve(__dirname, 'dist'),
+    },
+    root: 'src/client',
+    server: {
+      sourcemapIgnoreList: false
     },
 
     test: {

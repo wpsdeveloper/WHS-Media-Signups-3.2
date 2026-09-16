@@ -1,0 +1,346 @@
+ <!-- HTML for the Attendance Page  -->
+<script>
+  if (window.trustedTypes && window.trustedTypes.createPolicy) {
+    window.trustedTypes.createPolicy('default', {
+      createHTML: string => string,
+      createScriptURL: string => string,
+      createScript: string => string,
+    });
+  }
+</script>
+
+<!-- CSS files -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Main display -->
+<div class="body attendance">
+
+  <!-- Header/masthead -->
+  <header >
+    <div class="container-fluid">
+      <div class="row pb-2 pt-2 align-items-center">
+
+        <!-- Logo image -->
+        <div class="logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center">
+          <img id="logo-image" src="https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc" alt="Walpole Public Schools">
+          <div class="ms-3 d-none d-lg-inline">
+            <span class="d-inline d-md-block">Walpole </span><span class="public-schools d-inline d-md-block">Public Schools</span>
+          </div>
+        </div>
+
+        <!-- Page title  -->
+        <div class="col text-center page-title">
+          <h1>
+            WHS Intervention & Media Center Attendance
+          </h1>
+        </div>
+
+        <!-- Buttons/links to other pages  -->
+        <div class="link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center ">
+          <a id="attendance-link" class="staff-only btn btn-light" href="#" target="_top">Signup Form</a>
+          <a id="admin-link" class="admin-only btn btn-light ms-1" href="#?page=admin" target="_top">Admin</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Date and period section  -->
+  <div class="subheader p-3 mb-4">
+    <div class="container">
+      <div class="row justify-content-center ">
+        <div class="col col-12 d-flex justify-content-center">
+          <div>
+
+            <!-- Date selection -->
+            <div class="d-block d-lg-inline">
+              <label for="date" class="form-label main-label required text-end text-white d-inline me-2">
+                Date
+              </label>
+              <input type="date" class="form-control date-input required d-inline" id="date" >
+            </div>
+
+            <!-- Period selection  -->
+            <div class="d-block d-lg-inline mt-2 mt-lg-0">
+              <label for="period" class="form-label main-label required text-end text-white d-inline ms-lg-4 me-2">
+                Period
+              </label>
+              <select class="form-select required d-inline" id="period"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main body container  -->
+  <div class="container">
+
+    <!-- Main data table  -->
+    <div id="student-table" class="">
+
+      <!-- Table header row  -->
+      <div class="row header-row mb-2">
+
+        <!-- Student header  -->
+        <div class="col col-12 col-lg-3 d-none d-lg-flex">
+          <h4 class="sortable">Student 
+            <span class="sort-icon">
+              <i class="sort-student fa-solid"></i>
+            </span>
+          </h4>
+        </div>
+
+        <!-- Study header  -->
+        <div class="col col-12 col-lg-2 d-none d-lg-flex">
+          <h4 class="sortable" >Study 
+            <span class="sort-icon">
+              <i class="sort-study fa-solid fa-caret-down direction active"></i>
+            </span>
+          </h4>
+        </div>
+
+        <!-- Panel header: Attendance  -->
+        <div class="col col-12 col-lg-7 attendance-info ">
+          <div class="row">
+            <div class="col col-8">
+              <h4>Attendance  |  
+                <span id="details-link" class="panel-link">Details</span>
+              </h4>
+            </div>
+
+            <!-- Data refresh button -->
+            <div class="col col-4 text-end">
+              <button id="refresh-data-btn" class="btn btn-primary">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel header: Details  -->
+        <div class="col col-12 col-lg-7 signup-info d-none">
+          <div class="row">
+            <div class="col col-8">
+              <h4>
+                <span id="attendance-link" class="panel-link">Attendance</span>
+                 | Details
+              </h4>
+            </div>
+
+            <!-- Data refresh button -->
+            <div class="col col-4 text-end">
+              <button class="btn btn-primary" >Refresh</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data not found row  -->
+      <div class="row student-row-empty d-none">
+        <div class="col">No records found</div>
+      </div>
+    </div>
+
+    <!-- Main data table  -->
+    <div id="staff-table" class="mt-4 d-none">
+
+      <!-- Table header row  -->
+      <div class="row header-row mb-2">
+
+        <!-- Student header  -->
+        <div class="col col-12 col-lg-5 d-lg-flex">
+          <h4>Staff 
+          </h4>
+        </div>
+
+        <!-- Panel header: Details  -->
+        <div class="col col-12 col-lg-7 signup-info">
+          <h4>Details 
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->
+  <section id="templates" style="display:none">
+    
+    <!-- Tri-state button (not currently used)  -->
+    <div id="custom-checkbox-template">
+      <div class="custom-checkbox mb-2 d-flex">
+        <span type="checkbox" class="form-check-input tri-state" ></span>
+        <label for="feedback" class="form-check-label ms-1">
+        </label>
+      </div>
+    </div>
+
+    <!-- Student row of data  -->
+    <template id="student-row-template" >
+      <div class="row data-row student-row mb-2">
+
+        <!-- Column 1  -->
+        <div class="col col-12 col-lg-3 mb-2">
+          
+          <!-- Edit icons (shown to editors only) -->
+          <div class="edit-icons d-none me-1 text-secondary">
+            <a class="edit-link" href="#?page=update" target="_top"><i class="fas fa-edit"></i></a> 
+          </div>
+          
+          <!-- Student name  -->
+          <div class="student-name d-inline">
+          </div>
+        </div>
+        
+        <!-- Column 2  -->
+        <!-- Study hall teacher  -->
+        <div class="study-teacher col col-12 col-lg-2 mb-2"></div>
+        
+        <!-- Column 3  -->
+        <div id="slider-wrapper" class="col col-12 col-lg-7 mb-2" data-items="2">
+          <div class="slider">
+            
+            <!-- Panel: Attendance  -->
+            <div class="panel attendance-info">
+              <div class="row">
+                <div data-type="study-checkin" class="checkin-box study-checkin col-6 col-xl-3 order-1 text-center"></div>
+                <div data-type="media-checkin" class="checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center"></div>
+                <div data-type="media-checkout" class="checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center"></div>
+                <div data-type="study-return" class="checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center"></div>
+              </div>
+            </div>
+            
+            <!-- Panel: Details  -->
+            <div class="panel details-info">
+              <div class="row">
+                <div class="type col-12 col-lg-6"></div>
+                <div class="room col-12 col-lg-6"></div>
+                <div class="comments col-12"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+    
+    <template id="checkin-box">
+      <div>
+        <label class="checkin-box-label">Study Return</label>
+      </div>
+
+      <!-- UI elements  -->
+      <button class="checkin-btn btn btn-light" >Return</button>
+      <div class="time d-none">
+        <span class="time-value text-success"></span>
+        <span class="time-edit d-none">
+          <input class="text-center" type="time"></input> 
+          <i class="save-btn edit fa-solid fa-check text-success" ></i>
+          <i class="cancel-btn edit fa-solid fa-ban text-danger" ></i>
+          <i class="delete-btn cancel fa-solid fa-trash text-danger"></i>
+        </span>
+        <span class="primary-buttons ms-1">
+          <i class="edit-start-btn edit fa-solid fa-edit text-primary" ></i>
+        </span>
+      </div>
+      <div class="spinner d-none">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    </template>
+
+    <!-- Staff row of data  -->
+    <div id="staff-row-template" class="row data-row staff-row mb-2">
+      
+      <!-- Column 1  -->
+      <div class="col col-12 col-lg-5 mb-2">
+
+        <!-- Edit icons (shown to editors only) -->
+        <div class="edit-icons d-none me-1 text-secondary">
+          <a class="edit-link" href="#?page=update" target="_top"><i class="fas fa-edit"></i></a> 
+        </div>
+
+        <!-- Student name  -->
+        <div class="student-name d-inline">
+        </div>
+      </div>
+
+      <!-- Column 2  -->
+      <!-- none  -->
+
+      <!-- Column 3  -->
+      <div class="signup-info col col-12 col-lg-7 mb-2">
+        <div class="row">
+          <div class="type col-12"></div>
+          <div class="room col-12 col-lg-6"></div>
+          <div class="comments col-12"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal: Loading -->
+  <div class="modal fade" id="loading-modal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-body">
+          <div class="d-flex">
+            <div class="spinner-border text-primary me-3" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="loading-text">
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- Toast (green): Success -->
+  <div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
+    <div id="success-toast" class="toast text-bg-success align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Submission complete!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast (red): Error  -->
+  <div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
+    <div id="error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Error completing submission.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast (red): Invalid data (not used)  -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="validation-error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          Please complete the missing information.
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Helper area for storing data sent from the server -->
+<div class="d-none hidden-data">
+  <input id="is-editor" type="checkbox" value="false" />
+  <input id="is-admin" type="checkbox" value="false" />
+  <input id="wed-int-active" type="checkbox" value="true" />
+</div>
+
+<!-- Javacript libraries and files -->
+<script src="https://kit.fontawesome.com/1a74660f3b.js" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
