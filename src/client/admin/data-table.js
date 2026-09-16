@@ -1,6 +1,6 @@
 import * as dom from "../common/dom.js";
 import { store } from "../common/store";
-import { DataRow } from "./data-row.js";
+import { AdminDataRow as DataRow } from "./data-row.js";
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)

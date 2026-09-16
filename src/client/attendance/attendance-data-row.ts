@@ -1,15 +1,18 @@
 import * as dom from '../common/dom.js';
-import * as dates from '../common/dates.ts';
-import { store } from "../common/store.js";
+import * as dates from '../common/dates.js';
+import { AttendanceState, store } from "../common/store.js";
 import { CheckinBox } from '../common/checkin-box.js';
+import { Signup } from '../../shared/types/signups.js';
 
-export class DataRow {
-  element = null;
-  signup = null;
-  rowId = '';
-  state = 'attendance';
+export class AttendanceDataRow {
+  element: HTMLElement;
+  signup: Signup;
+  rowId: string = '';
+  state: 'attendance' | 'details' = 'attendance';
+  attendancePanel: HTMLElement;
+  detailsPanel: HTMLElement;
   
-  constructor(rowId, signup) {
+  constructor(rowId: string, signup: Signup) {
     this.rowId = rowId;
     this.signup = signup;
     
@@ -17,15 +20,23 @@ export class DataRow {
       ? '#staff-row-template'
       : '#student-row-template';
 
-    const template = dom.qs(templateSelector); // clone the template
-    this.element = template.content.cloneNode(true).firstElementChild;
+    const template = dom.qs<HTMLTemplateElement>(templateSelector); // clone the template
+    if (!template?.content) throw new Error(`${templateSelector} template not found`);;
+    const clonedNode = template.content.cloneNode(true) as DocumentFragment;
+    const firstChild = clonedNode.firstElementChild as HTMLElement;
+    if (!firstChild) throw new Error(`Empty template for ${templateSelector}`);
+    this.element = firstChild;
     this.element.removeAttribute('id');
     this.element.classList.add('data-row');
     
     dom.setAttribute(this.element, 'dataset.signupId', this.rowId);
 
-    this.attendancePanel = this.element.querySelector('.attendance-info');
-    this.detailsPanel = this.element.querySelector('.details-info');
+    const attendancePanel: HTMLElement = this.element.querySelector('.attendance-info') as HTMLElement; 
+    const detailsPanel: HTMLElement = this.element.querySelector('.details-info') as HTMLElement; 
+    if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
+
+    this.attendancePanel = attendancePanel;
+    this.detailsPanel = detailsPanel;
   }
 
   render() {
@@ -51,24 +62,33 @@ export class DataRow {
     if (this.detailsPanel) dom.setVisible(this.detailsPanel, true);
   }
 
-  populate() {
+  populate(currentDate: AttendanceState['currentDate'], currentPeriod: AttendanceState['currentPeriod']) {
     const { element, signup } = this;
 
+    // assigns current-date or current-period tags if appropriate
+    if (currentPeriod && String(currentDate) === String(signup.period)) {
+      element.classList.add('current-period');
+    }
+
+    const signupDate = new Date(signup.date);
+    if (currentDate && dates.isSameDate(signupDate, currentDate)) {
+      element.classList.add('current-date');
+    }
+
     // render student names and room badges
-    const dateDiv = element.querySelector('.signup-date');
-    if (dateDiv) dom.setHTML(dateDiv, dates.formatDateSlashes(new Date(signup.date)));
-    
-    const periodDiv = element.querySelector('.signup-period');
-    const period = signup?.period === "Wed. PM Int." ? signup.period : "Period " + signup.period;
-    if (periodDiv) dom.setHTML(periodDiv, period);
+    const studentNameDiv = element.querySelector('.student-name') as HTMLElement;
+    if (studentNameDiv) {
+      const roomBadge = getRoomBadge(signup.room);
+      dom.setHTML(studentNameDiv, `${signup.lastname}, ${signup.firstname}${roomBadge}`);
+    }
 
     // render editor links/icons
     const { isEditor } = store.getState();
-    const editIcons = element.querySelector('.edit-icons');
+    const editIcons = element.querySelector('.edit-icons') as HTMLElement;
     if (editIcons) {
       dom.setVisible(editIcons, true);
       if (isEditor) {
-        const editLink = editIcons.querySelector('a.edit-link');
+        const editLink = editIcons.querySelector('a.edit-link') as HTMLAnchorElement;
         if (editLink) {
           const editUrl = `${editLink.href}&id=${signup.rowId}`
           dom.setAttribute(editLink, "href", editUrl);
@@ -77,17 +97,17 @@ export class DataRow {
     }
     
     //render type label and study info
-    const typeDiv = element.querySelector('.type');
+    const typeDiv = element.querySelector('.type') as HTMLInputElement;
     if (typeDiv) dom.setText(typeDiv, getSignupTypeLabel(signup));
     
-    const studyTeacherDiv = element.querySelector('.study-teacher');
+    const studyTeacherDiv = element.querySelector('.study-teacher') as HTMLInputElement;
     if (studyTeacherDiv) dom.setText(studyTeacherDiv, signup.teacherStudy || "");
     
-    const commentDiv = element.querySelector('.comments');
+    const commentDiv = element.querySelector('.comments') as HTMLInputElement;
     if (commentDiv) dom.setText(commentDiv, signup.comments || "");
 
     // render room information
-    const roomDiv = element.querySelector('.room');
+    const roomDiv = element.querySelector('.room') as HTMLInputElement;
     if (roomDiv) {
       const roomText = signup.room
       ? `Glass Room ${signup.room}, reserved by ${signup.email}`
@@ -101,7 +121,7 @@ export class DataRow {
   mountCheckinBoxes() {
     if (!this.attendancePanel) return;
 
-    CheckinBox.CHECKIN_TYPES.forEach((checkinType) => {
+    CheckinBox.CHECKIN_TYPES.forEach((checkinType: CheckinType) => {
       const panel = this.attendancePanel.querySelector(`div[data-type="${checkinType}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
@@ -129,7 +149,18 @@ export class DataRow {
 // PURE HELPER FUNCTIONS
 // =====================================================================
 
-function getSignupTypeLabel(signup) {
+function getRoomBadge(room: Signup['room']) {
+  const roomNum = String(room);
+  if (roomNum === '1') {
+    return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
+  }
+  if (roomNum === '2') {
+    return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
+  }
+  return '';
+}
+
+function getSignupTypeLabel(signup: Signup) {
   switch (signup.type) {
     case 'Intervention':
       return `Intervention: ${signup.subject}`;
