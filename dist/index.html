@@ -67,10 +67,15 @@ var signup_form_default = "\x3C!-- Main display -->\r\n<div class=\"body signup\
 //#region src/client/common/dom.js
 var qs$1 = (selector) => document.querySelector(selector);
 var qsa$1 = (selector) => [...document.querySelectorAll(selector)];
-var isVisible = (selector) => !!(qs$1(selector) && !qs$1(selector).classList.contains("d-none") && !qs$1(selector).classList.contains("hidden") && qs$1(selector).style.display !== "none");
+var isVisible = (selector) => {
+	const element = qs$1(selector);
+	return !!(element && !element.classList.contains("d-none") && !element.classList.contains("hidden") && element.style.display !== "none");
+};
 var getAttribute = (selector, attrName) => {
-	var _qs;
-	return (_qs = qs$1(selector)) === null || _qs === void 0 ? void 0 : _qs.getAttribute(attrName);
+	var _element$getAttribute;
+	const element = qs$1(selector);
+	if (!element) return "";
+	return (_element$getAttribute = element.getAttribute(attrName)) !== null && _element$getAttribute !== void 0 ? _element$getAttribute : "";
 };
 var valueOf = (param) => {
 	const get = (element) => {
@@ -117,7 +122,7 @@ var setInvalid = (param, isInvalid) => {
 	setterFunction(set, param, isInvalid);
 };
 var appendOption = (param, value, text, selected = false) => {
-	const set = (element, value, text, selected) => {
+	const set = (element, value, text, selected = false) => {
 		const option = document.createElement("option");
 		option.value = value;
 		option.textContent = text;
@@ -314,13 +319,13 @@ var toDateInputValue = (date) => {
 * @param {Date} date2 The second date to compare
 * @return {boolean} True if the two dates are the same
 */
-var isSameDate = (date1, date2) => {
+var isSameDate$1 = (date1, date2) => {
 	const monthMatch = date1.getMonth() === date2.getMonth();
 	const yearMatch = date1.getFullYear() === date2.getFullYear();
 	const dateMatch = date1.getDate() === date2.getDate();
 	return monthMatch && yearMatch && dateMatch;
 };
-function parseDateInput(value) {
+function parseDateInput$1(value) {
 	if (!value) throw new Error("Missing parameter");
 	const [year, month, day] = value.split("-").map(Number);
 	if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) throw new Error("Invalid date format");
@@ -527,8 +532,8 @@ var setupPanelsObserver = () => {
 * */
 var checkFull = (currentDateStr, currentPeriod, signups = [], currentMax = 15) => {
 	if (!currentDateStr || !currentPeriod) return;
-	const date = parseDateInput(currentDateStr);
-	let matching = signups.filter((su) => isSameDate(new Date(su.date), date) && currentPeriod == "" + su.period);
+	const date = parseDateInput$1(currentDateStr);
+	let matching = signups.filter((su) => isSameDate$1(new Date(su.date), date) && currentPeriod == "" + su.period);
 	matching = matching.filter((su) => su.type === "Non-intervention" || su.type === "Tutoring");
 	if (matching.length >= currentMax) ["#non-intervention", "#tutoring"].forEach((selector) => {
 		setDisabled(selector, true);
@@ -607,10 +612,10 @@ var updatePeriodOptions = (currentDateStr, dailySchedules) => {
 	var _selectElem$options$;
 	const oldPeriodVal = valueOf("#period");
 	if (!currentDateStr) return;
-	const date = parseDateInput(currentDateStr);
+	const date = parseDateInput$1(currentDateStr);
 	clearOptions("#period");
 	if (Array.isArray(dailySchedules)) dailySchedules.forEach((schedule) => {
-		if (isSameDate(new Date(schedule.date), date)) schedule.periods.forEach((period) => {
+		if (isSameDate$1(new Date(schedule.date), date)) schedule.periods.forEach((period) => {
 			appendOption("#period", period, period);
 		});
 	});
@@ -793,13 +798,13 @@ var updateStudyOptions = (currentDateStr, currentPeriod, currentType, studyTeach
 	if (!studyTeachers || !currentDateStr || !currentPeriod) return;
 	toggleStudyInputVisibility(false);
 	setVisible$1("#study-div", currentPeriod !== "Wed. PM");
-	const date = parseDateInput(currentDateStr);
+	const date = parseDateInput$1(currentDateStr);
 	const schedules = chooseSemester(/* @__PURE__ */ new Date(), new Date(studyTeachers.s2Date)) === "2" ? studyTeachers.s2 : studyTeachers.s1;
 	const availableTeachers = [];
 	if (currentType === "Alt setting") availableTeachers.push("Directly from class");
 	if (Array.isArray(dailySchedules)) {
 		var _schedules$matchingSc;
-		const matchingSched = dailySchedules.find((sched) => isSameDate(new Date(sched.date), date));
+		const matchingSched = dailySchedules.find((sched) => isSameDate$1(new Date(sched.date), date));
 		if (matchingSched && (schedules === null || schedules === void 0 || (_schedules$matchingSc = schedules[matchingSched.day]) === null || _schedules$matchingSc === void 0 ? void 0 : _schedules$matchingSc[currentPeriod])) {
 			const teachers = schedules[matchingSched.day][currentPeriod];
 			if (Array.isArray(teachers)) availableTeachers.push(...teachers);
@@ -856,14 +861,14 @@ var subjectChangeHandler = (event) => {
 var updateSubjectOptions = (currentDateStr, currentPeriod, interventionTeachers, dailySchedules = []) => {
 	clearOptions("#subject-int-select");
 	if (!interventionTeachers || !currentDateStr || !currentPeriod) return;
-	const date = parseDateInput(currentDateStr);
+	const date = parseDateInput$1(currentDateStr);
 	const today = /* @__PURE__ */ new Date();
 	const s2Date = new Date(interventionTeachers.s2Date);
 	let schedules;
 	if (today.getTime() < s2Date.getTime()) schedules = interventionTeachers.s1;
 	else schedules = interventionTeachers.s2;
 	if (Array.isArray(dailySchedules)) dailySchedules.forEach((sched) => {
-		if (isSameDate(new Date(sched.date), date)) {
+		if (isSameDate$1(new Date(sched.date), date)) {
 			const day = sched.day;
 			if (!(schedules === null || schedules === void 0 ? void 0 : schedules[day]) || !schedules[day][currentPeriod]) return;
 			const availableTeachers = schedules[day][currentPeriod];
@@ -909,9 +914,9 @@ var updateGlassRooms = (currentDateStr, currentPeriod, signups = []) => {
 	setText("#glass-room-1-label .availability", "Available");
 	setText("#glass-room-2-label .availability", "Available");
 	if (!currentDateStr || !currentPeriod) return;
-	const date = parseDateInput(currentDateStr);
+	const date = parseDateInput$1(currentDateStr);
 	signups.forEach((signup) => {
-		if (!isSameDate(new Date(signup.date), date)) return;
+		if (!isSameDate$1(new Date(signup.date), date)) return;
 		if ("" + signup.period !== currentPeriod) return;
 		const room = signup.room;
 		if (room >= 1 && room <= 2) {
@@ -943,10 +948,10 @@ var evaluateScheduleRules = (currentDateStr, currentPeriod, dailySchedules = [])
 	var _special$allowInterve, _special$allowAssessm, _special$allowAltSett, _special$allowTutorin, _special$allowNonInte;
 	resetAllTypes();
 	if (!currentDateStr || !currentPeriod) return null;
-	const date = parseDateInput(currentDateStr);
+	const date = parseDateInput$1(currentDateStr);
 	const isWednesdayInterventions = currentPeriod === "Wed. PM";
 	if (isWednesdayInterventions) disableWednesdayInterventions();
-	const match = dailySchedules.filter((sched) => isSameDate(new Date(sched.date), date) && sched.specials !== null);
+	const match = dailySchedules.filter((sched) => isSameDate$1(new Date(sched.date), date) && sched.specials !== null);
 	if (match.length == 0) return null;
 	const specials = match[0].specials;
 	if (!specials || !specials.hasOwnProperty(currentPeriod)) return null;
@@ -2307,6 +2312,27 @@ var storeInitialData$1 = {
 	requestedStudentEmail: null
 };
 //#endregion
+//#region src/client/common/dates.js
+/**
+* Determines if two Date object are the same date, regardless of time-of-day
+*
+* @param {Date} date1 The first date to compare
+* @param {Date} date2 The second date to compare
+* @return {boolean} True if the two dates are the same
+*/
+var isSameDate = (date1, date2) => {
+	const monthMatch = date1.getMonth() === date2.getMonth();
+	const yearMatch = date1.getFullYear() === date2.getFullYear();
+	const dateMatch = date1.getDate() === date2.getDate();
+	return monthMatch && yearMatch && dateMatch;
+};
+function parseDateInput(value) {
+	if (!value) throw new Error("Missing parameter");
+	const [year, month, day] = value.split("-").map(Number);
+	if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) throw new Error("Invalid date format");
+	return new Date(year, month - 1, day);
+}
+//#endregion
 //#region src/client/attendance/data-row.js
 var DataRow = class {
 	constructor(rowId, signup) {
@@ -2347,7 +2373,7 @@ var DataRow = class {
 		const { element, signup } = this;
 		if (currentDatePeriod.period && String(currentDatePeriod.period) === String(signup.period)) element.classList.add("current-period");
 		const signupDate = new Date(signup.date);
-		if (currentDatePeriod.date && isSameDate(signupDate, parseDateInput(currentDatePeriod.date))) element.classList.add("current-date");
+		if (currentDatePeriod.date && isSameDate$1(signupDate, parseDateInput$1(currentDatePeriod.date))) element.classList.add("current-date");
 		const studentNameDiv = element.querySelector(".student-name");
 		if (studentNameDiv) {
 			const roomBadge = getRoomBadge(signup.room);
