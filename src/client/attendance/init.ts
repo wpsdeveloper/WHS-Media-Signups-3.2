@@ -1,24 +1,26 @@
-import * as dom from '../common/dom.js';
-import * as messaging from '../common/messaging.js';
-import * as dataTable from "./data-table.js";
-import { store } from "../common/store.js";
-import { DEBUG } from '../common/debug.js';
+import * as dom from '../common/dom';
+import * as messaging from '../common/messaging';
+import * as dataTable from "./data-table";
+import { AttendanceStateRaw, AttendanceState, store } from "../common/store";
+import { DEBUG } from '../common/debug';
+import { AppConfig, getAppConfig } from '../common/appConfig';
+import { AttendanceDataRow } from './attendance-data-row';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
   try {
-    store.initialize(storeInitialData);
+    store().initialize(storeInitialData);
     dataTable.initObservers();
     bindEvents();
     
     await refreshData();
   } catch (error) {
-    messaging.processError(error, 'Failed to initialize app:');
+    messaging.processError(error as Error, 'Failed to initialize app:');
     messaging.hideLoadingModal();
   }
 }
 
-const getServerData = async () => {
+const getServerData = async ():Promise<Partial<AttendanceStateRaw>> => {
   if (DEBUG) {
     return await setMockData();
   } 
@@ -31,21 +33,23 @@ const getServerData = async () => {
   });
 };
 
-function parseServerData(data) {
+function parseServerData(data: Partial<AttendanceStateRaw>): Partial<AttendanceState> {
+  const appConfig: AppConfig = getAppConfig();
+  if (!data || !data.signups || !data.dailySchedules) throw new Error("Error retreiving data from server");
   return {
     signups: JSON.parse(data.signups),
     dailySchedules: JSON.parse(data.dailySchedules),
-    currentEmail: APP_CONFIG.email,
-    isStaff: APP_CONFIG.isStaff,
-    isAdmin: APP_CONFIG.isAdmin,
-    isEditor: APP_CONFIG.isEditor, 
+    currentEmail: appConfig.email,
+    isStaff: appConfig.isStaff,
+    isAdmin: appConfig.isAdmin,
+    isEditor: appConfig.isEditor, 
   };
 }
 
 function initDateInput() {
-  const dateInput = dom.qs(".date-input");
+  const dateInput = dom.qs(".date-input") as HTMLInputElement;
   const today = new Date();
-  const toDateValue = date => date.toISOString().slice(0, 10);
+  const toDateValue = (dateVal: Date) => dateVal.toISOString().slice(0, 10);
   if (dateInput) {
     const minDate = new Date(today);
     const maxDate = new Date(today);
@@ -74,7 +78,7 @@ export const refreshData = async () => {
   const parsedData = parseServerData(rawData);
   initDateInput();
 
-  store.setState({
+  store().setState({
     ...parsedData,
     currentDatePeriod : {
       date: dom.valueOf("#date"),
@@ -82,8 +86,11 @@ export const refreshData = async () => {
     }
   });
 
-  dom.toggleEditorOnlyViews(parsedData.isEditor);
-  dom.toggleAdminOnlyViews(parsedData.isAdmin);
+  const isEditor = parsedData.isEditor ?? false;
+  const isAdmin = parsedData.isAdmin ?? false;
+
+  dom.toggleEditorOnlyViews(isEditor);
+  dom.toggleAdminOnlyViews(isAdmin);
   
   messaging.hideLoadingModal();
 };
@@ -98,8 +105,8 @@ async function setMockData() {
   dom.toggleEditorOnlyViews(true);
   dom.toggleAdminOnlyViews(true);
 
-  const sampleData = await import('../../sampledata.js');
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const sampleData = await import("../../sampledata");
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
   return sampleData.attendanceData;

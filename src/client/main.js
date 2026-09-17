@@ -8,17 +8,17 @@
  * Note: This script handles both new submissions and the updating of existing data.
  * Updates are done by appending "?page=update&id" plus the record's row id to the URL.
  */  
-import { DEBUG } from "./common/debug.js";
+import { initAppConfig, getAppConfig } from "../common/appConfig";
 import attendanceHtml from './attendance/attendance.html?raw';
 import adminHtml from './admin/admin.html?raw';
 import signupHtml from './signup/signup-form.html?raw';
 
-import { initializeApp as initializeSignup } from "./signup/init.js";
-import { initializeApp as initializeAdmin } from "./admin/init.js";
-import { initializeApp as initializeAttendance } from "./attendance/init.js";
+import { initializeApp as initializeSignup } from "./signup/init";
+import { initializeApp as initializeAdmin } from "./admin/init";
+import { initializeApp as initializeAttendance } from "./attendance/init";
 
 const appDiv = document.getElementById('app');
-const APP_CONFIG = getServerInjection();
+const APP_CONFIG = await APP_CONFIG;
 
 
 /* Initialization, after everything has loaded */
@@ -26,21 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
   mountApp();
 });
 
-function getServerInjection() {
-  //assume debugging if page is served locally
-  if (DEBUG) {
-    return {
-      view:'admin', 
-    };
-  } 
-  const appConfig = window.APP_CONFIG ? window.APP_CONFIG : { view: 'signup' };
-
-  return appConfig;
-}
 
 // Client-side router based on server-validated state
-function mountApp() {
-  const { view } = APP_CONFIG;
+async function mountApp() {
+  await initAppConfig();
+  const appConfig = getAppConfig();
+  const { view } = appConfig;
 
   switch (view) {
     case 'attendance':

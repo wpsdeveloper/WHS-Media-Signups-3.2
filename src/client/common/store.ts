@@ -85,7 +85,7 @@ function isDeepEqual(obj1: any, obj2: any): boolean {
 }
 
 let __store: any;
-export const store = <T>(stateType: T) => {
+export const store = <T>(stateType?: T) => {
   __store ??= new Store(stateType);
   return __store;
 }
@@ -118,6 +118,11 @@ export interface SignupState {
   currentEmail: string,
 };
 
+export type SignupStateRaw = Omit<SignupState, 'signups' | 'dailySchedules'> & {
+  dailySchedules: string,
+  signups: string,
+}
+
 
 export interface AttendanceState {
   dailySchedules: DailySchedule[],
@@ -126,15 +131,21 @@ export interface AttendanceState {
   isStaff: boolean,
   isEditor: boolean,
   isAdmin: boolean,
+  currentEmail: string,
   
-  currentSortField: 'study' | 'date',
+  currentSortField: 'study' | 'student',
   currentSortOrder: 'asc' | 'desc', 
   
   dataRows: AttendanceDataRow[],
 
   currentDate: Date,
   currentPeriod: string,
-  };
+};
+
+export type AttendanceStateRaw = Omit<AttendanceState, 'signups' | 'dailySchedules'> & {
+  dailySchedules: string,
+  signups: string,
+}
 
 export interface AdminState {
   students: Student[],
@@ -153,3 +164,8 @@ export interface AdminState {
   currentStudentName: "",
   requestedStudentEmail: "",
 };
+
+export type AdminStateRaw = Omit<AdminState, 'signups' | 'dailySchedules'> & {
+  dailySchedules: string,
+  signups: string,
+}

@@ -1,8 +1,10 @@
 import * as dom from "../common/dom";
 import { parseDateInput, isSameDate } from "../common/dates";
-import { store } from "../common/store";
-import * as messaging from "../common/messaging.js";
-import { DataRow } from "./data-row.js";
+import { AttendanceState, store } from "../common/store";
+import * as messaging from "../common/messaging";
+import { AttendanceDataRow, AttendanceDataRow as DataRow } from "./attendance-data-row";
+import { getAppConfig } from "../common/appConfig";
+import { Signup } from "../../shared/types/signups";
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
@@ -12,14 +14,14 @@ import { DataRow } from "./data-row.js";
 
 export const initObservers = () => {
   // Updates the period dropdown when the date changes
-  store.subscribe((state) => {
-    const { currentDatePeriod, dailySchedules } = state;
-    if (!currentDatePeriod.date) return;
+  store().subscribe((state: AttendanceState) => {
+    const { currentDate, currentPeriod, dailySchedules } = state;
+    if (!currentDate || !currentPeriod) return;
 
     try {
       // clear previous options
       dom.clearOptions("#period");
-      const targetDate = parseDateInput(currentDatePeriod.date);
+      const targetDate = currentDate;
 
       // rebuild options in Period selectbox
       dailySchedules.forEach(schedule => {
@@ -36,31 +38,33 @@ export const initObservers = () => {
       }
 
       // Reselect previous period if it still exists, otherwise grab the first available
-      if (currentDatePeriod.period) {
-        dom.setValue("#period", currentDatePeriod.period || dom.valueOf("#period option")) || "";
+      if (currentPeriod) {
+        dom.setValue("#period", currentPeriod); 
+      } else {
+        dom.valueOf("#period option");
       }
 
     } catch (error) {
-      messaging.processError(error, "Error parsing new period");
+      messaging.processError(error as Error, "Error parsing new period");
     }
   }, ["currentDatePeriod", "dailySchedules"]);
 
   // Rebuild the data table with date, signups or sort changes
-  store.subscribe((state) => {
-    const { currentDatePeriod, signups, currentSort } = state;
-    if (!currentDatePeriod.date) return;
+  store().subscribe((state: AttendanceState) => {
+    const { currentDate, currentPeriod, signups, currentSortField, currentSortOrder } = state;
+    if (!currentDate) return;
     
-    const targetDate = parseDateInput(currentDatePeriod.date);
+    const targetDate = currentDate;
     
-    const sortedSignups = sortSignups(signups, currentSort.field, currentSort.order);
+    const sortedSignups = sortSignups(signups, currentSortField, currentSortOrder);
     const currentSignups = sortedSignups.filter(su => (isSameDate(new Date(su.date), targetDate)));
     
     dom.qsa("#student-table .student-row, #staff-table .staff-row").forEach(row => row.remove());
 
     // render new rows
-    const studentTable = dom.qs("#student-table");
-    const staffTable = dom.qs("#staff-table");
-    const newRows = [];
+    const studentTable = dom.qs("#student-table") as HTMLElement;
+    const staffTable = dom.qs("#staff-table") as HTMLElement;
+    const newRows: DataRow[] = [];
 
     currentSignups.forEach(signup => {
       // adds a new empty student row
@@ -68,21 +72,21 @@ export const initObservers = () => {
   
       const targetTable = signup.type === "Staff reservation" ? staffTable : studentTable;
       targetTable.append(dataRow.element);
-      dataRow.populate(currentDatePeriod);
+      dataRow.populate(currentDate, currentPeriod);
       newRows.push(dataRow);
     });
 
     // Update state with new rows
-    store.setState({ dataRows: newRows });
+    store().setState({ dataRows: newRows } as Partial<AttendanceState>);
   }, ["currentDatePeriod", "signups", "currentSort"]);
 
   // toggle row visibility and wed UI when period changes
-  store.subscribe((state)  => {
-    const { currentDatePeriod, dataRows } = store.getState();
-    if (!currentDatePeriod.date || !currentDatePeriod.period) return;
+  store().subscribe((state: AttendanceState)  => {
+    const { currentDate, currentPeriod, dataRows } = store().getState();
+    if (!currentDate || !currentPeriod) return;
 
-    const selectedDate = parseDateInput(currentDatePeriod.date);
-    const period = currentDatePeriod.period;
+    const selectedDate = parseDateInput(currentDate);
+    const period = currentPeriod;
    
     // update Wednesday-specific UI
     const isWednesdayPM = period === "Wed. PM";
@@ -105,16 +109,16 @@ export const initObservers = () => {
   }, ["currentDatePeriod", "dataRows"]);
 
   // updates the sort header ui
-  store.subscribe((state) => {
-    const { currentSort } = state;
+  store().subscribe((state: AttendanceState) => {
+    const { currentSortField, currentSortOrder } = state;
     dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 
-    const activeHeader = currentSort.field === "student" ? ".sort-student" : ".sort-study";
+    const activeHeader = currentSortField === "student" ? ".sort-student" : ".sort-study";
     dom.qs(activeHeader)?.classList.add("active");
 
-    const directionIcon = currentSort.order === "asc" ? "fa-caret-down" : "fa-caret-up";
+    const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
     dom.qs(".sort-icon i.active")?.classList.add(directionIcon);
-  }, ["currentSort"]);
+  }, ["currentSortField", "currentSortOrder"]);
 };
 
 // =====================================================================
@@ -130,8 +134,8 @@ export const dateChangeHandler = () => {
   const newDate = dom.valueOf("#date");
   if (!newDate) return;
 
-  const currentData = store.getState().currentDatePeriod;
-  store.setState({ 
+  const currentData = store().getState().currentDatePeriod;
+  store().setState({ 
     currentDatePeriod: { ...currentData, date: newDate } 
   });
 };
@@ -139,28 +143,27 @@ export const dateChangeHandler = () => {
 export const periodChangeHandler = () => {
   const newPeriod = dom.valueOf("#period");
   if (!newPeriod) return;
-
-  const currentData = store.getState().currentDatePeriod;
-  store.setState({ 
-    currentDatePeriod: { ...currentData, period: newPeriod } 
-  });
+  store().setState({ 
+    currentPeriod: newPeriod 
+  } as Partial<AttendanceState>);
 };
 
-export const resort = (field) => {
-  const { currentSort } = store.getState();
+export const resort = (field: (AttendanceState['currentSortField'])) => {
+  const { currentSortField, currentSortOrder } = store().getState();
   
-  const newOrder = (currentSort.field === field && currentSort.order === "asc") ? "desc" : "asc";
+  const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
   
-  store.setState({ 
-    currentSort: { field: field, order: newOrder } 
-  });
+  store().setState({ 
+    currentSortField: field, 
+    currentSortOrder: newOrder 
+  } as Partial<AttendanceState>);
 };
 
 // =====================================================================
 // PURE UTILITIES & VISUAL TOGGLES
 // =====================================================================
 
-const updateRowVisibility = (dataRows, selectedDate, period) => {
+const updateRowVisibility = (dataRows: AttendanceDataRow[], selectedDate: Date, period: string) => {
   dataRows.forEach(row => {
     const signup = row.signup;
     const suDate = typeof signup.date === "string" ? new Date(signup.date) : signup.date;
@@ -177,16 +180,21 @@ const updateRowVisibility = (dataRows, selectedDate, period) => {
   });
 };
 
-function wednesdayInterventions(date) {
+function wednesdayInterventions(date: Date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = dom.qs("#wed-int-active")?.value === "true";
+  const appConfig = getAppConfig();
+  const wedIntActive = appConfig.wedInt;
 
   return dateIsWednesday && wedIntActive;
 }
 
-export const sortSignups = (signups, field, order) => {
+export const sortSignups = (
+  signups: Signup[], 
+  field: AttendanceState['currentSortField'], 
+  order: AttendanceState['currentSortOrder']
+) => {
   const modifier = (order === "asc" ? 1 : -1);
   const targetField = field === "student" ? "lastname" : "teacherStudy";
   
@@ -202,11 +210,12 @@ export const sortSignups = (signups, field, order) => {
  * */
 export const showAttendance = () => {
   // slide animation back to "original" position
-  dom.qsa(".panel").forEach(panel => panel.style.transform = "translate(0, 0)");
+  const panels = dom.qsa(".panel") as HTMLElement[];
+  panels.forEach(panel => panel.style.transform = "translate(0, 0)");
 
   // updates the header
-  dom.setVisible(dom.qs(".header-row .signup-info"), false);
-  dom.setVisible(dom.qs(".header-row .attendance-info"), true);
+  dom.setVisible(".header-row .signup-info", false);
+  dom.setVisible(".header-row .attendance-info", true);
 }
 
 /**
@@ -215,14 +224,16 @@ export const showAttendance = () => {
 export const showSignupInfo =() => {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const width = dom.qs(".header-row .attendance-info").getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
+  const attPanel = dom.qs(".header-row .attendance-info") as HTMLElement;
+  const width = attPanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
 
   // animates the panel
-  dom.qsa(".panel").forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
+  const panels = dom.qsa(".panel") as HTMLElement[];
+  panels.forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
 
   // updates the header
-  dom.setVisible(dom.qs(".header-row .signup-info"), true);
-  dom.setVisible(dom.qs(".header-row .attendance-info"), false);
+  dom.setVisible(".header-row .signup-info", true);
+  dom.setVisible(".header-row .attendance-info", false);
 }
 
 

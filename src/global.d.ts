@@ -1,4 +1,5 @@
 import type * as Bootstrap from 'bootstrap';
+import type { AppConfig } from './client/common/appConfig';
 
 declare global {
   interface Window {
@@ -19,6 +20,10 @@ interface ServerFunctions {
   getInventoryList(): string[];
 
   setCheckin(type: CheckinBox['type'], id: CheckinBox['rowId'], value: string): boolean;
+  getAppConfig(): AppConfig;
+  getInitialAttendanceData(): string;
+  getInitialSignupData(): string;
+  getInitialAdminData(): string;
 }
 
 // Define the shape of your server-side API
