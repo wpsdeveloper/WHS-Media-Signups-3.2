@@ -10,6 +10,7 @@ export const initAppConfig = async (): Promise<void> => {
         appConfig = {
           view: 'signup', 
           wedInt: true,
+          s2Date: '2026-01-25',
           isEditor: true,
           isAdmin: true,
           isStaff: true,
@@ -39,6 +40,7 @@ async function getAppConfigFromServer(): Promise<AppConfig> {
 export interface AppConfig {
   view: 'signup' | 'attendance' | 'admin',
   wedInt: boolean,
+  s2Date: string,
   isEditor: boolean,
   isAdmin: boolean,
   isStaff: boolean,

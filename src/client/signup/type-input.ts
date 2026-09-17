@@ -1,12 +1,14 @@
-import * as dom from "../common/dom.js"
-import { store } from "../common/store";
+import * as dom from "../common/dom"
+import { SignupState, store } from "../common/store";
 
 /**
 *  Responds to a change in the Type field 
 * */
-export const typeChangeHandler = (event) => {
-  const selectedType = event.target.value;
-  store.setState({ currentType: selectedType });
+export const typeChangeHandler = (event: MouseEvent) => {
+  if (!event) return;
+  const target = event.target as HTMLInputElement;
+  const selectedType = target.value;
+  store().setState({ currentType: selectedType });
 };
 
 /**
@@ -75,9 +77,9 @@ export const toggleTutoringLink = () => {
  * Subscriber: Keeps input selections synchronized with state.currentType.
  */
 export const setupTypeInputObserver = () => {
-  store.subscribe((state) => {
+  store().subscribe((state: SignupState) => {
     if (state.currentType) {
-      const radio = dom.qs(`input[name='signup-type'][value='${state.currentType}']`);
+      const radio = dom.qs(`input[name='signup-type'][value='${state.currentType}']`) as HTMLInputElement;
       if (radio) {
         dom.setChecked(radio, true);
       }

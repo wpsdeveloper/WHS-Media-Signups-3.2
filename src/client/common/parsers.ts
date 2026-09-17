@@ -1,5 +1,8 @@
 import { Student } from "../../shared/types/students";
 import { Setting } from "../../shared/types/settings";
+import { DailySchedule, Day, Period, ScheduleBlock, SpecialSchedule, Term } from "../../shared/types/dailySchedule";
+import * as dates from '../common/dates';
+import { getAppConfig } from "./appConfig";
 
 /**
  * Safe JSON parsing helper to prevent syntax crashes on corrupt or missing strings.
@@ -30,8 +33,9 @@ export const parseStudentNames = (students: Student[]) => {
 /**
  *  parses daily schedule data from the server 
  * */
-export const parseDailySchedules = (schedules: string) => {
-  return safeJsonParse(schedules, []);
+export const parseDailySchedules = (schedules: string): DailySchedule[] => {
+  const parsedSchedules = safeJsonParse(schedules, []);
+  return flattenDailySchedules(parsedSchedules);
 }
 
 /**
@@ -107,4 +111,61 @@ export const parseSettings = (settingsJson: string) => {
   }
   return settings;
 
+}
+
+const flattenDailySchedules = (rawData: RawDailySchedule[], term: Term = "s1"): DailySchedule[] => {
+  const schedules: DailySchedule[] = [];
+  const s2date = new Date(getAppConfig().s2Date);
+
+  for (const rawDay of rawData) {
+    const parsedDate = new Date(rawDay.date);
+    const term: Term = parsedDate.getTime() < s2date.getTime() ? 's1' : 's2';
+    const dayString = rawDay.day as Day;
+
+    // Flatten: Create a DailySchedule block for each period in the raw periods array
+    for (const p of rawDay.periods) {
+      const periodStr = p.toString() as Period;
+      const rawSpecial = rawDay.specials?.[periodStr];
+      
+      let special: SpecialSchedule | null = null;
+
+      if (rawSpecial) {
+        special = {
+          allowInterventions: rawSpecial.allowInterventions === "",
+          allowAssessmentMakeups: rawSpecial.allowAssessmentMakeups === "",
+          allowAltSetting: rawSpecial.allowAltSetting === "",
+          allowTutoring: rawSpecial.allowTutoring === "",
+          allowNonInterventions: rawSpecial.allowNonInterventions === "",
+          // Convert max string to number, defaulting to 0 if it's an empty string
+          max: rawSpecial.max ? parseInt(rawSpecial.max, 10) : 0,
+        };
+      }
+
+      schedules.push({
+        date: parsedDate,
+        term: term,
+        day: dayString,
+        period: periodStr,
+        intTeachers: [],    // Defaulting to empty array as it's missing in raw JSON
+        studyTeachers: [],  // Defaulting to empty array as it's missing in raw JSON
+        special: special,
+      });
+    }
+  }
+
+  return schedules;
+}
+
+interface RawDailySchedule {
+  date: string;
+  day: string;
+  periods: number[];
+  specials: Record<string, {
+    allowInterventions: string;
+    allowAssessmentMakeups: string;
+    allowAltSetting: string;
+    allowTutoring: string;
+    allowNonInterventions: string;
+    max: string;
+  }>;
 }

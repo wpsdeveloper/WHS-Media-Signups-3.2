@@ -1,25 +1,25 @@
-export interface DailySchedule {
-    date: Date,
-    day: string,
-    periods: string[],
-    specials: {
-      '1'?: SpecialSchedule,
-      '2'?: SpecialSchedule,
-      '3'?: SpecialSchedule,
-      '4'?: SpecialSchedule,
-      '5'?: SpecialSchedule,
-      '6'?: SpecialSchedule,
-      '7'?: SpecialSchedule,
-      '8'?: SpecialSchedule,
-      'Wed. PM Int.'?: SpecialSchedule,
-    },
+export type Term = "s1" | "s2";
+export type Day = `Day ${1|2|3|4|5|6|7|8}`;
+export type Period = '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'Wed. PM Int.';
+
+export interface ScheduleBlock {
+  term: Term,
+  day: Day,
+  period: Period,
+  intTeachers: string[],
+  studyTeachers: string[],
+  special: SpecialSchedule | null, 
 }
 
-interface SpecialSchedule {
-  allowInterventions: string,
-  allowAssessmentMakeups: string,
-  allowAltSetting: string,
-  allowTutoring: string,
-  allowNonInterventions: string,
+export interface SpecialSchedule {
+  allowInterventions: boolean,
+  allowAssessmentMakeups: boolean,
+  allowAltSetting: boolean,
+  allowTutoring: boolean,
+  allowNonInterventions: boolean,
   max: number,  
+}
+
+export interface DailySchedule extends ScheduleBlock {
+  date: Date,
 }
