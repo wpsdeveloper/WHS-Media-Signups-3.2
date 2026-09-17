@@ -5,7 +5,8 @@
     "moduleResolution": "bundler",
     "allowUmdGlobalAccess": true,
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["google-apps-script"]
   },
   "include": ["src/**/*"]
 }

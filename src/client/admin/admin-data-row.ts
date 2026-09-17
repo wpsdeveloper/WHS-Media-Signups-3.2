@@ -1,16 +1,13 @@
 import * as dom from '../common/dom.js';
 import * as dates from '../common/dates.js';
-import { AttendanceState, store } from "../common/store.js";
+import { store } from "../common/store.js";
 import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box.js';
 import { Signup } from '../../shared/types/signups.js';
 
-export class AttendanceDataRow {
+export class AdminDataRow {
   element: HTMLElement;
   signup: Signup;
   rowId: string = '';
-  state: 'attendance' | 'details' = 'attendance';
-  attendancePanel: HTMLElement;
-  detailsPanel: HTMLElement;
   
   constructor(rowId: string, signup: Signup) {
     this.rowId = rowId;
@@ -30,57 +27,18 @@ export class AttendanceDataRow {
     this.element.classList.add('data-row');
     
     dom.setAttribute(this.element, 'dataset.signupId', this.rowId);
-
-    const attendancePanel: HTMLElement = this.element.querySelector('.attendance-info') as HTMLElement; 
-    const detailsPanel: HTMLElement = this.element.querySelector('.details-info') as HTMLElement; 
-    if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
-
-    this.attendancePanel = attendancePanel;
-    this.detailsPanel = detailsPanel;
   }
 
-  render() {
-    switch (this.state) {
-      case 'attendance':
-        this.renderAttendance();
-        break;
-      case 'details':
-        this.renderDetails();
-        break;
-      default:
-        console.error('Unknown dataRow state: ', this.state);
-    }
-  }
-
-  renderAttendance() {
-    if (this.attendancePanel) dom.setVisible(this.attendancePanel, true);
-    if (this.detailsPanel) dom.setVisible(this.detailsPanel, false);
-  }
-
-  renderDetails() {
-    if (this.attendancePanel) dom.setVisible(this.attendancePanel, false);
-    if (this.detailsPanel) dom.setVisible(this.detailsPanel, true);
-  }
-
-  populate(currentDate: AttendanceState['currentDate'], currentPeriod: AttendanceState['currentPeriod']) {
+  populate() {
     const { element, signup } = this;
 
-    // assigns current-date or current-period tags if appropriate
-    if (currentPeriod && String(currentDate) === String(signup.period)) {
-      element.classList.add('current-period');
-    }
-
-    const signupDate = new Date(signup.date);
-    if (currentDate && dates.isSameDate(signupDate, currentDate)) {
-      element.classList.add('current-date');
-    }
-
     // render student names and room badges
-    const studentNameDiv = element.querySelector('.student-name') as HTMLElement;
-    if (studentNameDiv) {
-      const roomBadge = getRoomBadge(signup.room);
-      dom.setHTML(studentNameDiv, `${signup.lastname}, ${signup.firstname}${roomBadge}`);
-    }
+    const dateDiv = element.querySelector('.signup-date') as HTMLInputElement;
+    if (dateDiv) dom.setHTML(dateDiv, dates.formatDateSlashes(new Date(signup.date)));
+    
+    const periodDiv = element.querySelector('.signup-period') as HTMLInputElement;
+    const period = signup?.period === "Wed. PM Int." ? signup.period : "Period " + signup.period;
+    if (periodDiv) dom.setHTML(periodDiv, period);
 
     // render editor links/icons
     const isEditor = store.getState()?.isEditor;
@@ -97,17 +55,17 @@ export class AttendanceDataRow {
     }
     
     //render type label and study info
-    const typeDiv = element.querySelector('.type') as HTMLInputElement;
+    const typeDiv = element.querySelector('.type') as HTMLElement;
     if (typeDiv) dom.setText(typeDiv, getSignupTypeLabel(signup));
     
-    const studyTeacherDiv = element.querySelector('.study-teacher') as HTMLInputElement;
+    const studyTeacherDiv = element.querySelector('.study-teacher') as HTMLElement;
     if (studyTeacherDiv) dom.setText(studyTeacherDiv, signup.teacherStudy || "");
     
-    const commentDiv = element.querySelector('.comments') as HTMLInputElement;
+    const commentDiv = element.querySelector('.comments') as HTMLElement;
     if (commentDiv) dom.setText(commentDiv, signup.comments || "");
 
     // render room information
-    const roomDiv = element.querySelector('.room') as HTMLInputElement;
+    const roomDiv = element.querySelector('.room') as HTMLElement;
     if (roomDiv) {
       const roomText = signup.room
       ? `Glass Room ${signup.room}, reserved by ${signup.email}`
@@ -119,15 +77,14 @@ export class AttendanceDataRow {
   }
 
   mountCheckinBoxes() {
-    if (!this.attendancePanel) return;
-    
-  (Object.entries(CHECKIN_CONFIG) as Array<[keyof typeof CHECKIN_CONFIG, typeof CHECKIN_CONFIG[keyof typeof CHECKIN_CONFIG]]>)
-    .forEach(([checkinType, config]) => {
-      const panel = this.attendancePanel.querySelector(`div[data-type="${checkinType}"]`);
+    (Object.entries(CHECKIN_CONFIG) as Array<[keyof typeof CHECKIN_CONFIG, typeof CHECKIN_CONFIG[keyof typeof CHECKIN_CONFIG]]>)
+        .forEach(([checkinType, config]) => {
+      const panel = dom.qs(`div[data-type="${checkinType}"]`) as HTMLElement;
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
         const checkinBox = new CheckinBox(checkinType, this.signup.rowId);
-        panel.append(checkinBox.element as HTMLElement);
+        if (!checkinBox.element) return;
+        panel.append(checkinBox.element);
         checkinBox.render();
       }
     });
@@ -149,17 +106,6 @@ export class AttendanceDataRow {
 // =====================================================================
 // PURE HELPER FUNCTIONS
 // =====================================================================
-
-function getRoomBadge(room: Signup['room']) {
-  const roomNum = String(room);
-  if (roomNum === '1') {
-    return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
-  }
-  if (roomNum === '2') {
-    return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
-  }
-  return '';
-}
 
 function getSignupTypeLabel(signup: Signup) {
   switch (signup.type) {

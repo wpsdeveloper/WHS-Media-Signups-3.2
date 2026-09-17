@@ -4,9 +4,36 @@ import * as dates from "./dates";
 import { store, StoreState } from "./store";
 import { Signup } from "../../shared/types/signups";
 
-export type CheckinType = (typeof CheckinBox.TYPES)[keyof typeof CheckinBox.TYPES];
-export type CheckinLabel = typeof CheckinBox.CHECKIN_LABEL[CheckinType];
-export type CheckinButtonText = typeof CheckinBox.CHECKIN_BTN_TEXT[CheckinType];
+export const CHECKIN_CONFIG = {
+  'study-checkin': { 
+    label: 'Study In', 
+    btnText: 'Check In', 
+    propName: 'studyIn1',
+    className: '.study-checkin', 
+  },
+  'media-checkin': { 
+    label: 'Media In', 
+    btnText: 'Check In', 
+    propName: 'mediaIn',
+    className: '.media-checkin', 
+ 
+  },
+  'media-checkout': { 
+    label: 'Media Out', 
+    btnText: 'Check Out', 
+    propName: 'mediaOut',
+    className: '.media-checkout',
+  },
+  'study-return': { 
+    label: 'Study Return', 
+    btnText: 'Return', 
+    propName: 'studyIn2',
+    className: '.study-return', 
+  },
+} as const;
+
+export type CheckinType = keyof typeof CHECKIN_CONFIG;
+export type CheckinKeys = typeof CHECKIN_CONFIG[CheckinType]['propName'];
 export type CheckinBoxState = "ready" | "loading" | "editing" | "hasData";
 
 export class CheckinBox {
@@ -17,25 +44,10 @@ export class CheckinBox {
     STUDY_RETURN: "study-return",
   } as const;
 
-  static readonly CHECKIN_TYPES = (Object.values(CheckinBox.TYPES)) as CheckinType[];
-
-  static readonly CHECKIN_LABEL: Record<CheckinType, string> = {
-    [CheckinBox.TYPES.STUDY_CHECKIN]: 'Study In',
-    [CheckinBox.TYPES.MEDIA_CHECKIN]: 'Media In',
-    [CheckinBox.TYPES.MEDIA_CHECKOUT]: 'Media Out',
-    [CheckinBox.TYPES.STUDY_RETURN]: 'Study Return',
-  };
-
-  static readonly CHECKIN_BTN_TEXT:Record<CheckinType, string> = {
-    [CheckinBox.TYPES.STUDY_CHECKIN]: 'Check In',
-    [CheckinBox.TYPES.MEDIA_CHECKIN]: 'Check In',
-    [CheckinBox.TYPES.MEDIA_CHECKOUT]: 'Check Out',
-    [CheckinBox.TYPES.STUDY_RETURN]: 'Return',
-  };
-
   type: CheckinType;
-  label: CheckinLabel;
-  buttonText: CheckinButtonText;
+  label: string;
+  buttonText: string;
+  propName: CheckinKeys;
   className: string = "";
   timeValue: string = "";
   rowId: string = "";
@@ -60,6 +72,10 @@ export class CheckinBox {
     rowId: CheckinBox['rowId'], 
     timeValue: CheckinBox['timeValue'] = ""
   ){
+    this.type = type;
+    this.rowId = rowId;
+    this.timeValue = timeValue || "";
+
     const template = dom.qs<HTMLTemplateElement>("template#checkin-box");
     if (!template) throw new Error ('Checkbox template not found');
     const clonedNode = template.content.cloneNode(true) as DocumentFragment;
@@ -80,16 +96,15 @@ export class CheckinBox {
     this.cancelBtn = this.element.querySelector(".cancel-btn") as HTMLButtonElement;
     this.spinner= this.element.querySelector(".spinner") as HTMLElement;
     
-    this.type = type;
-    this.rowId = rowId;
-    this.label = CheckinBox.CHECKIN_LABEL[type];
-    this.timeValue = timeValue || "";
-    this.buttonText = CheckinBox.CHECKIN_BTN_TEXT[type];
+    const config = CHECKIN_CONFIG[this.type];
+    this.label = config.label;
+    this.buttonText = config.btnText;
+    this.propName = config.propName;
 
     this.bindEvents();
   }
   
-  bindEvents() {
+  bindEvents(): void {
       dom.addEventListener(this.checkinButton, 'click', () => this.handleCheckinClick());
       dom.addEventListener(this.editStartButton, 'click', () => this.handleEditStartClick());
       dom.addEventListener(this.editSaveBtn, 'click', () => this.handleEditSaveClick());
@@ -97,12 +112,12 @@ export class CheckinBox {
       dom.addEventListener(this.deleteBtn, 'click', () => this.handleDeleteClick());
   }
 
- setComponentState(state: CheckinBoxState) {
+ setComponentState(state: CheckinBoxState): void {
     this.state = state;
     this.render();
   }
   
-  render() {
+  render(): void {
     dom.setText(this.checkinLabel, this.label);
     dom.setText(this.checkinButton, this.buttonText);
 
@@ -124,7 +139,7 @@ export class CheckinBox {
      }
   }
 
-  renderReady() {
+  renderReady(): void {
     dom.setVisible(this.checkinButton, true);
     dom.setVisible(this.primaryButtonsDiv, true);
     dom.setVisible(this.timeDiv, false);
@@ -133,7 +148,7 @@ export class CheckinBox {
     dom.setVisible(this.spinner, false); 
   }
   
-  renderLoading() {
+  renderLoading(): void {
     dom.setVisible(this.checkinButton, false);
     dom.setVisible(this.primaryButtonsDiv, false);
     dom.setVisible(this.timeDiv, false);
@@ -142,7 +157,7 @@ export class CheckinBox {
     dom.setVisible(this.spinner, true);
   }
   
-  renderEditing() {
+  renderEditing(): void {
     dom.setVisible(this.checkinButton, false);
     dom.setVisible(this.primaryButtonsDiv, false);
     dom.setVisible(this.timeDiv, true);
@@ -152,7 +167,7 @@ export class CheckinBox {
     dom.setVisible(this.spinner, false);
   }
   
-  renderHasData() {
+  renderHasData(): void {
     dom.setVisible(this.checkinButton, false);
     dom.setVisible(this.primaryButtonsDiv, true);
     
@@ -164,7 +179,7 @@ export class CheckinBox {
     dom.setVisible(this.spinner, false);
   }
 
-  async handleCheckinClick() {
+  async handleCheckinClick(): Promise<void> {
     this.setComponentState("loading");
 
     const formattedTime = dates.formatTime(new Date());
@@ -175,12 +190,12 @@ export class CheckinBox {
     this.setComponentState("hasData");
   }
   
-  handleEditStartClick() {
+  handleEditStartClick(): void {
     this.setComponentState("editing");
     dom.setTimeInputValue(this.timeEditInput, this.timeValue);
   }
   
-  handleEditSaveClick() {
+  handleEditSaveClick(): void {
     const inputtedValue = dom.valueOf(this.timeEditInput);
     if (!this.element) return;
     const validationErrorDiv = 
@@ -201,7 +216,7 @@ export class CheckinBox {
     this.setComponentState("hasData");
   }
 
-  handleCancelClick() {
+  handleCancelClick(): void {
     if (this.timeValue.length >0) {
       this.setComponentState("hasData");
     } else {
@@ -209,18 +224,18 @@ export class CheckinBox {
     }
   }
 
-  handleDeleteClick() {
+  handleDeleteClick(): void {
     this.setComponentState("ready");
   }
 
-  updateSignups(rowId: Signup['rowId'], newValue: string) {
-    const signups = store.getState()?.signups;
-    if (!signups) return;
+  updateSignups(rowId: Signup['rowId'], newValue: string): Signup[] {
+    const signups = store.getState()?.signups as Signup[];
+    if (!signups) [] as Signup[];
     
     const type = this.type;
     const thisSignup = signups.filter(su => su.rowId == rowId);
-      thisSignup.forEach(su => {
-      su[type] = newValue;
+      thisSignup.forEach((su) => {
+        su[this.propName] = newValue;
     });
 
     return signups;

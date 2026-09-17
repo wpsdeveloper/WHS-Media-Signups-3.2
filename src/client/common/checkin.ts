@@ -2,14 +2,7 @@ import * as dom from '../common/dom.js';
 import * as dates from "../common/dates";
 import * as messaging from "../common/messaging.js";
 import { DEBUG } from '../common/debug.js';
-
-// matches the type with a div class
-const divClass = {
-  "study-checkin": ".study-checkin",
-  "media-checkin": ".media-checkin",
-  "media-checkout": ".media-checkout",
-  "study-return": ".study-return",
-};
+import { CHECKIN_CONFIG, CheckinBox, CheckinType } from './checkin-box.js';
 
 /**
  *  Responds to a Checkin button click 
@@ -17,69 +10,55 @@ const divClass = {
  * @param {string} type The specific category of checkin (e.g. "mediaOut")
  * @type {button} button The button that was clicked 
  * */
-export const checkin = (checkinBox, time) => {
+export const checkin = (checkinBox: CheckinBox, time: string): string => {
   // sets the value to the current time
   if (DEBUG) return time; // simulates instant success in debug mode
 
-  // determines the rowId of the signup belonging to that button
-  const id = checkinBox.rowId;
-
   // sends the checkin request to the server for async processing
-  setCheckin(checkinBox.type, checkinBox.rowId, formattedTime);
+  setCheckin(checkinBox.type, checkinBox.rowId, time);
 
-  return formattedTime;
+  return time;
 }
 
-export const showEditCheckin = (type, button) => {
+export const showEditCheckin = (type: CheckinType, button: HTMLButtonElement) => {
   // determines the rowId of the signup belonging to that button
-  const id = button.closest(".data-row").dataset.signupId;
+  const id = button?.closest(".data-row")?.getAttribute('dataset-signup-id');
+  if (!id) return;
 
   // matches the type with a div class
-  const divClass = {
-    "studyIn1": ".study-checkin",
-    "mediaIn": ".media-checkin",
-    "mediaOut": ".media-checkout",
-    "studyIn2": ".study-return",
-  };
+  const divClass = CHECKIN_CONFIG[type].className;
+  if (!divClass) return;
 
-  const box = `.data-row[data-signup-id="${id}"] ${divClass[type]}`;
+  const box = `.data-row[data-signup-id="${id}"] ${divClass}`;
   dom.setVisible(`${box} .time-edit`, true);
   dom.setVisible(`${box} button, ${box} .primary-buttons, ${box} .time-value`, false);
 }
 
-export const cancelEditCheckin = (type, button) => {
+export const cancelEditCheckin = (type: CheckinType, button: HTMLButtonElement) => {
   // determines the rowId of the signup belonging to that button
-  const id = button.closest(".data-row").dataset.signupId;
+  const id = button?.closest(".data-row")?.getAttribute('dataset-signup-id');
+  if (!id) return;
 
   // matches the type with a div class
-  const divClass = {
-    "studyIn1": ".study-checkin",
-    "mediaIn": ".media-checkin",
-    "mediaOut": ".media-checkout",
-    "studyIn2": ".study-return",
-  };
+  const divClass = CHECKIN_CONFIG[type].className;
+  if (!divClass) return;
 
-  const box = `.data-row[data-signup-id="${id}"] ${divClass[type]}`;
+  const box = `.data-row[data-signup-id="${id}"] ${divClass}`;
   dom.setVisible(`${box} .time-edit`, false);
   dom.setVisible(`${box} button`, false);
   dom.setVisible(`${box} .primary-buttons`, true);
   dom.setVisible(`${box} .time-value`, true);
 }
 
-export const formatCheckin = (type, id, value) => {
-  // matches the type with a div class
-  const divClass = {
-    "studyIn1": ".study-checkin",
-    "mediaIn": ".media-checkin",
-    "mediaOut": ".media-checkout",
-    "studyIn2": ".study-return",
-  };
-
+export const formatCheckin = (type: CheckinType, id: CheckinBox['rowId'], timeValue: string) => {
+  const divClass = CHECKIN_CONFIG[type].className;
+  if (!id || !divClass) return;
+  
   // Updates the checkin box UI
-  const box = `.data-row[data-signup-id="${id}"] ${divClass[type]}`;
+  const box = `.data-row[data-signup-id="${id}"] ${divClass}`;
   dom.setVisible(`${box} .spinner`, false);
 
-  if (value === "") {
+  if (timeValue === "") {
     dom.setVisible(`${box} button`, true);
     dom.setVisible(`${box} .time`, false);
     dom.setValue(`${box} .timeInput`, "");
@@ -87,14 +66,12 @@ export const formatCheckin = (type, id, value) => {
   } else {
     dom.setVisible(`${box} button`, false);
     dom.setVisible(`${box} .time`, true);
-    dom.setText(`${box}.time-value`, dates.formatTime(value));
+    dom.setText(`${box}.time-value`, timeValue);
     dom.setVisible(`${box} .primary-buttons`, true);
     dom.setVisible(`${box} .time-edit`, false);
-    dom.setValue(`${box} .timeInput`, dates.formatTime(value));
+    dom.setValue(`${box} .timeInput`, timeValue);
   }
 }
-
-
 
 /**
  * Responds to a checkin cancel X button click
@@ -102,22 +79,19 @@ export const formatCheckin = (type, id, value) => {
  * @param {string} type The specific category of checkin (e.g. "mediaOut")
  * @type {button} button The button that was clicked 
  * */
-export const cancelCheckin = (type, button) => {
+export const cancelCheckin = (type: CheckinType, button: HTMLButtonElement) => {
   // determines the rowId of the signup belonging to that button
-  const id = button.closest(".data-row").dataset.signupId;
-  
+  const id = button?.closest(".data-row")?.getAttribute('dataset-signup-id');
+  if (!id) return;
+
   // matches the type with a div class
-  const divClass = {
-    "studyIn1": ".study-checkin",
-    "mediaIn": ".media-checkin",
-    "mediaOut": ".media-checkout",
-    "studyIn2": ".study-return",
-  };
+  const divClass = CHECKIN_CONFIG[type].className;
+  if (!divClass) return;
 
   // shows a loading UI for the button
-  const box = qs(`.data-row[data-signup-id="${id}"] ${divClass[type]}`);
-  setVisible(qs(".spinner", box), true);
-  qsa("button, .time", box).forEach(element => setVisible(element, false));
+  const box = `.data-row[data-signup-id="${id}"] ${divClass}`;
+  dom.setVisible(`${box} .spinner`, true);
+  dom.qsa<HTMLButtonElement>(`${box} button .time`).forEach(element => dom.setVisible(element, false));
   
   // sets the value to blank i.e. a blank (cleared) cell in the spreadsheet
   const value = "";
@@ -126,46 +100,45 @@ export const cancelCheckin = (type, button) => {
   setCheckin(type, id, value)
 }
 
-export const editCheckin = (type, button) => {
-  // determines the rowId of the signup belonging to that button
-  const id = button.closest(".data-row").dataset.signupId;
-  
-  // matches the type with a div class
-  const divClass = {
-    "studyIn1": ".study-checkin",
-    "mediaIn": ".media-checkin",
-    "mediaOut": ".media-checkout",
-    "studyIn2": ".study-return",
-  };
+export const editCheckin = (type: CheckinType, button: HTMLButtonElement) => {
+   const id = button?.closest(".data-row")?.getAttribute('dataset-signup-id');
+  if (!id) return;
 
-  const box = qs(`.data-row[data-signup-id="${id}"] ${divClass[type]}`);
-  const inputtedValue = qs("input", box)?.value || "";
-  if (!isValidTime(inputtedValue)) {
-    qs(".validation-error", box)?.remove();
+  // matches the type with a div class
+  const divClass = CHECKIN_CONFIG[type].className;
+  if (!divClass) return;
+
+  const box = dom.qs<HTMLElement>(`.data-row[data-signup-id="${id}"] ${divClass}`);
+  const inputtedValue = dom.valueOf(`${box} input`);
+
+  if (!dates.isValidTime24Hr(inputtedValue)) {
+    dom.qs(`${box} .validation-error`)?.remove();
+
     const error = document.createElement("span");
     error.className = "validation-error text-danger";
     error.innerHTML = "<small>Invalid time</small>";
-    box.append(error);
+    
+    dom.qs(`${box}`)?.append(error);
     return;
   }
-  qs(".validation-error", box)?.remove();
+  dom.qs(`${box} .validation-error`)?.remove();
   
-  setVisible(qs(".spinner", box), true);
-  qsa("button, .time", box).forEach(element => setVisible(element, false));
+  dom.setVisible(`${box} .spinner`, true);
+  dom.qsa<HTMLElement>(`${box} button, .time`).forEach(element => dom.setVisible(element, false));
  
   // sends the checkin request to the server for async processing
   setCheckin(type, id, inputtedValue);
 
-  const thisSignup = SIGNUPS.filter(su => su.rowId == id);
-  thisSignup.forEach(su => {
-    su[type] = inputtedValue;
-  });
+  // const thisSignup = SIGNUPS.filter(su => su.rowId == id);
+  // thisSignup.forEach(su => {
+  //   su[type] = inputtedValue;
+  // });
 }
 
 /**
  *  Receives checkin data results 
  * */
-export const checkinSuccess = (returnVal) => {
+export const checkinSuccess = (returnVal: {type: CheckinBox['type'], id: CheckinBox['rowId'], value: string}) => {
   const type = returnVal.type;
   const id = returnVal.id;
   const value = returnVal.value;
@@ -180,15 +153,24 @@ export const checkinSuccess = (returnVal) => {
  * @param {string} id The row id of the data
  * @param {string} value The value to store, typically a time or ""
  * */
-export const setCheckin = (type, id, value) => {
+export const setCheckin = async (type: CheckinBox['type'], id: CheckinBox['rowId'], value: string) => {
   if (DEBUG) {
     checkinSuccess({ type: type, id: id, value: value });
     return;
   }
-
-  google.script.run
-    .withSuccessHandler(checkinSuccess)
-    .withFailureHandler(messaging.processError)
-    .setCheckin(type, id, value);
+  try {
+    const returnVal = await sendCheckinToServer(type, id, value);
+    checkinSuccess(returnVal);
+  } catch (error) {
+    messaging.processError(error as Error, "Error sending data to server");
+  }
 }
 
+async function sendCheckinToServer(type: CheckinBox['type'], id: CheckinBox['rowId'], value: string): Promise<{type: CheckinBox['type'], id: CheckinBox['rowId'], value: string}> {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(reject)
+      .setCheckin(type, id, value);
+  });
+}

@@ -5,6 +5,7 @@ import { Student } from "../../shared/types/students";
 import { InterventionTeachers } from "../../shared/types/teachers";
 import { StudyTeachers } from "../../shared/types/teachers";
 import { AttendanceDataRow } from "../attendance/attendance-data-row";
+import { AdminDataRow } from "../admin/admin-data-row";
 
 export type StoreState = SignupState | AttendanceState | AdminState | null;
 
