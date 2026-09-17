@@ -9,59 +9,55 @@ import { AdminDataRow } from "../admin/admin-data-row";
 
 export type StoreState = SignupState | AttendanceState | AdminState | null;
 
-export interface StoreListener<StoreState> {
-  callback: (state: StoreState) => void;
-  dependencies: (keyof StoreState)[] | null;
+export interface StoreListener<T> {
+  callback: (state: T) => void;
+  dependencies: (keyof T)[] | null;
 }
 
 // Store.js
-export class Store {
-  state: StoreState = null;
-  listeners: StoreListener<StoreState>[] = [];
+export class Store<T> {
+  state: T;
+  listeners: StoreListener<T>[] = [];
 
-  constructor() {}
-
-  initialize(initialState: StoreState = null) {
-    this.state = { ...initialState } as StoreState;
+  constructor(state: T) {
+    this.state = state;
   }
 
-  getState(): StoreState {
-    return { ...this.state } as StoreState;
+  getState(): T {
+    return { ...this.state };
   }
 
-  setState(newState: StoreState): void {
+  setState(newState: Partial<T>): void {
     if (!newState) return;
-    let hasChanges = false;
-    const changedKeys: (keyof StoreState)[] = [];
-
-    const keys = Object.keys(newState) as (keyof StoreState)[];
-
+    const changedKeys: (keyof T)[] = [];
+    const keys = Object.keys(newState) as (keyof T)[];
+    
+    // FIX: Actually compare values and populate changedKeys
     for (const key of keys) {
-      if (!this.state || !isDeepEqual(newState[key], this.state[key])) {
+      if (!isDeepEqual(this.state[key], newState[key])) {
         changedKeys.push(key);
-        hasChanges = true;
       }
     }
 
-    if (hasChanges) {
-      this.state = { ...this.state, ...newState } as StoreState;
-      this.notify(changedKeys);
-    }
+    // If nothing changed, don't trigger a re-render
+    if (changedKeys.length === 0) return;
+
+    this.state = { ...this.state, ...newState } as T;
+    this.notify(changedKeys);
   }
 
   subscribe(
-    callback: StoreListener<StoreState>['callback'], 
-    dependencies = null
+    callback: StoreListener<T>['callback'], 
+    dependencies: (keyof T)[] | null = null
   ): () => void {
     this.listeners.push({ callback, dependencies });
     
-    // Unsubscribe helper
     return () => {
       this.listeners = this.listeners.filter(l => l.callback !== callback);
     };
   }
 
-  notify(changedKeys: (keyof StoreState)[] ) {
+  notify(changedKeys: (keyof T)[]) {
     this.listeners.forEach(({ callback, dependencies }) => {
       if (!dependencies || dependencies.some(dep => changedKeys.includes(dep))) {
         callback(this.state);
@@ -70,7 +66,7 @@ export class Store {
   }
 }
 
-function isDeepEqual(obj1: (keyof StoreState), obj2: (keyof StoreState)) {
+function isDeepEqual(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) return true;
   if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
     return false;
@@ -88,7 +84,11 @@ function isDeepEqual(obj1: (keyof StoreState), obj2: (keyof StoreState)) {
   return true;
 }
 
-export const store = new Store();
+let __store: any;
+export const store = <T>(stateType: T) => {
+  __store ??= new Store(stateType);
+  return __store;
+}
 
 export interface SignupState {
   kind: 'signup';

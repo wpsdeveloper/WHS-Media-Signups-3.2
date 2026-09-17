@@ -3,4 +3,5 @@ export interface Setting {
   description: string,
   comments: string,
   value: string | number | Date | boolean,
+  dataType: 'string'| 'string-array'| 'integer'| 'boolean'| 'date'
 }

@@ -1,15 +1,17 @@
 import * as dom from './dom.js';
-import { store } from './store';
+import { AdminState, SharedStudentState, Store, store } from './store.js';
 
 /**
  * Publisher: Listens to input changes in the student text field and updates store state.
  */
-export const studentInputChangeHandler = (event) => {
-  const query = event.target.value;
-  store.setState({ currentStudentName: query });
+export const studentInputChangeHandler = (event: MouseEvent) => {
+  if (!event || !event.target) return;
+  const target = event.target as HTMLButtonElement;
+  const query: string = target.value;
+  store.setState({ currentStudentName: query } as AdminState);
 };
 
-export const renderStudentDatalist = (studentNames = [], currentQuery = '') => {
+export const renderStudentDatalist = (studentNames: string[], currentQuery = '') => {
   const input = dom.qs(".student-autocomplete");
   if (!input) return;
 
@@ -38,9 +40,14 @@ export const renderStudentDatalist = (studentNames = [], currentQuery = '') => {
 /**
  * Subscriber: Updates suggestions when studentNames or current query change in store.
  */
-export const setupStudentInputObserver = () => {
-  store.subscribe((state) => {
-    renderStudentDatalist(state.studentNames, state.currentStudentName);
-  }, ['studentNames', 'currentStudentName']);
+export const setupStudentInputObserver = (store: Store<SharedStudentState>) => {
+  // TypeScript automatically infers everything. No casting, no Extract, no NonNullable.
+  store.subscribe(
+    (state) => ({ 
+      names: state.studentNames, 
+      query: state.currentStudentName 
+    }),
+    ({ names, query }) => renderStudentDatalist(names, query)
+  );
 };
 
