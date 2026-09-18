@@ -1,6 +1,5 @@
 import { Student } from "../../shared/types/students";
 import { Setting } from "../../shared/types/settings";
-import { DailySchedule, Day, Period, ScheduleBlock, SpecialSchedule, Term } from "../../shared/types/dailySchedule";
 import * as dates from '../common/dates';
 import { getAppConfig } from "./appConfig";
 
@@ -33,9 +32,9 @@ export const parseStudentNames = (students: Student[]) => {
 /**
  *  parses daily schedule data from the server 
  * */
-export const parseDailySchedules = (schedules: string): DailySchedule[] => {
+export const parseDailyBlocks = (schedules: string): DailyBlock[] => {
   const parsedSchedules = safeJsonParse(schedules, []);
-  return flattenDailySchedules(parsedSchedules);
+  return flattenDailyBlocks(parsedSchedules);
 }
 
 /**
@@ -113,8 +112,8 @@ export const parseSettings = (settingsJson: string) => {
 
 }
 
-const flattenDailySchedules = (rawData: RawDailySchedule[], term: Term = "s1"): DailySchedule[] => {
-  const schedules: DailySchedule[] = [];
+const flattenDailyBlocks = (rawData: RawDailyBlock[]): DailyBlock[] => {
+  const schedules: DailyBlock[] = [];
   const s2date = new Date(getAppConfig().s2Date);
 
   for (const rawDay of rawData) {
@@ -122,7 +121,7 @@ const flattenDailySchedules = (rawData: RawDailySchedule[], term: Term = "s1"): 
     const term: Term = parsedDate.getTime() < s2date.getTime() ? 's1' : 's2';
     const dayString = rawDay.day as Day;
 
-    // Flatten: Create a DailySchedule block for each period in the raw periods array
+    // Flatten: Create a DailyBlock block for each period in the raw periods array
     for (const p of rawDay.periods) {
       const periodStr = p.toString() as Period;
       const rawSpecial = rawDay.specials?.[periodStr];
@@ -156,7 +155,7 @@ const flattenDailySchedules = (rawData: RawDailySchedule[], term: Term = "s1"): 
   return schedules;
 }
 
-interface RawDailySchedule {
+interface RawDailyBlock {
   date: string;
   day: string;
   periods: number[];
