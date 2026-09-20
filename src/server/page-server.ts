@@ -14,7 +14,8 @@ let email: string;
 // function doGet() {
 //   const data = getInitialSignupData();
 //   const stringified = JSON.stringify(data, null, 2);
-//   return ContentService.createTextOutput(stringified);
+//   return ContentService.createTextOutput(data)
+//   .setMimeType(ContentService.MimeType.JSON);
 // }
 
 /**
@@ -40,7 +41,6 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
       window.APP_CONFIG = ${JSON.stringify(appConfig)};
     </script>
   `);
-
   // sends the HTML to the client
   return template
 }
@@ -67,10 +67,10 @@ function createIndexTemplate() {
 }
 
 function getInitialSignupData(): string {
-  const students = getStudents();
-  const dailySchedules = buildFlatScheduleData();
-  const signups = getSignups();
   const appSettings = getAppSettings();
+  const students = getStudents();
+  const dailySchedules = buildFlatScheduleData(appSettings);
+  const signups = getSignups();
   
   if (!students || !dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
   

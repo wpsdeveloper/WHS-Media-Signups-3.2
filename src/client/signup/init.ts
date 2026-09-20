@@ -57,6 +57,7 @@ export const initObservers = () => {
   studentInput.setupStudentInputObserver();
   scheduleRules.setupScheduleRulesObserver();
   capacity.setupCapacityValidationObserver();
+  setupDailyScheduleBlocksObserver();
 };
 
 
@@ -200,6 +201,23 @@ async function setMockData(): Promise<string> {
 
   return sampleData.signupData;
 }
+
+const setupDailyScheduleBlocksObserver = () => {
+  store.subscribe((state: SignupState) => {
+    const currentPeriod = state.currentPeriod;
+    const currentDate = state.currentDate;
+    if (!currentPeriod || !currentDate) return;
+
+    const dailyScheduleBlocks = state.dailySchedules;
+
+    const newCurrentBlock = dailyScheduleBlocks.find(
+      (block: any) => block.period === currentPeriod && dates.isSameDate(block.date, currentDate)
+    ) ?? null;
+    store.setState({currentScheduleBlock: newCurrentBlock });
+
+  }, ['currentPeriod', 'currentDate']);
+}
+
 
 
 

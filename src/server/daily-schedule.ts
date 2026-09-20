@@ -1,7 +1,7 @@
-function buildFlatScheduleData(): DailyBlock[] {
+function buildFlatScheduleData(appSettings: Setting[]): DailyBlock[] {
   const rotationGrid = MASTER_ROTATION_GRID;
-  const interventionTeachers = parseInterventionsGrid();
-  const studyTeachers = parseStudyGrid();
+  const interventionTeachers = parseInterventionsGrid(appSettings);
+  const studyTeachers = parseStudyGrid(appSettings);
   const scheduleBlocks: ScheduleBlock[] = parseRotation(rotationGrid, interventionTeachers, studyTeachers);
   
   const calendarRows = getSheetData(DAILY_SCHEDULES_SHEET_NAME);

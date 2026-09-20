@@ -9,13 +9,18 @@ interface InterventionsEntry {
  * Parses the "S1" and "S2" sheets in Google Apps Script.
  * @returns {InterventionsEntry[]} Flat array of schedule entries.
  */
-function parseInterventionsGrid(): InterventionsEntry[] {
+function parseInterventionsGrid(appSettings: Setting[]): InterventionsEntry[] {
   const terms: Record<string, Term> = {S1: 's1', S2: 's2'};
   const records: InterventionsEntry[] = [] ;
+
+  const spreadsheetId = getInterventionSpreadsheetId(appSettings);
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  if (!spreadsheet) return [];
+  
   
   const sheetsToParse = ['S1', 'S2'];
   sheetsToParse.forEach(sheetName => {
-    const sheet = SPREADSHEET.getSheetByName(sheetName);
+    const sheet = spreadsheet.getSheetByName(sheetName);
     if (!sheet) return;
 
     const currentTerm: Term = terms[sheetName] as Term;
@@ -40,19 +45,21 @@ function parseInterventionsGrid(): InterventionsEntry[] {
       // Loop through teacher rows starting from row index 2
       for (let row = 1; row < data.length; row++) {
         const cell = data[row][col];
-        if (parseInt(cell) === 0) {
-          currentPeriod = cell;
+        if (typeof cell === "number") {
+          currentPeriod = cell.toString().trim() as Period;
+          continue;
         } 
         if (!currentPeriod) continue;
 
-        const teacherName = String(cell);
+        const teacherName = cell.toString().trim();
+        if (teacherName.length === 0) continue;
         
         const match = records.filter(r => 
           r.day == currentDay 
           && r.period == currentPeriod
           && r.term == currentTerm
         );
-        if (match) {
+        if (Array.isArray(match) && match.length > 0) {
           match[0].teachers.push(teacherName);
         } else {
           records.push({
@@ -67,4 +74,10 @@ function parseInterventionsGrid(): InterventionsEntry[] {
   });
 
   return records;
+}
+
+function getInterventionSpreadsheetId(appSettings: Setting[]): string {
+  const setting = appSettings.find(s => s.key === 'DocId_Interventions');
+  if (!setting) return "";
+  return setting.value as string;
 }

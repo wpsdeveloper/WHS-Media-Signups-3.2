@@ -1,8 +1,8 @@
 "use strict";
-function buildFlatScheduleData() {
+function buildFlatScheduleData(appSettings) {
     const rotationGrid = MASTER_ROTATION_GRID;
-    const interventionTeachers = parseInterventionsGrid();
-    const studyTeachers = parseStudyGrid();
+    const interventionTeachers = parseInterventionsGrid(appSettings);
+    const studyTeachers = parseStudyGrid(appSettings);
     const scheduleBlocks = parseRotation(rotationGrid, interventionTeachers, studyTeachers);
     const calendarRows = getSheetData(DAILY_SCHEDULES_SHEET_NAME);
     const calendarDays = parseCalendarRows(calendarRows);

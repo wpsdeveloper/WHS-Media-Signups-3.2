@@ -5,13 +5,17 @@ interface StudyEntry {
   teachers: string[];
 }
 
-function parseStudyGrid(): InterventionsEntry[] {
+function parseStudyGrid(appSettings: Setting[]): InterventionsEntry[] {
   const terms: Record<string, Term> = {'Duties S1': 's1', 'Duties S2': 's2'};
   const records: InterventionsEntry[] = [] ;
+
+  const spreadsheetId = getStudySpreadsheetId(appSettings);
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  if (!spreadsheet) return [];
   
   const sheetsToParse = ['Duties S1', 'Duties S2'];
   sheetsToParse.forEach(sheetName => {
-    const sheet = SPREADSHEET.getSheetByName(sheetName);
+    const sheet = spreadsheet.getSheetByName(sheetName);
     if (!sheet) return;
 
     const currentTerm: Term = terms[sheetName] as Term;
@@ -41,14 +45,15 @@ function parseStudyGrid(): InterventionsEntry[] {
         const cell = data[row][col];
         
         // if cell is a number, then this is the period
-        if (parseInt(cell) !== 0) {
-          currentPeriod = cell.trim();
+        if (typeof cell === "number") {
+          currentPeriod = cell.toString().trim() as Period;
+          continue;
         } 
 
         // if we reached a string without a period, there's an issue.
         if (!currentPeriod) throw new Error('Error parsing study schedule');
 
-        const teacherName = String(cell).trim();
+        const teacherName = cell.toString().trim();
         if (teacherName.length === 0) continue;
         
         // add teacher to existing record or create new record
@@ -57,7 +62,7 @@ function parseStudyGrid(): InterventionsEntry[] {
           && r.period == currentPeriod
           && r.term == currentTerm
         );
-        if (match) {
+        if (Array.isArray(match) && match.length > 0) {
           match[0].teachers.push(teacherName);
         } else {
           records.push({
@@ -79,4 +84,10 @@ function findLastStudyRow(data: SSRow[]) {
   let locationIndex = block.indexOf("Location");
   if (locationIndex < 0) locationIndex = data.length;
   return locationIndex - 1;
+}
+
+function getStudySpreadsheetId(appSettings: Setting[]): string {
+  const setting = appSettings.find(s => s.key === 'DocId_Study_Teachers');
+  if (!setting) return "";
+  return setting.value as string;
 }

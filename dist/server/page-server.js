@@ -12,7 +12,8 @@ let email;
 // function doGet() {
 //   const data = getInitialSignupData();
 //   const stringified = JSON.stringify(data, null, 2);
-//   return ContentService.createTextOutput(stringified);
+//   return ContentService.createTextOutput(data)
+//   .setMimeType(ContentService.MimeType.JSON);
 // }
 /**
  * Creates HTML and client-side script to serve to the user
@@ -59,10 +60,10 @@ function createIndexTemplate() {
     return template;
 }
 function getInitialSignupData() {
-    const students = getStudents();
-    const dailySchedules = buildFlatScheduleData();
-    const signups = getSignups();
     const appSettings = getAppSettings();
+    const students = getStudents();
+    const dailySchedules = buildFlatScheduleData(appSettings);
+    const signups = getSignups();
     if (!students || !dailySchedules || !appSettings)
         throw new Error("Error retreiving server data");
     const initialData = {
