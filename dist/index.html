@@ -51,73 +51,6 @@ var __exportAll = (all, no_symbols) => {
 	}
 })();
 //#endregion
-//#region src/client/common/debug.ts
-var url = window.location.href;
-var DEBUG = url.indexOf("localhost") >= 0 || url.indexOf("127.0.0.1") >= 0;
-//#endregion
-//#region \0@oxc-project+runtime@0.127.0/helpers/asyncToGenerator.js
-function asyncGeneratorStep(n, t, e, r, o, a, c) {
-	try {
-		var i = n[a](c), u = i.value;
-	} catch (n) {
-		e(n);
-		return;
-	}
-	i.done ? t(u) : Promise.resolve(u).then(r, o);
-}
-function _asyncToGenerator(n) {
-	return function() {
-		var t = this, e = arguments;
-		return new Promise(function(r, o) {
-			var a = n.apply(t, e);
-			function _next(n) {
-				asyncGeneratorStep(a, r, o, _next, _throw, "next", n);
-			}
-			function _throw(n) {
-				asyncGeneratorStep(a, r, o, _next, _throw, "throw", n);
-			}
-			_next(void 0);
-		});
-	};
-}
-//#endregion
-//#region src/client/common/app-config.ts
-var appConfig = null;
-var initAppConfig = function() {
-	var _ref = _asyncToGenerator(function* () {
-		if (!appConfig) return new Promise(_asyncToGenerator(function* () {
-			if (DEBUG) appConfig = {
-				view: "signup",
-				wedInt: true,
-				s2Date: "2026-01-25",
-				isEditor: true,
-				isAdmin: true,
-				isStaff: true,
-				email: "wpsdeveloper@walpole.k12.ma.us"
-			};
-			else appConfig = yield getAppConfigFromServer();
-		}));
-	});
-	return function initAppConfig() {
-		return _ref.apply(this, arguments);
-	};
-}();
-function getAppConfig() {
-	if (!appConfig) throw new Error("getConfig() cannot be called before initAppConfig() is completed");
-	return appConfig;
-}
-function getAppConfigFromServer() {
-	return _getAppConfigFromServer.apply(this, arguments);
-}
-function _getAppConfigFromServer() {
-	_getAppConfigFromServer = _asyncToGenerator(function* () {
-		return new Promise((resolve, reject) => {
-			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getAppConfig();
-		});
-	});
-	return _getAppConfigFromServer.apply(this, arguments);
-}
-//#endregion
 //#region src/client/attendance/attendance.html?raw
 var attendance_default = " \x3C!-- HTML for the Attendance Page  -->\r\n<script>\r\n  if (window.trustedTypes && window.trustedTypes.createPolicy) {\r\n    window.trustedTypes.createPolicy('default', {\r\n      createHTML: string => string,\r\n      createScriptURL: string => string,\r\n      createScript: string => string,\r\n    });\r\n  }\r\n<\/script>\r\n\r\n\x3C!-- CSS files -->\r\n<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN\" crossorigin=\"anonymous\">\r\n\r\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\r\n\r\n\x3C!-- Main display -->\r\n<div class=\"body attendance\">\r\n\r\n  \x3C!-- Header/masthead -->\r\n  <header >\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row pb-2 pt-2 align-items-center\">\r\n\r\n        \x3C!-- Logo image -->\r\n        <div class=\"logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center\">\r\n          <img id=\"logo-image\" src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\" alt=\"Walpole Public Schools\">\r\n          <div class=\"ms-3 d-none d-lg-inline\">\r\n            <span class=\"d-inline d-md-block\">Walpole </span><span class=\"public-schools d-inline d-md-block\">Public Schools</span>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Page title  -->\r\n        <div class=\"col text-center page-title\">\r\n          <h1>\r\n            WHS Intervention & Media Center Attendance\r\n          </h1>\r\n        </div>\r\n\r\n        \x3C!-- Buttons/links to other pages  -->\r\n        <div class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center \">\r\n          <a id=\"attendance-link\" class=\"staff-only btn btn-light\" href=\"#\" target=\"_top\">Signup Form</a>\r\n          <a id=\"admin-link\" class=\"admin-only btn btn-light ms-1\" href=\"#?page=admin\" target=\"_top\">Admin</a>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </header>\r\n\r\n  \x3C!-- Date and period section  -->\r\n  <div class=\"subheader p-3 mb-4\">\r\n    <div class=\"container\">\r\n      <div class=\"row justify-content-center \">\r\n        <div class=\"col col-12 d-flex justify-content-center\">\r\n          <div>\r\n\r\n            \x3C!-- Date selection -->\r\n            <div class=\"d-block d-lg-inline\">\r\n              <label for=\"date\" class=\"form-label main-label required text-end text-white d-inline me-2\">\r\n                Date\r\n              </label>\r\n              <input type=\"date\" class=\"form-control date-input required d-inline\" id=\"date\" >\r\n            </div>\r\n\r\n            \x3C!-- Period selection  -->\r\n            <div class=\"d-block d-lg-inline mt-2 mt-lg-0\">\r\n              <label for=\"period\" class=\"form-label main-label required text-end text-white d-inline ms-lg-4 me-2\">\r\n                Period\r\n              </label>\r\n              <select class=\"form-select required d-inline\" id=\"period\"></select>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Main body container  -->\r\n  <div class=\"container\">\r\n\r\n    \x3C!-- Main data table  -->\r\n    <div id=\"student-table\" class=\"\">\r\n\r\n      \x3C!-- Table header row  -->\r\n      <div class=\"row header-row mb-2\">\r\n\r\n        \x3C!-- Student header  -->\r\n        <div class=\"col col-12 col-lg-3 d-none d-lg-flex\">\r\n          <h4 class=\"sortable\">Student \r\n            <span class=\"sort-icon\">\r\n              <i class=\"sort-student fa-solid\"></i>\r\n            </span>\r\n          </h4>\r\n        </div>\r\n\r\n        \x3C!-- Study header  -->\r\n        <div class=\"col col-12 col-lg-2 d-none d-lg-flex\">\r\n          <h4 class=\"sortable\" >Study \r\n            <span class=\"sort-icon\">\r\n              <i class=\"sort-study fa-solid fa-caret-down direction active\"></i>\r\n            </span>\r\n          </h4>\r\n        </div>\r\n\r\n        \x3C!-- Panel header: Attendance  -->\r\n        <div class=\"col col-12 col-lg-7 attendance-info \">\r\n          <div class=\"row\">\r\n            <div class=\"col col-8\">\r\n              <h4>Attendance  |  \r\n                <span id=\"details-link\" class=\"panel-link\">Details</span>\r\n              </h4>\r\n            </div>\r\n\r\n            \x3C!-- Data refresh button -->\r\n            <div class=\"col col-4 text-end\">\r\n              <button id=\"refresh-data-btn\" class=\"btn btn-primary\">Refresh</button>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Panel header: Details  -->\r\n        <div class=\"col col-12 col-lg-7 signup-info d-none\">\r\n          <div class=\"row\">\r\n            <div class=\"col col-8\">\r\n              <h4>\r\n                <span id=\"attendance-link\" class=\"panel-link\">Attendance</span>\r\n                 | Details\r\n              </h4>\r\n            </div>\r\n\r\n            \x3C!-- Data refresh button -->\r\n            <div class=\"col col-4 text-end\">\r\n              <button class=\"btn btn-primary\" >Refresh</button>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n\r\n      \x3C!-- Data not found row  -->\r\n      <div class=\"row student-row-empty d-none\">\r\n        <div class=\"col\">No records found</div>\r\n      </div>\r\n    </div>\r\n\r\n    \x3C!-- Main data table  -->\r\n    <div id=\"staff-table\" class=\"mt-4 d-none\">\r\n\r\n      \x3C!-- Table header row  -->\r\n      <div class=\"row header-row mb-2\">\r\n\r\n        \x3C!-- Student header  -->\r\n        <div class=\"col col-12 col-lg-5 d-lg-flex\">\r\n          <h4>Staff \r\n          </h4>\r\n        </div>\r\n\r\n        \x3C!-- Panel header: Details  -->\r\n        <div class=\"col col-12 col-lg-7 signup-info\">\r\n          <h4>Details \r\n          </h4>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n  </div>\r\n\r\n  \x3C!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->\r\n  <section id=\"templates\" style=\"display:none\">\r\n    \r\n    \x3C!-- Tri-state button (not currently used)  -->\r\n    <div id=\"custom-checkbox-template\">\r\n      <div class=\"custom-checkbox mb-2 d-flex\">\r\n        <span type=\"checkbox\" class=\"form-check-input tri-state\" ></span>\r\n        <label for=\"feedback\" class=\"form-check-label ms-1\">\r\n        </label>\r\n      </div>\r\n    </div>\r\n\r\n    \x3C!-- Student row of data  -->\r\n    <template id=\"student-row-template\" >\r\n      <div class=\"row data-row student-row mb-2\">\r\n\r\n        \x3C!-- Column 1  -->\r\n        <div class=\"col col-12 col-lg-3 mb-2\">\r\n          \r\n          \x3C!-- Edit icons (shown to editors only) -->\r\n          <div class=\"edit-icons d-none me-1 text-secondary\">\r\n            <a class=\"edit-link\" href=\"#?page=update\" target=\"_top\"><i class=\"fas fa-edit\"></i></a> \r\n          </div>\r\n          \r\n          \x3C!-- Student name  -->\r\n          <div class=\"student-name d-inline\">\r\n          </div>\r\n        </div>\r\n        \r\n        \x3C!-- Column 2  -->\r\n        \x3C!-- Study hall teacher  -->\r\n        <div class=\"study-teacher col col-12 col-lg-2 mb-2\"></div>\r\n        \r\n        \x3C!-- Column 3  -->\r\n        <div id=\"slider-wrapper\" class=\"col col-12 col-lg-7 mb-2\" data-items=\"2\">\r\n          <div class=\"slider\">\r\n            \r\n            \x3C!-- Panel: Attendance  -->\r\n            <div class=\"panel attendance-info\">\r\n              <div class=\"row\">\r\n                <div data-type=\"study-checkin\" class=\"checkin-box study-checkin col-6 col-xl-3 order-1 text-center\"></div>\r\n                <div data-type=\"media-checkin\" class=\"checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center\"></div>\r\n                <div data-type=\"media-checkout\" class=\"checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center\"></div>\r\n                <div data-type=\"study-return\" class=\"checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center\"></div>\r\n              </div>\r\n            </div>\r\n            \r\n            \x3C!-- Panel: Details  -->\r\n            <div class=\"panel details-info\">\r\n              <div class=\"row\">\r\n                <div class=\"type col-12 col-lg-6\"></div>\r\n                <div class=\"room col-12 col-lg-6\"></div>\r\n                <div class=\"comments col-12\"></div>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </template>\r\n    \r\n    <template id=\"checkin-box\">\r\n      <div>\r\n        <label class=\"checkin-box-label\">Study Return</label>\r\n      </div>\r\n\r\n      \x3C!-- UI elements  -->\r\n      <button class=\"checkin-btn btn btn-light\" >Return</button>\r\n      <div class=\"time d-none\">\r\n        <span class=\"time-value text-success\"></span>\r\n        <span class=\"time-edit d-none\">\r\n          <input class=\"text-center\" type=\"time\"></input> \r\n          <i class=\"save-btn edit fa-solid fa-check text-success\" ></i>\r\n          <i class=\"cancel-btn edit fa-solid fa-ban text-danger\" ></i>\r\n          <i class=\"delete-btn cancel fa-solid fa-trash text-danger\"></i>\r\n        </span>\r\n        <span class=\"primary-buttons ms-1\">\r\n          <i class=\"edit-start-btn edit fa-solid fa-edit text-primary\" ></i>\r\n        </span>\r\n      </div>\r\n      <div class=\"spinner d-none\">\r\n        <div class=\"spinner-border spinner-border-sm text-primary\" role=\"status\">\r\n          <span class=\"visually-hidden\">Loading...</span>\r\n        </div>\r\n      </div>\r\n    </template>\r\n\r\n    \x3C!-- Staff row of data  -->\r\n    <div id=\"staff-row-template\" class=\"row data-row staff-row mb-2\">\r\n      \r\n      \x3C!-- Column 1  -->\r\n      <div class=\"col col-12 col-lg-5 mb-2\">\r\n\r\n        \x3C!-- Edit icons (shown to editors only) -->\r\n        <div class=\"edit-icons d-none me-1 text-secondary\">\r\n          <a class=\"edit-link\" href=\"#?page=update\" target=\"_top\"><i class=\"fas fa-edit\"></i></a> \r\n        </div>\r\n\r\n        \x3C!-- Student name  -->\r\n        <div class=\"student-name d-inline\">\r\n        </div>\r\n      </div>\r\n\r\n      \x3C!-- Column 2  -->\r\n      \x3C!-- none  -->\r\n\r\n      \x3C!-- Column 3  -->\r\n      <div class=\"signup-info col col-12 col-lg-7 mb-2\">\r\n        <div class=\"row\">\r\n          <div class=\"type col-12\"></div>\r\n          <div class=\"room col-12 col-lg-6\"></div>\r\n          <div class=\"comments col-12\"></div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </section>\r\n\r\n  \x3C!-- Modal: Loading -->\r\n  <div class=\"modal fade\" id=\"loading-modal\" tabindex=\"-1\" aria-labelledby=\"loadingModalLabel\" aria-hidden=\"true\">\r\n    <div class=\"modal-dialog modal-lg\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-body\">\r\n          <div class=\"d-flex\">\r\n            <div class=\"spinner-border text-primary me-3\" role=\"status\">\r\n              <span class=\"visually-hidden\">Loading...</span>\r\n            </div>\r\n            <div class=\"loading-text\">\r\n              \r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n\r\n  \x3C!-- Toast (green): Success -->\r\n  <div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\r\n    <div id=\"success-toast\" class=\"toast text-bg-success align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">\r\n          Submission complete!\r\n        </div>\r\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (red): Error  -->\r\n  <div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\r\n    <div id=\"error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">\r\n          Error completing submission.\r\n        </div>\r\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (red): Invalid data (not used)  -->\r\n  <div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\r\n    <div id=\"validation-error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">\r\n          Please complete the missing information.\r\n        </div>\r\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n\r\n\x3C!-- Helper area for storing data sent from the server -->\r\n<div class=\"d-none hidden-data\">\r\n  <input id=\"is-editor\" type=\"checkbox\" value=\"false\" />\r\n  <input id=\"is-admin\" type=\"checkbox\" value=\"false\" />\r\n  <input id=\"wed-int-active\" type=\"checkbox\" value=\"true\" />\r\n</div>\r\n\r\n\x3C!-- Javacript libraries and files -->\r\n<script src=\"https://kit.fontawesome.com/1a74660f3b.js\" crossorigin=\"anonymous\"><\/script>\r\n\r\n<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL\" crossorigin=\"anonymous\"><\/script>\r\n";
 //#endregion
@@ -1027,6 +960,36 @@ var setupScheduleRulesObserver = () => {
 	]);
 };
 //#endregion
+//#region src/client/common/debug.ts
+var url = window.location.href;
+var DEBUG = url.indexOf("localhost") >= 0 || url.indexOf("127.0.0.1") >= 0;
+//#endregion
+//#region \0@oxc-project+runtime@0.127.0/helpers/asyncToGenerator.js
+function asyncGeneratorStep(n, t, e, r, o, a, c) {
+	try {
+		var i = n[a](c), u = i.value;
+	} catch (n) {
+		e(n);
+		return;
+	}
+	i.done ? t(u) : Promise.resolve(u).then(r, o);
+}
+function _asyncToGenerator(n) {
+	return function() {
+		var t = this, e = arguments;
+		return new Promise(function(r, o) {
+			var a = n.apply(t, e);
+			function _next(n) {
+				asyncGeneratorStep(a, r, o, _next, _throw, "next", n);
+			}
+			function _throw(n) {
+				asyncGeneratorStep(a, r, o, _next, _throw, "throw", n);
+			}
+			_next(void 0);
+		});
+	};
+}
+//#endregion
 //#region src/client/signup/form-data.ts
 /**
 *  Sends the form data to the server for submission 
@@ -1196,6 +1159,20 @@ function _mockSubmit() {
 		yield delay(2e3);
 	});
 	return _mockSubmit.apply(this, arguments);
+}
+//#endregion
+//#region src/client/common/app-config.ts
+function getAppConfig() {
+	if (DEBUG) return {
+		view: "signup",
+		wedInt: true,
+		s2Date: "2026-01-25",
+		isEditor: true,
+		isAdmin: true,
+		isStaff: true,
+		email: "wpsdeveloper@walpole.k12.ma.us"
+	};
+	return window.APP_CONFIG;
 }
 //#endregion
 //#region \0vite/preload-helper.js
@@ -2691,8 +2668,7 @@ function mountApp() {
 }
 function _mountApp() {
 	_mountApp = _asyncToGenerator(function* () {
-		yield initAppConfig();
-		const { view } = getAppConfig();
+		const { view } = window.APP_CONFIG;
 		switch (view) {
 			case "attendance":
 				renderAttendance(appDiv);

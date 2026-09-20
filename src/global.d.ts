@@ -11,6 +11,7 @@ declare global {
 
   interface Window {
     bootstrap: typeof import('bootstrap');
+    APP_CONFIG: AppConfig,
   }
 
   // Extend Google Apps Script's official type namespace
@@ -51,5 +52,15 @@ interface WithHandlers<T> {
 }
 
 type TypedScriptRun = ServerFunctions & WithHandlers<TypedScriptRun>;
+
+type AppConfig = {
+  view: 'signup' | 'attendance' | 'admin',
+  wedInt: boolean,
+  s2Date: string,
+  isEditor: boolean,
+  isAdmin: boolean,
+  isStaff: boolean,
+  email: string,
+}
 
 export {};

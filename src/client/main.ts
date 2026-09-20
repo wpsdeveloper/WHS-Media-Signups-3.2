@@ -8,7 +8,6 @@
  * Note: This script handles both new submissions and the updating of existing data.
  * Updates are done by appending "?page=update&id" plus the record's row id to the URL.
  */  
-import { initAppConfig, getAppConfig } from "./common/app-config";
 import attendanceHtml from './attendance/attendance.html?raw';
 import adminHtml from './admin/admin.html?raw';
 import signupHtml from './signup/signup-form.html?raw';
@@ -27,8 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Client-side router based on server-validated state
 async function mountApp() {
-  await initAppConfig();
-  const appConfig = getAppConfig();
+  const appConfig = window.APP_CONFIG;
   const { view } = appConfig;
 
   switch (view) {
