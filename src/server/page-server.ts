@@ -9,7 +9,6 @@
  */
 
 
-const SPREADSHEET_ID = '1LbVD6PYDns60osOfsRtUea3xyHr5BPyfAkhum0-eC5k'; // Google Sheet that holds the signup data
 let email: string;
 
 /**
@@ -57,7 +56,7 @@ function getUrlParameter(e: GoogleAppsScript.Events.DoGet, parameterName: string
 }
 
 function createIndexTemplate() {
-  const template = HtmlService.createHtmlOutputFromFile('ui/index.html');
+  const template = HtmlService.createHtmlOutputFromFile('index.html');
   return template;
 }
 

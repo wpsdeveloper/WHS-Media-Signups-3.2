@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "push": "tsc && vite build && clasp push",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "push": "npm run build && clasp push",
     "preview": "vite preview",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

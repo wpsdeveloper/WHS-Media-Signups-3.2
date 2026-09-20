@@ -25,10 +25,6 @@ export default defineConfig(({ command, mode }) => {
       viteStaticCopy({
         targets: [
           {
-            src: normalizePath(resolve(__dirname, 'src/server/*.js')),
-            dest: '.'
-          },
-          {
             src: normalizePath(resolve(__dirname, 'appsscript.json')),
             dest: 'dist'
           }

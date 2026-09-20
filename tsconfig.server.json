@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./dist/server",
+    "rootDir": "./src/server",
+    "module": "None",
+    "ignoreDeprecations": "6.0",
+    "target": "ES2022",
+    "types": ["google-apps-script"]
+  },
+  "include": [
+    "src/server/**/*.ts",
+    "src/server/**/*.d.ts",
+    "src/shared/**/*.d.ts"
+  ]
+}

@@ -2,11 +2,15 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "classic",
+    "ignoreDeprecations": "6.0",
     "allowUmdGlobalAccess": true,
     "noEmit": true,
     "skipLibCheck": true,
     "types": ["google-apps-script"]
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*", 
+    "tsconfig.server.json"
+  ]
 }
