@@ -1,4 +1,6 @@
-export interface Signup {
+type SignupType = 'Non-intervention' | 'Intervention' | 'Tutoring' | 'Assessment' | 'Staff reservation' | 'Alt setting';
+
+type Signup = {
   timestamp: Date,
   email: string,
   emailStudent: string,
@@ -11,7 +13,7 @@ export interface Signup {
   subject: string,
   purpose: string,
   teacherAcad: string,
-  room: string,
+  room: '1' | '2' | null,
   comments: string,
   rowId: string,
   studyIn1: string,
@@ -20,5 +22,9 @@ export interface Signup {
   studyIn2: string ,
 }
 
-export type SignupType = 'Non-intervention' | 'Intervention' | 'Tutoring' | 'Assessment' | 'Staff reservation' | 'Alt setting';
+type RawSignup = Omit<Signup, 'date' | 'timestamp'> & { 
+  date: string, 
+  timestamp: Date
+}
+
 

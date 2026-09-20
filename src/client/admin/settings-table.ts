@@ -1,6 +1,6 @@
-import * as dom from "../common/dom.js";
-import { store } from "../common/store";
-import { SettingsRow } from "./settings-row.js";
+import * as dom from "../common/dom";
+import { store } from "./admin-store";
+import { SettingsRow } from "./settings-row";
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
@@ -17,7 +17,7 @@ export const initObservers = () => {
     dom.qsa("#settings-panel .settings-row").forEach(row => row.remove());
 
     // render new rows
-    const targetTable = dom.qs("#settings-panel");
+    const targetTable = dom.qs("#settings-panel") as HTMLElement;
     const newRows = [];
 
     settings.forEach(setting => {
@@ -34,28 +34,17 @@ export const initObservers = () => {
 // PURE UTILITIES & VISUAL TOGGLES
 // =====================================================================
 
-
-export const sortSignups = (signups, field, order) => {
-  const modifier = (order === "asc" ? 1 : -1);
-  const targetField = field === "student" ? "lastname" : "teacherStudy";
-  
-  return [...signups].sort((a, b) => {
-    if (a[targetField] < b[targetField]) return -1 * modifier;
-    if (a[targetField] > b[targetField]) return 1 * modifier;
-    return 0;
-  });
-}
-
 /**
  * Shows the attendance panel 
  * */
 export const showAttendance = () => {
   // slide animation back to "original" position
-  dom.qsa(".panel").forEach(panel => panel.style.transform = "translate(0, 0)");
+  const panels = dom.qsa(".panel") as HTMLElement[];
+  panels.forEach(panel => panel.style.transform = "translate(0, 0)");
 
   // updates the header
-  dom.setVisible(dom.qs(".header-row .signup-info"), false);
-  dom.setVisible(dom.qs(".header-row .attendance-info"), true);
+  dom.setVisible(".header-row .signup-info", false);
+  dom.setVisible(".header-row .attendance-info", true);
 }
 
 /**
@@ -64,14 +53,16 @@ export const showAttendance = () => {
 export const showSignupInfo =() => {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const width = dom.qs(".header-row .attendance-info").getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
+  const attendancePanel = dom.qs(".header-row .attendance-info") as HTMLElement;
+  const width = attendancePanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
 
   // animates the panel
-  dom.qsa(".panel").forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
+  const panels = dom.qsa(".panel") as HTMLElement[];
+  panels.forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
 
   // updates the header
-  dom.setVisible(dom.qs(".header-row .signup-info"), true);
-  dom.setVisible(dom.qs(".header-row .attendance-info"), false);
+  dom.setVisible(".header-row .signup-info", true);
+  dom.setVisible(".header-row .attendance-info", false);
 }
 
 

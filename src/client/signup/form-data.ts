@@ -1,16 +1,17 @@
 import * as dom from "../common/dom";
-import * as messaging from '../common/messaging.js';
-import { store } from '../common/store';
-import { DEBUG } from "../common/debug.js";
+import * as messaging from '../common/messaging';
+import { store } from './signup-store';
+import { DEBUG } from "../common/debug";
 
 /**
  *  Sends the form data to the server for submission 
  * */
 export const submitForm = async () => {
-  const formData = collectData();
+  const unvalidatedFormData = collectData();
+  const formData = validateForm(unvalidatedFormData);
 
   // returns if form is not validated (validation indicators occur in validateForm function)
-  if (!validateForm(formData)) {
+  if (!formData) {
     console.log("Invalid form data, submission aborted.");
     return;
   }
@@ -38,7 +39,7 @@ export const submitForm = async () => {
   }
 }
 
-async function submitNewFormData(formData) {
+async function submitNewFormData(formData: Signup) {
   return new Promise((resolve, reject) => {
     google.script.run
       .withSuccessHandler(resolve)
@@ -47,7 +48,7 @@ async function submitNewFormData(formData) {
     });
 }
 
-async function submitUpdatedFormData(formData) {
+async function submitUpdatedFormData(formData: Signup) {
   return new Promise((resolve, reject) => {
     google.script.run
     .withSuccessHandler(resolve)
@@ -58,11 +59,10 @@ async function submitUpdatedFormData(formData) {
 
 /**
  * Gathers all entered form data in prep for validation and submission 
- * @return {SignupData}
  * */
 function collectData() {
   const state = store.getState();
-  const data = {};
+  const data: Partial<Signup> = {};
   
   data.email = dom.valueOf("#email");
   data.firstname = "";
@@ -79,10 +79,9 @@ function collectData() {
   } else {
     data.emailStudent = data.email;
   }
-
-  data.date = state.currentDate || dom.valueOf("#date");
+  if (state.currentDate) data.date = state.currentDate;
   data.period = state.currentPeriod || dom.valueOf("#period");
-  data.type = state.currentType || dom.valueOf("input[name='signup-type']:checked");
+  if (state.currentType) data.type = state.currentType;
   
   // gets subject from whichever is visible
   if (dom.isVisible(".subject-int")) {
@@ -92,7 +91,7 @@ function collectData() {
   }
 
   data.purpose = dom.isVisible("#purpose") ? dom.valueOf("#purpose input[type='radio']:checked") : "";
-  data.room = dom.isVisible("#glass-room") ? dom.valueOf("#glass-room input[type='radio']:checked") : "";
+  data.room = dom.isVisible("#glass-room") ? dom.valueOf("#glass-room input[type='radio']:checked") as Signup['room'] : null;
   data.teacherStudy = dom.valueOf(".study-teacher");
   data.teacherAcad = dom.valueOf("#acad-teacher");
   data.comments = dom.valueOf("#topic-intervention");
@@ -104,7 +103,7 @@ function collectData() {
 /**
  *  Checks fields to make sure not required data is missing 
  * */
-function validateForm(formData) {
+function validateForm(formData: Partial<Signup>) {
   dom.setInvalid("input, select, textarea, div", false);
   const invalidFields = getInvalidFields(formData); 
 
@@ -113,7 +112,7 @@ function validateForm(formData) {
     dom.setInvalid(invalidIds, true);
     return false;
   }
-  return true;
+  return {...formData} as Signup;
 }
 
 /**
@@ -121,7 +120,7 @@ function validateForm(formData) {
  * 
  * @return {string[]} Array of class names to mark aas invalid
  * */
-function getInvalidFields(data) {
+function getInvalidFields(data: Partial<Signup>) {
   const invalidFields = [];
 
   // requires student names if student is visible (teacher submission)
@@ -147,9 +146,9 @@ function getInvalidFields(data) {
   }
 
   // requires type is selected
-  if (!data.type) invalidFields.push("#type");
-
-  if (["Non-intervention", "Assessment", "Alt setting"].includes(data.type) && !data.teacherAcad) {
+  if (!data.type) {
+    invalidFields.push("#type");
+  } else if (["Non-intervention", "Assessment", "Alt setting"].includes(data.type) && !data.teacherAcad) {
     invalidFields.push("#acad-teacher");
   }
 
@@ -188,7 +187,7 @@ function updateComplete() {
   store.setState({
     currentType: null,
     currentStudyTeacher: null,
-    currentSubject: null,
+    currentSubject: "",
     currentStudentName: '',
   });
   
@@ -203,9 +202,9 @@ function updateComplete() {
  }
 
 
-async function mockSubmit(data) {
+async function mockSubmit(data: Signup) {
   console.log("Debug mode: Form data to submit:", data);
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
   return;
 }

@@ -1,12 +1,10 @@
-import { Student } from "../../shared/types/students";
-import { Setting } from "../../shared/types/settings";
 import * as dates from '../common/dates';
-import { getAppConfig } from "./appConfig";
+import { getAppConfig } from "./app-config";
 
 /**
  * Safe JSON parsing helper to prevent syntax crashes on corrupt or missing strings.
  */
-const safeJsonParse = (data: string, fallback = []) => {
+export const safeJsonParse = (data: string, fallback = []) => {
   if (data === null || data === undefined) return fallback;
   if (typeof data !== 'string') return data;
   try {
@@ -24,7 +22,7 @@ export const parseStudents = (students: Student[]) => {
   return Array.isArray(students) ? students : [];
 }
 
-export const parseStudentNames = (students: Student[]) => {
+export const parseStudentDataList = (students: Student[]) => {
   if (!Array.isArray(students)) return [];
   return students.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
 };
@@ -32,9 +30,11 @@ export const parseStudentNames = (students: Student[]) => {
 /**
  *  parses daily schedule data from the server 
  * */
-export const parseDailyBlocks = (schedules: string): DailyBlock[] => {
-  const parsedSchedules = safeJsonParse(schedules, []);
-  return flattenDailyBlocks(parsedSchedules);
+export const parseDailyBlocks = (block: string): DailyBlock[] => {
+  const parsedRawBlocks: RawDailyBlock[] = safeJsonParse(block, []);
+  const dailyBlocks: DailyBlock[] = hydrateDailyBlock(parsedRawBlocks); 
+
+  return dailyBlocks;
 }
 
 /**
@@ -68,8 +68,9 @@ export const parseMaxSignups = (maxValue: string) => {
 /**
  *  parses signup data from the server 
  * */
-export const parseSignups = (signups: string) => {
-  return safeJsonParse(signups, []);
+export const parseSignups = (signups: string): Signup[] => {
+  const rawData =  safeJsonParse(signups, []) as RawSignup[];
+  return hydrateSignups(rawData);
 }
 
 
@@ -108,63 +109,43 @@ export const parseSettings = (settingsJson: string) => {
   } catch (error) {
     return [];
   }
-  return settings;
+  return hydrateSettings(settings);
 
 }
 
-const flattenDailyBlocks = (rawData: RawDailyBlock[]): DailyBlock[] => {
-  const schedules: DailyBlock[] = [];
-  const s2date = new Date(getAppConfig().s2Date);
+function hydrateDailyBlock(rawData: RawDailyBlock[]): DailyBlock[] {
+  return rawData.map((block: any) => ({
+    ...block,
+    date: new Date(block.date),
+  }));
+}
 
-  for (const rawDay of rawData) {
-    const parsedDate = new Date(rawDay.date);
-    const term: Term = parsedDate.getTime() < s2date.getTime() ? 's1' : 's2';
-    const dayString = rawDay.day as Day;
+function hydrateSignups(rawData: RawSignup[]): Signup[] {
+  return rawData.map((block: any) => ({
+    ...block,
+    date: new Date(block.date),
+    timestamp: new Date(block.timestamp),
+  }));
+}
 
-    // Flatten: Create a DailyBlock block for each period in the raw periods array
-    for (const p of rawDay.periods) {
-      const periodStr = p.toString() as Period;
-      const rawSpecial = rawDay.specials?.[periodStr];
-      
-      let special: SpecialSchedule | null = null;
+function hydrateSettings(rawSettings: Setting[]): Setting[] {
+  return rawSettings.map(setting => {
+    // stringified values sent by the server must be strings
+    if (typeof setting.value !=="string") return setting;
 
-      if (rawSpecial) {
-        special = {
-          allowInterventions: rawSpecial.allowInterventions === "",
-          allowAssessmentMakeups: rawSpecial.allowAssessmentMakeups === "",
-          allowAltSetting: rawSpecial.allowAltSetting === "",
-          allowTutoring: rawSpecial.allowTutoring === "",
-          allowNonInterventions: rawSpecial.allowNonInterventions === "",
-          // Convert max string to number, defaulting to 0 if it's an empty string
-          max: rawSpecial.max ? parseInt(rawSpecial.max, 10) : 0,
-        };
-      }
-
-      schedules.push({
-        date: parsedDate,
-        term: term,
-        day: dayString,
-        period: periodStr,
-        intTeachers: [],    // Defaulting to empty array as it's missing in raw JSON
-        studyTeachers: [],  // Defaulting to empty array as it's missing in raw JSON
-        special: special,
-      });
+    switch (setting.dataType) {
+      case 'boolean':
+        return { ...setting, value: setting.value === 'true' || setting.value === "On"} as Setting;
+      case 'integer':
+        return { ...setting, value: parseInt(setting.value)} as Setting;
+      case 'date':
+        return { ...setting, value: new Date(setting.value)} as Setting;
+      case 'string-array':
+        return { ...setting, value: setting.value.split(',').map(s => s.trim()) } as Setting;
+      case 'string': 
+      default:
+        return setting;
     }
-  }
-
-  return schedules;
+  });
 }
 
-interface RawDailyBlock {
-  date: string;
-  day: string;
-  periods: number[];
-  specials: Record<string, {
-    allowInterventions: string;
-    allowAssessmentMakeups: string;
-    allowAltSetting: string;
-    allowTutoring: string;
-    allowNonInterventions: string;
-    max: string;
-  }>;
-}

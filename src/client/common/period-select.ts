@@ -1,44 +1,43 @@
-import * as dom from '../common/dom.js';
-import { parseDateInput, isSameDate } from '../common/dates.ts';
-import { store } from '../common/store';
+import * as dom from './dom';
+import { parseDateInput, isSameDate } from './dates';
+import { SignupState, store } from '../signup/signup-store';
 
- /**
-  *  Responds to a change in the Period field 
-  * */
- export const periodChangeHandler = (event) => {
-  const selectedPeriod = event.target.value;
+/**
+*  Responds to a change in the Period field 
+* */
+export const periodChangeHandler = (event: MouseEvent) => {
+  const target = event.target as HTMLSelectElement;
+  if (!target) return;
+  const selectedPeriod = target.value as Period;
   store.setState({ currentPeriod: selectedPeriod });
- }
+}
 
  /**
   * Updates the Periods select box based on the date 
   * */
- export const updatePeriodOptions = (currentDateStr, dailySchedules) => {
-   // remembers current selection. If this period is available in the new list,
-   const oldPeriodVal = dom.valueOf("#period");
-   if (!currentDateStr) return;
+export const updatePeriodOptions = (
+  currentDate: Date | null, 
+  dailySchedules: DailyBlock[]
+) => {
+  if (!currentDate) return;
+  // remembers current selection. If this period is available in the new list,
+  const oldPeriodVal = store.getState().currentPeriod;
 
-   const date = parseDateInput(currentDateStr);
-   dom.clearOptions("#period");
+  dom.clearOptions("#period");
 
-   if (Array.isArray(dailySchedules)) {
-    dailySchedules.forEach(schedule => {
-      const schedDate = new Date(schedule.date);  
-      if (isSameDate(schedDate, date)) {
-        schedule.periods.forEach(period => {
-          dom.appendOption("#period", period, period);
-        })
-      }
-    })
-  }
+  dailySchedules.forEach(schedule => {
+    if (isSameDate(schedule.date, currentDate)) {
+      dom.appendOption("#period", schedule.period, schedule.period);
+    }
+  })
 
-  if (wednesdayInterventions(date)) {
+  if (wednesdayInterventions(currentDate)) {
     dom.appendOption("#period", "Wed. PM", "Wed. PM");
   }
 
   // Restore existing selection if valid
-  const selectElem = dom.qs("#period");
-  const firstAvailableValue = selectElem?.options[0]?.value || "";
+  const selectElem = dom.qs("#period") as HTMLSelectElement;
+  const firstAvailableValue = (selectElem?.options[0]?.value ?? "") as Period;
 
   if (oldPeriodVal && [...(selectElem?.options || [])].some(opt => opt.value === oldPeriodVal)) {
     dom.setValue("#period", oldPeriodVal);
@@ -52,7 +51,7 @@ import { store } from '../common/store';
  * Subscriber: Re-renders available options when date or schedule data changes.
  */
 export const setupPeriodOptionsObserver = () => {
-  store.subscribe((state) => {
+  store.subscribe((state: SignupState) => {
     updatePeriodOptions(state.currentDate, state.dailySchedules);
   }, ['currentDate', 'dailySchedules']);
 };
@@ -61,8 +60,8 @@ export const setupPeriodOptionsObserver = () => {
  * Subscriber: Keeps the select element state synchronized with store.currentPeriod.
  */
 export const setupPeriodValueObserver = () => {
-  store.subscribe((state) => {
-    const periodSelect = dom.qs("#period");
+  store.subscribe((state: SignupState) => {
+    const periodSelect = dom.qs("#period") as HTMLSelectElement;
     if (periodSelect && state.currentPeriod && periodSelect.value !== state.currentPeriod) {
       dom.setValue("#period", state.currentPeriod);
     }
@@ -72,7 +71,7 @@ export const setupPeriodValueObserver = () => {
 /**
  * Helper: Determines if Wednesday Interventions should be shown.
  */
-function wednesdayInterventions(date) {
+function wednesdayInterventions(date: Date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);

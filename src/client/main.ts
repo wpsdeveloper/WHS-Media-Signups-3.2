@@ -8,7 +8,7 @@
  * Note: This script handles both new submissions and the updating of existing data.
  * Updates are done by appending "?page=update&id" plus the record's row id to the URL.
  */  
-import { initAppConfig, getAppConfig } from "../common/appConfig";
+import { initAppConfig, getAppConfig } from "./common/app-config";
 import attendanceHtml from './attendance/attendance.html?raw';
 import adminHtml from './admin/admin.html?raw';
 import signupHtml from './signup/signup-form.html?raw';
@@ -17,15 +17,13 @@ import { initializeApp as initializeSignup } from "./signup/init";
 import { initializeApp as initializeAdmin } from "./admin/init";
 import { initializeApp as initializeAttendance } from "./attendance/init";
 
-const appDiv = document.getElementById('app');
-const APP_CONFIG = await APP_CONFIG;
+const appDiv = document.getElementById('app') as HTMLElement;
 
 
 /* Initialization, after everything has loaded */
 document.addEventListener("DOMContentLoaded", () => {
   mountApp();
 });
-
 
 // Client-side router based on server-validated state
 async function mountApp() {
@@ -41,7 +39,6 @@ async function mountApp() {
       renderAdmin(appDiv);
       break;
     case 'signup':
-    case 'update':
     default:
       renderSignup(appDiv);
       break;
@@ -49,19 +46,19 @@ async function mountApp() {
   }
 }
 
-function renderSignup(appDiv) {
+function renderSignup(appDiv: HTMLElement) {
   // 1. Inject the raw HTML into the container
   appDiv.innerHTML = signupHtml;
   initializeSignup();
 }
 
-function renderAttendance(appDiv) {
+function renderAttendance(appDiv: HTMLElement) {
   // 1. Inject the raw HTML into the container
   appDiv.innerHTML = attendanceHtml;
   initializeAttendance();
 }
 
-function renderAdmin(appDiv) {
+function renderAdmin(appDiv: HTMLElement) {
   // 1. Inject the raw HTML into the container
   appDiv.innerHTML = adminHtml;
   initializeAdmin();

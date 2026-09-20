@@ -1,0 +1,117 @@
+/** ======= SERVER CODE  ======== 
+ *
+ * Media Center Sign Up System
+ * Walpole High School, Walpole, MA
+ * @author: Tom Reeve, treeve@walpole.k12.ma.us
+ *
+ * Note: This script relies on the AdminDirectory Service to access student names
+ * and email addresses. This Service requires admin-level access. 
+ */
+
+
+const SPREADSHEET_ID = '1LbVD6PYDns60osOfsRtUea3xyHr5BPyfAkhum0-eC5k'; // Google Sheet that holds the signup data
+let email: string;
+
+/**
+ * Creates HTML and client-side script to serve to the user
+ */
+function doGet(event: GoogleAppsScript.Events.DoGet) {
+  const template = createIndexTemplate();
+  const page = getUrlParameter(event, "page");
+  
+  const appConfig = {
+    view: page ? page : "signup",
+    isEditor: mayEdit(),
+    isAdmin: mayViewAdmin(),
+    isStaff: isStaff(),
+    email: getEmail(),
+    updateId: getPageId(event),
+  };
+  // adds meta data so tha page reformats nicely on mobile devices
+  template.addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  template.setTitle("WHS Intervention & Media Center Sign Up");
+  template.append(`
+    <script>
+      window.APP_CONFIG = ${JSON.stringify(appConfig)};
+    </script>
+  `);
+
+  // sends the HTML to the client
+  return template
+}
+
+function getPageId(event: GoogleAppsScript.Events.DoGet) {
+  return getUrlParameter(event, "id");
+}
+
+/**
+ * Gets a URL parameter value (e.g. "page" from "https://....?page=attendance")
+ */
+function getUrlParameter(e: GoogleAppsScript.Events.DoGet, parameterName: string): string {
+  if (!e) return "";
+  const parameters = e.parameters;
+  if (parameters.hasOwnProperty(parameterName)) {
+    return parameters[parameterName][0];
+  }
+  return "";
+}
+
+function createIndexTemplate() {
+  const template = HtmlService.createHtmlOutputFromFile('ui/index.html');
+  return template;
+}
+
+function getInitialSignupData(): SignupServerData {
+  const students = getStudents();
+  const dailySchedules = buildFlatScheduleData();
+  const signups = getSignups();
+  const appSettings = getAppSettings();
+  
+  if (!students || !dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+  
+  const initialData:SignupServerData = {
+    students: students,
+    dailySchedules: dailySchedules,
+    signups: signups,
+    appSettings: appSettings,
+  };
+  return initialData;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

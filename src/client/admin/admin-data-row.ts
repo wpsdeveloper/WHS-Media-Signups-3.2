@@ -1,13 +1,15 @@
-import * as dom from '../common/dom.js';
-import * as dates from '../common/dates.js';
-import { store } from "../common/store.js";
-import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box.js';
-import { Signup } from '../../shared/types/signups.js';
+import * as dom from '../common/dom';
+import * as dates from '../common/dates';
+import { store, checkinStore } from "./admin-store";
+import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
 
 export class AdminDataRow {
   element: HTMLElement;
   signup: Signup;
   rowId: string = '';
+  state: 'attendance' | 'settings' = 'attendance';
+  studentPanel: HTMLElement;
+  settingsPanel: HTMLElement;
   
   constructor(rowId: string, signup: Signup) {
     this.rowId = rowId;
@@ -25,6 +27,14 @@ export class AdminDataRow {
     this.element = firstChild;
     this.element.removeAttribute('id');
     this.element.classList.add('data-row');
+
+    const studentPanel: HTMLElement = this.element.querySelector('#student-panel') as HTMLElement; 
+    const settingsPanel: HTMLElement = this.element.querySelector('#settings-panel') as HTMLElement; 
+    if (!studentPanel || !settingsPanel) throw new Error("panel missing");
+
+    this.studentPanel = studentPanel;
+    this.settingsPanel = settingsPanel;
+
     
     dom.setAttribute(this.element, 'dataset.signupId', this.rowId);
   }
@@ -77,14 +87,16 @@ export class AdminDataRow {
   }
 
   mountCheckinBoxes() {
-    (Object.entries(CHECKIN_CONFIG) as Array<[keyof typeof CHECKIN_CONFIG, typeof CHECKIN_CONFIG[keyof typeof CHECKIN_CONFIG]]>)
-        .forEach(([checkinType, config]) => {
-      const panel = dom.qs(`div[data-type="${checkinType}"]`) as HTMLElement;
+    if (!this.studentPanel) return;
+    
+    const checkinType = Object.keys(CHECKIN_CONFIG);
+    checkinType
+    .forEach((type) => {
+      const panel = this.studentPanel.querySelector(`div[data-type="${CHECKIN_CONFIG[type].className}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
-        const checkinBox = new CheckinBox(checkinType, this.signup.rowId);
-        if (!checkinBox.element) return;
-        panel.append(checkinBox.element);
+        const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
+        panel.append(checkinBox.element as HTMLElement);
         checkinBox.render();
       }
     });

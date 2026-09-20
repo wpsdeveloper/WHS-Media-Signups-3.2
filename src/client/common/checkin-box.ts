@@ -1,10 +1,18 @@
 import * as dom from './dom';
 import * as checkin from './checkin';
 import * as dates from "./dates";
-import { store, StoreState } from "./store";
-import { Signup } from "../../shared/types/signups";
 
-export const CHECKIN_CONFIG = {
+export type CheckinPropName = 'studyIn1' | 'mediaIn' | 'mediaOut'|'studyIn2';
+
+export type CheckinConfig = Record<
+  CheckinType, {
+    label: string,
+    btnText: string,
+    propName: CheckinPropName,
+    className: string,
+  }>
+
+export const CHECKIN_CONFIG: CheckinConfig = {
   'study-checkin': { 
     label: 'Study In', 
     btnText: 'Check In', 
@@ -32,9 +40,10 @@ export const CHECKIN_CONFIG = {
   },
 } as const;
 
-export type CheckinType = keyof typeof CHECKIN_CONFIG;
-export type CheckinKeys = typeof CHECKIN_CONFIG[CheckinType]['propName'];
-export type CheckinBoxState = "ready" | "loading" | "editing" | "hasData";
+export interface CheckinStore {
+  getSignups(): readonly Signup[];
+  setSignups(signups: Signup[]): void;
+}
 
 export class CheckinBox {
   static readonly TYPES = {
@@ -66,15 +75,18 @@ export class CheckinBox {
   deleteBtn: HTMLButtonElement;
   cancelBtn: HTMLButtonElement ;
   spinner: HTMLElement;
+  store: CheckinStore;
 
   constructor(
-    type: CheckinBox['type'], 
-    rowId: CheckinBox['rowId'], 
-    timeValue: CheckinBox['timeValue'] = ""
+    type: CheckinType, 
+    rowId: string, 
+    timeValue: string = "",
+    store: CheckinStore,
   ){
     this.type = type;
     this.rowId = rowId;
     this.timeValue = timeValue || "";
+    this.store = store;
 
     const template = dom.qs<HTMLTemplateElement>("template#checkin-box");
     if (!template) throw new Error ('Checkbox template not found');
@@ -186,7 +198,7 @@ export class CheckinBox {
     this.timeValue = await checkin.checkin(this, formattedTime);
     const updatedSignups = this.updateSignups(this.rowId, this.timeValue);
     
-    store.setState({signups: updatedSignups} as StoreState);
+    this.store.setSignups(updatedSignups);
     this.setComponentState("hasData");
   }
   
@@ -212,7 +224,7 @@ export class CheckinBox {
     checkin.checkin(this, this.timeValue);
     
     const updatedSignups = this.updateSignups(this.rowId, this.timeValue);   
-    store.setState({signups: updatedSignups} as StoreState);
+    this.store.setSignups(updatedSignups);
     this.setComponentState("hasData");
   }
 
@@ -229,15 +241,20 @@ export class CheckinBox {
   }
 
   updateSignups(rowId: Signup['rowId'], newValue: string): Signup[] {
-    const signups = store.getState()?.signups as Signup[];
+    const signups = this.store.getSignups() as Signup[];
     if (!signups) [] as Signup[];
     
-    const type = this.type;
-    const thisSignup = signups.filter(su => su.rowId == rowId);
-      thisSignup.forEach((su) => {
-        su[this.propName] = newValue;
-    });
+    const thisSignup = signups.find(su => su.rowId === rowId);
+    if (!thisSignup) return signups;
 
-    return signups;
+    const propName = CHECKIN_CONFIG[this.type].propName;
+    return signups.map(signup =>
+      signup.rowId === rowId
+        ? {
+            ...signup,
+            [propName]: newValue,
+          }
+        : signup
+    );
   }
 }

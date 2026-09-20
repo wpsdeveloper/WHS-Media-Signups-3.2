@@ -1,18 +1,18 @@
-import * as dom from '../common/dom.js';
-import * as messaging from '../common/messaging.js';
-import * as parser from '../common/parsers.js';
-import * as dataTable from "./data-table.js";
-import * as settingsTable from "./settings-table.js";
-import * as data from './data.js';
-import * as studentInput from '../common/student-input.js';
-import { store } from '../common/store.js';
-import { DEBUG } from "../common/debug.js";
+import * as dom from '../common/dom';
+import * as messaging from '../common/messaging';
+import * as parser from '../common/parsers';
+import * as dataTable from "./data-table";
+import * as settingsTable from "./settings-table";
+import * as data from './data';
+import * as studentInput from '../common/student-input';
+import { AdminState, store } from './admin-store';
+import { DEBUG } from "../common/debug";
+import { getAppConfig } from '../common/app-config';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
   messaging.showLoadingModal('Retrieving data');
   try {
-    store.initialize(storeInitialData);
     initObservers();
     
     const rawData = await getServerData();
@@ -22,7 +22,7 @@ export const initializeApp = async () => {
     await initializeUi();
     bindEvents();
   } catch (error) {
-    messaging.processError(error, 'Failed to initialize app:');
+    messaging.processError((error as Error), 'Failed to initialize app:');
   }
   
   messaging.hideLoadingModal();
@@ -38,9 +38,9 @@ export const initObservers = () => {
   settingsTable.initObservers();
 };
 
-const getServerData = async () => {
+const getServerData = async (): Promise<string> => {
   if (DEBUG) {
-    return await setMockData(parseServerData);
+    return await setMockData();
   } else {
   return new Promise((resolve, reject) => {
     google.script.run
@@ -51,12 +51,15 @@ const getServerData = async () => {
   }
 };
 
-function parseServerData(data) {
-  const students = parser.parseStudents(data.students);
-  const studentNames = parser.parseStudentNames(students);
-  const signups = parser.parseSignups(data.signups);
-  const settings = parser.parseSettings(data.settings);
-  const dailySchedules = parser.parseDailySchedules(data.dailySchedules);
+function parseServerData(data: string): AdminState {
+  const parsedData = parser.safeJsonParse(data);
+  const students = parser.parseStudents(parsedData.students);
+  const studentNames = parser.parseStudentDataList(students);
+  const signups = parser.parseSignups(parsedData.signups);
+  const settings = parser.parseSettings(parsedData.settings);
+  const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
+  const appConfig = getAppConfig()
+  
 
   return {
     students,
@@ -65,10 +68,12 @@ function parseServerData(data) {
     signups,
     settings,
     currentStudentName: '',
-    currentEmail: APP_CONFIG.email,
-    isStaff: APP_CONFIG.isStaff,
-    isAdmin: APP_CONFIG.isAdmin,
-    isEditor: APP_CONFIG.isEditor, 
+    currentSortField: 'date', 
+    currentSortOrder: 'desc', 
+    dataRows: [], 
+    requestedStudentEmail: '',
+    currentEmail: appConfig.email,
+    isEditor: appConfig.isEditor, 
   };
 }
 
@@ -96,21 +101,20 @@ function bindEvents() {
   const panels = document.querySelectorAll(".tab-panel");
   if (!tabContainer) return;
 
-  tabContainer.addEventListener("click", (e) => {
-    const targetId = e.target.dataset.target;
-    if (targetId) {
-      // 1. Remove 'active' class from all buttons and panels
-      tabs.forEach(tab => tab.classList.remove('active'));
-      panels.forEach(content => content.classList.remove('active'));
+  tabContainer.addEventListener("click", (e: Event) => {
+    const target = e.target as HTMLElement;
+    if (!target) return;
+    
+    // 1. Remove 'active' class from all buttons and panels
+    tabs.forEach(tab => tab.classList.remove('active'));
+    panels.forEach(content => content.classList.remove('active'));
 
-      // 2. Add 'active' class to clicked button and target panel
-      e.target.classList.add('active');
-      document.getElementById(targetId).classList.add('active');
-    }
+    // 2. Add 'active' class to clicked button and target panel
+    target.classList.add('active');
   });
 }
 
-export const setTooltips = (selector) => {
+export const setTooltips = (selector: string) => {
   const tooltipTriggerList = dom.qsa(selector);
   [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 };
@@ -122,26 +126,11 @@ async function setMockData() {
   dom.setValue("#wed-int-active", "true");
   dom.toggleEditorOnlyViews(true);
 
-  const sampleData = await import('../../sampledata.js');
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const sampleData = await import('../../sampledata');
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
-  return sampleData.adminData;
+  return JSON.stringify(sampleData.adminData);
 }
 
-const storeInitialData = {
-  students: [],
-  studentNames: [],
-  dailySchedules: [],
-  signups: [],
-  settings: [],
-
-  isEditor: false,
-  
-  currentSortField: "date",
-  currentSortOrder: "desc",
-
-  currentStudentName: null,
-  requestedStudentEmail: null,
-};
 

@@ -1,5 +1,5 @@
-import * as dom from "../common/dom.js"
-import { store } from "../common/store";
+import * as dom from "../common/dom"
+import { SignupState, store } from './signup-store';
 
 // Maps state.currentType values to their corresponding CSS class selectors
 const PANEL_MAP = {
@@ -24,7 +24,7 @@ export const hideTypes = () => {
 /**
  *  Updates the Details section of the form based on which Type is selected 
  * */
-export const updateDetailsPanel = (currentType) => {
+export const updateDetailsPanel = (currentType: SignupType | null) => {
   hideTypes();
 
   if (!currentType) return;
@@ -39,7 +39,7 @@ export const updateDetailsPanel = (currentType) => {
  * Subscriber: Automatically updates panel visibilities when state.currentType changes.
  */
 export const setupPanelsObserver = () => {
-  store.subscribe((state) => {
+  store.subscribe((state: SignupState) => {
     updateDetailsPanel(state.currentType);
   }, ['currentType']);
 };

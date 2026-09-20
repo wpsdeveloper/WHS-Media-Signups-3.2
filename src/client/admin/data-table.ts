@@ -1,6 +1,6 @@
-import * as dom from "../common/dom.js";
-import { store } from "../common/store";
-import { AdminDataRow as DataRow } from "./data-row.js";
+import * as dom from "../common/dom";
+import { AdminState, store } from "./admin-store";
+import { AdminDataRow as DataRow } from "./admin-data-row";
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
@@ -20,8 +20,8 @@ export const initObservers = () => {
     dom.qsa("#student-panel .student-row").forEach(row => row.remove());
 
     // render new rows
-    const targetTable = dom.qs("#student-panel");
-    const newRows = [];
+    const targetTable = dom.qs("#student-panel") as HTMLElement;
+    const newRows: DataRow[] = [];
 
     currentSignups.forEach(signup => {
       // adds a new empty student row
@@ -40,8 +40,7 @@ export const initObservers = () => {
     const { currentSortField, currentSortOrder } = state;
     dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 
-    const activeHeader = currentSortField === "date" ? ".sort-date" : ".sort-period";
-    const sortIcon = dom.qs(`.sort-${currentSortField}`)
+    const sortIcon = dom.qs(`.sort-${currentSortField}`) as HTMLElement;
     sortIcon.classList.add("active");
 
     const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
@@ -55,7 +54,7 @@ export const initObservers = () => {
 // Notice how they ONLY write to the store, and touch NO DOM elements.
 // =====================================================================
 
-export const resort = (field) => {
+export const resort = (field: AdminState['currentSortField']) => {
   const { currentSortField, currentSortOrder } = store.getState();
   
   const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
@@ -68,9 +67,13 @@ export const resort = (field) => {
 // =====================================================================
 
 
-export const sortSignups = (signups, field, order) => {
+export const sortSignups = (
+  signups: Signup[], 
+  field: AdminState['currentSortField'], 
+  order: 'asc' | 'desc'
+  ) => {
   const modifier = (order === "asc" ? 1 : -1);
-  const targetField = field === "student" ? "lastname" : "teacherStudy";
+  const targetField = field === "date" ? "date" : "period";
   
   return [...signups].sort((a, b) => {
     if (a[targetField] < b[targetField]) return -1 * modifier;
@@ -84,11 +87,12 @@ export const sortSignups = (signups, field, order) => {
  * */
 export const showAttendance = () => {
   // slide animation back to "original" position
-  dom.qsa(".panel").forEach(panel => panel.style.transform = "translate(0, 0)");
+  const panels = dom.qsa(".panel") as HTMLElement[];
+  panels.forEach(panel => panel.style.transform = "translate(0, 0)");
 
   // updates the header
-  dom.setVisible(dom.qs(".header-row .signup-info"), false);
-  dom.setVisible(dom.qs(".header-row .attendance-info"), true);
+  dom.setVisible(".header-row .signup-info", false);
+  dom.setVisible(".header-row .attendance-info", true);
 }
 
 /**
@@ -97,14 +101,16 @@ export const showAttendance = () => {
 export const showSignupInfo =() => {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const width = dom.qs(".header-row .attendance-info").getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
+  const AttendancePanel = dom.qs(".header-row .attendance-info") as HTMLElement;
+  const width = AttendancePanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
 
   // animates the panel
-  dom.qsa(".panel").forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
+  const panels = dom.qsa(".panel") as HTMLElement[];
+  panels.forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
 
   // updates the header
-  dom.setVisible(dom.qs(".header-row .signup-info"), true);
-  dom.setVisible(dom.qs(".header-row .attendance-info"), false);
+  dom.setVisible(".header-row .signup-info", true);
+  dom.setVisible(".header-row .attendance-info", false);
 }
 
 

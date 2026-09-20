@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseStudents,
   parseStudentNames,
-  parseDailySchedules,
+  parseDailyBlocks,
   parseInterventionTeachers,
   parseNoFlyList,
   parseMaxSignups,
@@ -43,9 +43,9 @@ describe('Parsers Module', () => {
     });
   });
 
-  describe('safeJsonParse wrappers (DailySchedules, InterventionTeachers, Signups, StudyTeachers)', () => {
+  describe('safeJsonParse wrappers (DailyBlocks, InterventionTeachers, Signups, StudyTeachers)', () => {
     const parsersToTest = [
-      parseDailySchedules,
+      parseDailyBlocks,
       parseInterventionTeachers,
       parseSignups,
       parseStudyTeachers

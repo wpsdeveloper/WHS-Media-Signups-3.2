@@ -1,14 +1,3 @@
-import { DailySchedule } from "../../shared/types/dailySchedule";
-import { Setting } from "../../shared/types/settings";
-import { Signup, SignupType } from "../../shared/types/signups";
-import { Student } from "../../shared/types/students";
-import { InterventionTeachers } from "../../shared/types/teachers";
-import { StudyTeachers } from "../../shared/types/teachers";
-import { AttendanceDataRow } from "../attendance/attendance-data-row";
-import { AdminDataRow } from "../admin/admin-data-row";
-
-export type StoreState = SignupState | AttendanceState | AdminState | null;
-
 export interface StoreListener<T> {
   callback: (state: T) => void;
   dependencies: (keyof T)[] | null;
@@ -24,7 +13,7 @@ export class Store<T> {
   }
 
   getState(): T {
-    return { ...this.state };
+    return { ...this.state } as T;
   }
 
   setState(newState: Partial<T>): void {
@@ -84,88 +73,3 @@ function isDeepEqual(obj1: any, obj2: any): boolean {
   return true;
 }
 
-let __store: any;
-export const store = <T>(stateType?: T) => {
-  __store ??= new Store(stateType);
-  return __store;
-}
-
-export interface SignupState {
-  kind: 'signup';
-  setting: Setting[];
-  students: Student[],
-  studentNames: string[],
-  dailySchedules: DailySchedule[],
-  interventionTeachers: InterventionTeachers,
-  studyTeachers: StudyTeachers,
-  signups: Signup[],
-  noFlyList: string[],
-
-  isStaff: boolean,
-  isEditor: boolean,
-  isAdmin: boolean,
-  updateRowId: string,
-  updateData: string,
-  defaultMax: number,
-
-  currentDate: Date,
-  currentPeriod: string,
-  currentType: SignupType,
-  currentStudyTeacher: string,
-  currentSubject: string,
-  currentStudentName: string,
-  currentMax: string,
-  currentEmail: string,
-};
-
-export type SignupStateRaw = Omit<SignupState, 'signups' | 'dailySchedules'> & {
-  dailySchedules: string,
-  signups: string,
-}
-
-
-export interface AttendanceState {
-  dailySchedules: DailySchedule[],
-  signups: Signup[],
-  
-  isStaff: boolean,
-  isEditor: boolean,
-  isAdmin: boolean,
-  currentEmail: string,
-  
-  currentSortField: 'study' | 'student',
-  currentSortOrder: 'asc' | 'desc', 
-  
-  dataRows: AttendanceDataRow[],
-
-  currentDate: Date,
-  currentPeriod: string,
-};
-
-export type AttendanceStateRaw = Omit<AttendanceState, 'signups' | 'dailySchedules'> & {
-  dailySchedules: string,
-  signups: string,
-}
-
-export interface AdminState {
-  students: Student[],
-  studentNames: string[],
-  dailySchedules: DailySchedule[],
-  signups: Signup[],
-  settings: Setting[],
-
-  isEditor: boolean,
-  
-  currentSortField: "date" | "period",
-  currentSortOrder: "asc" | "desc",
-
-  dataRows: AdminDataRow[],
-
-  currentStudentName: "",
-  requestedStudentEmail: "",
-};
-
-export type AdminStateRaw = Omit<AdminState, 'signups' | 'dailySchedules'> & {
-  dailySchedules: string,
-  signups: string,
-}

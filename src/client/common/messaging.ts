@@ -1,4 +1,4 @@
-import * as dom from "./dom.js"
+import * as dom from "./dom"
 
 /**
  *  Responds generically to a server error 

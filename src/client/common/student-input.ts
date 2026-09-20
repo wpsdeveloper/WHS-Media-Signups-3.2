@@ -1,17 +1,13 @@
-import * as dom from './dom.js';
-import { SharedStudentState } from './store copy.js';
-import { store, StoreState } from './store.js';
+import * as dom from './dom';
+import { store } from '../signup/signup-store';
 
 /**
  * Publisher: Listens to input changes in the student text field and updates store state.
  */
-export const studentInputChangeHandler = (event: MouseEvent) => {
+export const studentInputChangeHandler = (event: InputEvent) => {
   const target = event.target as HTMLInputElement;
   const query = dom.valueOf(target);
-  
-  // FIX: Invoke store() to get the instance
-  const appStore = store<StoreState>(null as any); 
-  appStore.setState({ currentStudentName: query });
+  store.setState({ currentStudentName: query });
 };
 
 export const renderStudentDatalist = (studentNames: string[] = [], currentQuery:string = '') => {
@@ -44,9 +40,7 @@ export const renderStudentDatalist = (studentNames: string[] = [], currentQuery:
  * Subscriber: Updates suggestions when studentNames or current query change in store.
  */
 export const setupStudentInputObserver = () => {
-  const appStore = store<StoreState>(null as any);
-
-  appStore.subscribe((state: StoreState) => {
+  store.subscribe((state) => {
     if (!state) return;
     
     // Type narrowing depending on how your state is structured

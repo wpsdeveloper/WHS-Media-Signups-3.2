@@ -1,12 +1,15 @@
-import * as dom from '../common/dom.js';
-import { parseDateInput, isSameDate } from "../common/dates.ts";
-import { store } from "../common/store";
+import * as dom from '../common/dom';
+import { parseDateInput, isSameDate } from "../common/dates";
+import { SignupState, store } from './signup-store';
 
 
 /**
  *  Updates the Glass Room labels if the rooms are already reserved or not 
  * */
-export const updateGlassRooms = (currentDateStr, currentPeriod, signups = []) => {
+export const updateGlassRooms = (
+  currentScheduleBlock: DailyBlock | null, 
+  signups: Signup[] = []
+) => {
   // marks rooms as available by default
   dom.setVisible("#glass-room-1", true);
   dom.setVisible("#glass-room-2", true);
@@ -16,27 +19,19 @@ export const updateGlassRooms = (currentDateStr, currentPeriod, signups = []) =>
   dom.setText("#glass-room-2-label .availability", "Available");
 
  // Exit early if missing date or period inputs
-  if (!currentDateStr || !currentPeriod) {
+  if (!currentScheduleBlock) {
     return;
   }
 
-  const date = parseDateInput(currentDateStr);
-
   // Cycles through signup data to calculate availability  
-  signups.forEach(signup => {
-    const suDate = new Date(signup.date);
-    
-    // skips if dates or periods don't match
-    if (!isSameDate(suDate, date)) {
-      return;
-    }
-    const suPeriod = "" + signup.period;
-    if (suPeriod !== currentPeriod) {
-      return;
-    }
+  const matchingSignups = signups.filter( su =>
+    isSameDate(su.date, currentScheduleBlock.date)
+    && (su.period === currentScheduleBlock.period)
+  );
 
+  matchingSignups.forEach(signup => {
     const room = signup.room;
-    if ((room >= 1) && (room <= 2)) {
+    if (room) {
       // disables the checkbox
       dom.setDisabled(`#glass-room-${room}`, true);
       dom.setChecked(`#glass-room-${room}`, false);
@@ -51,7 +46,7 @@ export const updateGlassRooms = (currentDateStr, currentPeriod, signups = []) =>
  * Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
  */
 export const setupGlassRoomsObserver = () => {
-  store.subscribe((state) => {
-    updateGlassRooms(state.currentDate, state.currentPeriod, state.signups);
+  store.subscribe((state: SignupState) => {
+    updateGlassRooms(state.currentScheduleBlock, state.signups);
   }, ['currentDate', 'currentPeriod', 'signups']);
 };

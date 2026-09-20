@@ -1,59 +1,5 @@
-type SSRow = string[]; 
-interface CalendarRaw {
-  date: string,
-  day: Day,
-}
-
-interface SpecialRaw{
-  date: string,
-  period: Period,
-  allowInterventions: string,
-  allowAssessmentMakeups: string,
-  allowAltSetting: string,
-  allowTutoring: string,
-  allowNonInterventions: string,
-  max: string,  
-}
-
-interface StudyTeachersRaw {
-  day: Day,
-  period: Period,
-  teachers: string[],
-}
-
-interface InterventionTeachersRaw {
-  day: Day,
-  period: Period,
-  teachers: string[],
-}
-
-type RotationGrid = {
-  day: Day,
-  periods: Period[],
-}
-
-const masterRotationGrid: RotationGrid[] = [
-  {day: 'Day 1', periods: ['1','2','3','4','5','6']},
-  {day: 'Day 2', periods: ['7','8','1','2','3','4']},
-  {day: 'Day 3', periods: ['5','6','7','8','1','2']},
-  {day: 'Day 4', periods: ['3','4','5','6','7','8']},
-  {day: 'Day 5', periods: ['1','1','4','3','6','5']},
-  {day: 'Day 6', periods: ['8','7','2','1','4','3']},
-  {day: 'Day 7', periods: ['6','5','8','7','2','1']},
-  {day: 'Day 8', periods: ['4','3','6','5','8','7']},
-];
-
-const emptySpecial: SpecialSchedule = {
-  allowInterventions: true,
-  allowAssessmentMakeups: true,
-  allowAltSetting: true,
-  allowTutoring: true,
-  allowNonInterventions: true,
-  max: 10,  
-};
-
 function buildFlatScheduleData(): DailyBlock[] {
-  const rotationGrid = masterRotationGrid;
+  const rotationGrid = MASTER_ROTATION_GRID;
   const interventionTeachers = parseInterventionsGrid();
   const studyTeachers = parseStudyGrid();
   const scheduleBlocks: ScheduleBlock[] = parseRotation(rotationGrid, interventionTeachers, studyTeachers);
@@ -110,7 +56,7 @@ function parseRotation(
           term: 's1',
           day: row.day,
           period: period,
-          intTeachers: intArray?.teachers ?? [],
+          interventionTeachers: intArray?.teachers ?? [],
           studyTeachers: studyArray?.teachers ?? [],
         };
         blocks.push(block);
@@ -176,7 +122,7 @@ function buildCalendarBlocks (
     const day = calDay.day;
     const term: Term = (date.getTime() < s2DateTime) ? 's1' : 's2';
     
-    const masterGridSchedule = masterRotationGrid.find(item => 
+    const masterGridSchedule = MASTER_ROTATION_GRID.find(item => 
       item.day === day
     ); 
     if (!masterGridSchedule) return;
@@ -194,7 +140,7 @@ function buildCalendarBlocks (
       let newBlock: DailyBlock = {
         ...schedBlock,
         date: date,
-        ...emptySpecial
+        ...EMPTY_SPECIAL
       }
 
       const special = findSpecial(specialRows, date, period);

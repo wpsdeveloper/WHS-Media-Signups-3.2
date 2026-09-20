@@ -1,52 +1,48 @@
-import * as dom from '../common/dom.js';
-import * as messaging from '../common/messaging.js';
-import * as parser from '../common/parsers.js';
-import { store } from '../common/store';
-import { DEBUG } from "../common/debug.js"; 
+import * as dom from '../common/dom';
+import * as messaging from '../common/messaging';
+import * as parser from '../common/parsers';
+import { store } from './admin-store';
 
 export const getAuditHandler = async () => {
   try {
-    if (dom.qs("#student-name").value.length < 3) {
+    const nameDiv = dom.qs("#student-name") as HTMLInputElement
+    const student = nameDiv.value.trim() || "";
+
+    if (student.length < 3) {
       return;
     }
     // this is a teacher submission
     // breaks apart the line selected in the student datalist
-    const student = dom.qs("#student-name").value.trim() || "";
     const brackets = student.indexOf(" <") >0 ? student.split(" <") : [];
-
     const emailStudent = (brackets.length == 2) ? brackets[1].trim().substring(0, brackets[1].length-1) : "";
   
     if (emailStudent) {
       store.setState({ requestedStudentEmail: emailStudent });
     }
   } catch (error) {
-    messaging.processError(error, "Error parsing student name:");
+    messaging.processError((error as Error), "Error parsing student name:");
   }
 }
 
 /**
  *  Requests student data from the server asynchronously
  */ 
-export const getStudentAudit = async () => {
+export const getStudentAudit = async (emailStudent: string): Promise<string> => {
   // this is a teacher submission
   // breaks apart the line selected in the student datalist
   try {
-    const emailStudent = store.getState().requestedStudentEmail;
-
     messaging.showLoadingModal("Getting student data");
-    if (DEBUG) {
-      return setMockData();
-    }
     
     return new Promise((resolve, reject) => {
       google.script.run
       .withSuccessHandler(resolve)
       .withFailureHandler(reject)
       .getStudentAudit(emailStudent);
-    });
+  });
   } catch (error) {
-    messaging.processError(error, "Error getting audit data:");
+    messaging.processError((error as Error), "Error getting audit data:");
     messaging.hideLoadingModal();
+    return "";
   }
 }
 
@@ -64,8 +60,8 @@ export const setupAuditObserver = () => {
 };
 
 async function setMockData() {
-  const sampleData = await import('../../sampledata.js');
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const sampleData = await import('../../sampledata');
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
   return sampleData.adminAudit;

@@ -30,7 +30,7 @@ vi.mock('../../client/signup/parsers.js', () => ({
   parseStudents: vi.fn(),
   parseMaxSignups: vi.fn(),
   parseStudentNames: vi.fn(),
-  parseDailySchedules: vi.fn(),
+  parseDailyBlocks: vi.fn(),
   parseSignups: vi.fn(),
   parseInterventionTeachers: vi.fn(),
   parseStudyTeachers: vi.fn(),

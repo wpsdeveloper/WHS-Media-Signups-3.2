@@ -1,14 +1,11 @@
-import * as dom from '../common/dom.js';
+import * as dom from '../common/dom';
 import * as dates from "../common/dates";
-import * as messaging from "../common/messaging.js";
-import { DEBUG } from '../common/debug.js';
-import { CHECKIN_CONFIG, CheckinBox, CheckinType } from './checkin-box.js';
+import * as messaging from "../common/messaging";
+import { DEBUG } from '../common/debug';
+import { CHECKIN_CONFIG, CheckinBox } from './checkin-box';
 
 /**
  *  Responds to a Checkin button click 
- * 
- * @param {string} type The specific category of checkin (e.g. "mediaOut")
- * @type {button} button The button that was clicked 
  * */
 export const checkin = (checkinBox: CheckinBox, time: string): string => {
   // sets the value to the current time

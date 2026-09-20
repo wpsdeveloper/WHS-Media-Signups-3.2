@@ -1,27 +1,27 @@
-import * as dom from '../common/dom.js';
-import * as messaging from '../common/messaging.js';
-import * as parser from '../common/parsers.js';
-import * as dates from '../common/dates.ts';
-import * as panels from './panels.js';
-import * as capacity from './capacity-validation.js';
-import * as dateSelect from './date-select.js';
-import * as periodSelect from './period-select.js';
-import * as typeInput from './type-input.js';
-import * as studentInput from '../common/student-input.js';
-import * as interventionTeacherSelect from './interventions-teacher-select.js';
-import * as studySelect from './study-select.js';
-import * as subjectSelect from './subject-select.js';
-import * as glassRoomsInput from './glass-rooms-input.js';
-import * as scheduleRules from './schedule-rules.js';
-import * as formData from './form-data.js';
-import { store } from '../common/store.js';
-import { DEBUG } from "../common/debug.js";
+import * as dom from '../common/dom';
+import * as messaging from '../common/messaging';
+import * as parser from '../common/parsers';
+import * as dates from '../common/dates';
+import * as panels from './panels';
+import * as capacity from './capacity-validation';
+import * as dateSelect from './date-select';
+import * as periodSelect from '../common/period-select';
+import * as typeInput from './type-input';
+import * as studentInput from '../common/student-input';
+import * as interventionTeacherSelect from './interventions-teacher-select';
+import * as studySelect from './study-select';
+import * as subjectSelect from './subject-select';
+import * as glassRoomsInput from './glass-rooms-input';
+import * as scheduleRules from './schedule-rules';
+import * as formData from './form-data';
+import { getAppConfig } from '../common/app-config';
+import { SignupState, store } from './signup-store';
+import { DEBUG } from "../common/debug";
 
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
   messaging.showLoadingModal('Retrieving data');
-  store.initialize(storeInitialData);
   initObservers();
 
   try {
@@ -29,12 +29,11 @@ export const initializeApp = async () => {
     const parsedData = parseServerData(rawData);
 
     store.setState(parsedData);
-    console.log(store.getState());
 
     await initializeUi();
     bindEvents();
   } catch (error) {
-    messaging.processError(error, 'Failed to initialize app:');
+    messaging.processError((error as Error), 'Failed to initialize app:');
   }
 
   messaging.hideLoadingModal();
@@ -61,44 +60,47 @@ export const initObservers = () => {
 };
 
 
-const getServerData = async () => {
+const getServerData = async (): Promise<string> => {
   if (DEBUG) {
-    return await setMockData(parseServerData);
+    return await setMockData();
   } else {
   return new Promise((resolve, reject) => {
     google.script.run
       .withFailureHandler(reject)
       .withSuccessHandler(resolve)
-      .getInitialSignupFormData();
+      .getInitialSignupData();
     });
   }
 };
 
-function parseServerData(data) {
-  const students = parser.parseStudents(data.students)
-  const defaultMax = parser.parseMaxSignups(data.defaultMaxSignups);
-  const today = new Date();
-  const initialDateStr = dates.toDateInputValue(today);
+function parseServerData(data: string): SignupState {
+  const parsedData = parser.safeJsonParse(data);
+  const students = parsedData.students;
+  const defaultMax = parsedData.appSettings.defaultMax;
+  const appConfig = getAppConfig()
 
   return {
     students,
-    studentNames: parser.parseStudentNames(students),
-    dailySchedules: parser.parseDailySchedules(data.dailySchedules),
-    signups: parser.parseSignups(data.signups),
-    interventionTeachers: parser.parseInterventionTeachers(data.interventionTeachers),
-    studyTeachers: parser.parseStudyTeachers(data.studyTeachers),
-    noFlyList: parser.parseNoFlyList(data.noFlyList),
+    studentNames: parser.parseStudentDataList(students),
+    dailySchedules: parsedData.dailySchedules,
+    signups: parsedData.signups,
+    settings: parsedData.settings,
+    defaultMax: defaultMax,
     currentMax: defaultMax,
-    currentDate: initialDateStr,
+    currentDate: new Date(),
     currentPeriod: null,
     currentType: 'Non-intervention',
     currentStudyTeacher: null,
-    currentSubject: null,
+    currentInterventionTeacher: null,
+    currentScheduleBlock: null,
+    currentSubject: '',
     currentStudentName: '',
-    currentEmail: APP_CONFIG.email,
-    isStaff: APP_CONFIG.isStaff,
-    isAdmin: APP_CONFIG.isAdmin,
-    isEditor: APP_CONFIG.isEditor, 
+    currentEmail: appConfig.email,
+    isStaff: appConfig.isStaff,
+    isAdmin: appConfig.isAdmin,
+    isEditor: appConfig.isEditor, 
+    updateData: null,
+    updateRowId: null,
   };
 }
 
@@ -116,7 +118,7 @@ export const initializeUi = async () => {
     '#date',
     dates.toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
     dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
-    currentDate
+    dates.toDateInputValue(today),
   );
 
   dom.setValue("#email", currentEmail);
@@ -127,12 +129,12 @@ export const initializeUi = async () => {
 };
 
 function bindEvents() {
-  dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler(e));
-  dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler(e));
-  dom.addEventListener("input[name='signup-type'], .purpose", "change", (e) => typeInput.typeChangeHandler(e));
-  dom.addEventListener("#study-teacher-select", "change", (e) => studySelect.studyTeacherChangeHandler(e));
-  dom.addEventListener("#subject-int-select", "change", (e) => subjectSelect.subjectChangeHandler(e));
-  dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
+  dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler(e as MouseEvent));
+  dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler(e as MouseEvent));
+  dom.addEventListener("input[name='signup-type'], .purpose", "change", (e) => typeInput.typeChangeHandler(e as MouseEvent));
+  dom.addEventListener("#study-teacher-select", "change", (e) => studySelect.studyTeacherChangeHandler(e as MouseEvent));
+  dom.addEventListener("#subject-int-select", "change", (e) => subjectSelect.subjectChangeHandler(e as MouseEvent));
+  dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e as InputEvent));
   dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
   dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
 }
@@ -159,26 +161,30 @@ export const setUpdateStatus = async () => {
 
   // requests the signup data for this row id
   try {
-    const updateData = await new Promise((resolve, reject) => {
+    const updateDataJson = await new Promise<string>((resolve, reject) => {
       google.script.run
         .withSuccessHandler(resolve)
         .withFailureHandler(reject)
         .getSignupByRow(updateRowId);
     });
-    store.setState({ updateData });
+    const updateData: Signup = parser.safeJsonParse(updateDataJson);
+    store.setState({updateData });
+    dom.setVisible('#btn-submit', true);
+    dom.setVisible('#btn-update', false);
+
   } catch (error) {
-    messaging.processError(error, "Failed to retrieve data for udpate:");
+    messaging.processError((error as Error), "Failed to retrieve data for udpate:");
   }
 };
 
 
-export const setTooltips = (selector) => {
+export const setTooltips = (selector: string) => {
   const tooltipTriggerList = dom.qsa(selector);
   [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 };
 
 
-async function setMockData() {
+async function setMockData(): Promise<string> {
   dom.setValue('#email', 'wpsdeveloper@walpole.k12.ma.us');
   dom.setValue('#update-row-id', '');
   dom.setValue('#is-admin', 'true');
@@ -187,38 +193,13 @@ async function setMockData() {
   dom.toggleStaffOnlyViews(true);
   dom.toggleAdminOnlyViews(true);
 
-  const sampleData = await import('../../sampledata.js');
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const sampleData = await import('../../sampledata');
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
-  return sampleData.signupData;
+  return JSON.stringify(sampleData.signupData);
 }
 
-const storeInitialData = {
-  students: [],
-  studentNames: [],
-  dailySchedules: [],
-  interventionTeachers: {},
-  studyTeachers: {},
-  signups: [],
-  noFlyList: [],
 
-  isStaff: false,
-  isEditor: false,
-  isAdmin: false,
-  updateRowId: null,
-  updateData: null,
-  defaultMax: 15,
-  currentMax: 15,
-
-  currentDate: null,
-  currentPeriod: null,
-  currentType: null,
-  currentStudyTeacher: null,
-  currentSubject: null,
-  currentStudentName: "",
-  currentMax: null,
-  currentEmail: "",
-};
 
 

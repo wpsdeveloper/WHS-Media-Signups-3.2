@@ -1,15 +1,15 @@
 import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
+import * as dates from '../common/dates';
 import * as dataTable from "./data-table";
-import { AttendanceStateRaw, AttendanceState, store } from "../common/store";
+import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
 import { DEBUG } from '../common/debug';
-import { AppConfig, getAppConfig } from '../common/appConfig';
+import { AppConfig, getAppConfig } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
   try {
-    store().initialize(storeInitialData);
     dataTable.initObservers();
     bindEvents();
     
@@ -78,12 +78,10 @@ export const refreshData = async () => {
   const parsedData = parseServerData(rawData);
   initDateInput();
 
-  store().setState({
+  store.setState({
     ...parsedData,
-    currentDatePeriod : {
-      date: dom.valueOf("#date"),
-      period: null,
-    }
+    currentDate: dates.parseDateInput(dom.valueOf("#date")),
+    currentPeriod: null,
   });
 
   const isEditor = parsedData.isEditor ?? false;
@@ -112,25 +110,6 @@ async function setMockData() {
   return sampleData.attendanceData;
 }
 
-const storeInitialData = {
-  dailySchedules: [],
-  signups: [],
-  
-  isStaff: false,
-  isEditor: false,
-  isAdmin: false,
-  
-  currentSort: {
-    field: "study",
-    order: "asc",
-  },
-  
-  dataRows: [],
 
-  currentDatePeriod: {
-    date: null,
-    period: null,
-    },
-  };
 
 

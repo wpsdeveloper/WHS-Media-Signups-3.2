@@ -29,7 +29,7 @@ vi.mock('../../client/common/parsers.js', () => ({
   parseStudentNames: vi.fn((x) => x),
   parseSignups: vi.fn((x) => x),
   parseSettings: vi.fn((x) => x),
-  parseDailySchedules: vi.fn((x) => x),
+  parseDailyBlocks: vi.fn((x) => x),
 }));
 
 vi.mock('../../client/admin/data-table.js', () => ({

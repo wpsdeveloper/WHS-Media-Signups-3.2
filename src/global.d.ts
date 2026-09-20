@@ -1,15 +1,22 @@
-import type * as Bootstrap from 'bootstrap';
-import type { AppConfig } from './client/common/appConfig';
-
 declare global {
-  interface Window {
-    bootstrap: typeof Bootstrap;
+  declare module '*?raw' {
+    const content: string;
+    export default content;
   }
-  const google: {
-    script: {
-      run: TypedScriptRun;
-    };
-  };
+
+  declare module '*.html' {
+    const content: string;
+    export default content;
+  }
+
+  interface Window {
+    bootstrap: typeof import('bootstrap');
+  }
+
+  // Extend Google Apps Script's official type namespace
+  namespace google.script {
+    const run: TypedScriptRun;
+  }
 }
 
 interface ServerFunctions {
@@ -20,10 +27,14 @@ interface ServerFunctions {
   getInventoryList(): string[];
 
   setCheckin(type: CheckinBox['type'], id: CheckinBox['rowId'], value: string): boolean;
-  getAppConfig(): AppConfig;
+  getAppConfig(): import('./client/common/app-config').AppConfig;
   getInitialAttendanceData(): string;
   getInitialSignupData(): string;
   getInitialAdminData(): string;
+
+  getSignupByRow(id: string): string;
+  submitForm(formData: Signup): void;
+  getStudentAudit(studentId: string): Signup[];
 }
 
 // Define the shape of your server-side API
@@ -40,3 +51,5 @@ interface WithHandlers<T> {
 }
 
 type TypedScriptRun = ServerFunctions & WithHandlers<TypedScriptRun>;
+
+export {};

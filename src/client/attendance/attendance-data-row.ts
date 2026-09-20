@@ -1,8 +1,7 @@
-import * as dom from '../common/dom.js';
-import * as dates from '../common/dates.js';
-import { AttendanceState, store } from "../common/store.js";
-import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box.js';
-import { Signup } from '../../shared/types/signups.js';
+import * as dom from '../common/dom';
+import * as dates from '../common/dates';
+import { AttendanceState, store, checkinStore } from "./attendance-store";
+import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
 
 export class AttendanceDataRow {
   element: HTMLElement;
@@ -120,13 +119,14 @@ export class AttendanceDataRow {
 
   mountCheckinBoxes() {
     if (!this.attendancePanel) return;
-    
-  (Object.entries(CHECKIN_CONFIG) as Array<[keyof typeof CHECKIN_CONFIG, typeof CHECKIN_CONFIG[keyof typeof CHECKIN_CONFIG]]>)
-    .forEach(([checkinType, config]) => {
-      const panel = this.attendancePanel.querySelector(`div[data-type="${checkinType}"]`);
+
+    const checkinType = Object.keys(CHECKIN_CONFIG);
+    checkinType
+    .forEach((type) => {
+      const panel = this.attendancePanel.querySelector(`div[data-type="${CHECKIN_CONFIG[type].className}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
-        const checkinBox = new CheckinBox(checkinType, this.signup.rowId);
+        const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
         panel.append(checkinBox.element as HTMLElement);
         checkinBox.render();
       }

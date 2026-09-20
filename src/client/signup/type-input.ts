@@ -1,5 +1,5 @@
 import * as dom from "../common/dom"
-import { SignupState, store } from "../common/store";
+import { SignupState, store } from './signup-store';
 
 /**
 *  Responds to a change in the Type field 
@@ -7,8 +7,8 @@ import { SignupState, store } from "../common/store";
 export const typeChangeHandler = (event: MouseEvent) => {
   if (!event) return;
   const target = event.target as HTMLInputElement;
-  const selectedType = target.value;
-  store().setState({ currentType: selectedType });
+  const selectedType = target.value as SignupType;
+  store.setState({ currentType: selectedType });
 };
 
 /**
@@ -19,65 +19,75 @@ export const resetAllTypes = () => {
   dom.setVisible('span.type-warning', false);
 }
 
-export const disableInterventions = () => {
-  dom.setDisabled("input#intervention", true);
-  dom.setChecked("input#intervention", false);
-  dom.setVisible("label[for='intervention'] span.type-warning", true);
-  dom.setText("label[for='intervention'] span.type-warning", "Not available");
+export const toggleInterventions = (show: boolean, message?: string) => {
+  dom.setDisabled("input#intervention", !show);
+  if (!show) {
+    dom.setChecked("input#intervention", false);
+    dom.setVisible("label[for='intervention'] span.type-warning", true);
+    dom.setText("label[for='intervention'] span.type-warning", message || "Not available");
+  }
 }
 
-export const disableAssessmentMakeups = () => {
-  dom.setDisabled("input#assessment", true);
-  dom.setChecked("input#assessment", false);
-  dom.setVisible("label[for='assessment'] span.type-warning", true);
-  dom.setText("label[for='assessment'] span.type-warning", "Not available");
+export const toggleAssessmentMakeups = (show: boolean, message?: string) => {
+  dom.setDisabled("input#assessment", !show);
+  if (!show) {
+    dom.setChecked("input#assessment", false);
+    dom.setVisible("label[for='assessment'] span.type-warning", true);
+    dom.setText("label[for='assessment'] span.type-warning", message || "Not available");
+  }
 }
 
-export const disableAltSetting = () => {
-  dom.setDisabled("input#alt-setting", true);
-  dom.setChecked("input#alt-setting", false);
-  dom.setVisible("label[for='alt-setting'] span.type-warning", true);
-  dom.setText("label[for='alt-setting'] span.type-warning", "Not available");
+export const toggleAltSetting = (show: boolean, message?: string) => {
+  dom.setDisabled("input#alt-setting", !show);
+  if (!show) {
+    dom.setChecked("input#alt-setting", false);
+    dom.setVisible("label[for='alt-setting'] span.type-warning", true);
+    dom.setText("label[for='alt-setting'] span.type-warning", message || "Not available");
+  }
 }
 
-export const disableTutoring = () => {
-  dom.setDisabled("input#tutoring", true);
-  dom.setChecked("input#tutoring", false);
-  dom.setVisible("label[for='tutoring'] span.type-warning", true);
-  dom.setText("label[for='tutoring'] span.type-warning", "Not available");
+export const toggleTutoring = (show: boolean, message?: string) => {
+  dom.setDisabled("input#tutoring", !show);
+  if (!show) {
+    dom.setChecked("input#tutoring", false);
+    dom.setVisible("label[for='tutoring'] span.type-warning", true);
+    dom.setText("label[for='tutoring'] span.type-warning", message || "Not available");
+  }
 }
 
-export const disableWednesdayInterventions = () => {
-  dom.setDisabled("input#non-intervention", true);
-  dom.setChecked("input#non-intervention", false);
-  dom.setVisible("label[for='non-intervention'] span.type-warning", true);
-  dom.setText("label[for='non-intervention'] span.type-warning", "Not available");
+export const toggleWednesdayInterventions = (show: boolean, message?: string) => {
+  dom.setDisabled("input#non-intervention", !show);
+  if (!show) {
+    dom.setChecked("input#non-intervention", false);
+    dom.setVisible("label[for='non-intervention'] span.type-warning", true);
+    dom.setText("label[for='non-intervention'] span.type-warning", message || "Not available");
+  }
 }
 
-export const disableNonInterventions = () => {
-  dom.setDisabled("input#non-intervention", true);
-  dom.setChecked("input#non-intervention", false);
-  dom.setDisabled("input[name='purpose']", true);
-  dom.setChecked("input[name='purpose']", false);
-  dom.setVisible("label[for='purpose'] span.type-warning", true);
-  dom.setText("label[for='purpose'] span.type-warning", "Not available");
+export const toggleNonInterventions = (show: boolean, message?: string) => {
+  dom.setDisabled("input#non-intervention, input[name='purpose']", !show);
+  if (!show) {
+    dom.setChecked("input#non-intervention, input[name='purpose'", false);
+    dom.setVisible("label[for='purpose'] span.type-warning", true);
+    dom.setText("label[for='purpose'] span.type-warning", message || "Not available");
+  }
 }
 
 export const toggleInterventionsLink = () => {
-  const isVisible = (dom.getAttribute('.int-link', 'href') || '').length > 58;
-  dom.setVisible('.int-link', isVisible);
+  const show = (dom.getAttribute('.int-link', 'href') || '').length > 58;
+  dom.setVisible('.int-link', show);
 }
 
 export const toggleTutoringLink = () => {
-  const isVisible = (dom.getAttribute('.tut-link', 'href') || '').length > 58;
-  dom.setVisible('.tut-link', isVisible);
+  const show = (dom.getAttribute('.tut-link', 'href') || '').length > 58;
+  dom.setVisible('.tut-link', show);
 }
 
 /**
  * Subscriber: Keeps input selections synchronized with state.currentType.
  */
 export const setupTypeInputObserver = () => {
-  store().subscribe((state: SignupState) => {
+  store.subscribe((state: SignupState) => {
     if (state.currentType) {
       const radio = dom.qs(`input[name='signup-type'][value='${state.currentType}']`) as HTMLInputElement;
       if (radio) {

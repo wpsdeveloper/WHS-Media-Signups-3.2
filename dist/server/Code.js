@@ -186,7 +186,7 @@ function getInitialSignupFormData() {
   initialData.students = students ? students : [];
 
   // requests download of daily schedules
-  const dailySchedules = getDailySchedules();
+  const dailySchedules = getDailyBlocks();
   initialData.dailySchedules = dailySchedules ? dailySchedules : [];
 
   // requests download of recent signups
@@ -216,9 +216,9 @@ function getInitialSignupFormData() {
  * Returns all daily schedules (e.g. March 4 = "Day 3") found in the spreadsheet.
  * Note: a script in the Spreadsheet Management file imports this data from a Google calendar nightly
  * 
- * @return {string} Stringified array of DailyScheduleData
+ * @return {string} Stringified array of DailyBlockData
  * */
-function getDailySchedules() {
+function getDailyBlocks() {
   const cache = CacheService.getScriptCache();
   const cached = cache.get("daily-schedules"); // data is cached as stringified JSON
 
@@ -226,8 +226,8 @@ function getDailySchedules() {
     return cached;
   }
   const specials = SPREADSHEET.getSheetByName(SPECIAL_SCHEDULES_SHEET_NAME).getDataRange().getValues();
-  const dailySchedulesRows = getDailySchedulesRows();
-  const dailySchedulesObj = parseDailySchedules(dailySchedulesRows, specials);
+  const dailySchedulesRows = getDailyBlocksRows();
+  const dailySchedulesObj = parseDailyBlocks(dailySchedulesRows, specials);
   
   const stringifiedData = JSON.stringify(dailySchedulesObj);
   cache.put("daily-schedules", stringifiedData, 2160);
@@ -236,7 +236,7 @@ function getDailySchedules() {
   return stringifiedData;
 }
 
-function getDailySchedulesRows() {
+function getDailyBlocksRows() {
   const scheduleSheet = SPREADSHEET.getSheetByName(DAILY_SCHEDULES_SHEET_NAME);
   const scheduleRows = scheduleSheet.getDataRange().getValues();
   scheduleRows.shift(); // removes the header
@@ -244,7 +244,7 @@ function getDailySchedulesRows() {
   return scheduleRows;
 }
 
-function parseDailySchedules(scheduleRows, specialScheduleRows) {
+function parseDailyBlocks(scheduleRows, specialScheduleRows) {
   const dailySchedules = [];
 
   // builds the schedule object
@@ -1287,7 +1287,7 @@ const MONTHS = [
 */
 
 /**
- * @typedef {Object} DailyScheduleData
+ * @typedef {Object} DailyBlockData
  * @property {string} date - The date of the schedule, formatted mm/dd/yyyy
  * @property {string} day - The "day" of the schedule, e.g. "Day 3"
  * @property {number[]} periods - Array of period numbers for this day (in order)
