@@ -34,6 +34,8 @@ import { SignupState, store } from './signup-store';
 export const setupDateSelectObserver = (selector: string) => {
   store.subscribe((state: SignupState) => {
     const dateInput = dom.qs(selector) as HTMLInputElement;
+    if (!dateInput) return;
+
     const newDate = parseDateInput(dateInput.value);
     if (state.currentDate !== newDate) {
       store.setState({ currentDate: newDate });

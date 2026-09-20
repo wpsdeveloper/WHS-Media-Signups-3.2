@@ -16,6 +16,9 @@ import { initializeApp as initializeSignup } from "./signup/init";
 import { initializeApp as initializeAdmin } from "./admin/init";
 import { initializeApp as initializeAttendance } from "./attendance/init";
 
+import { getAppConfig } from './common/app-config';
+
+
 const appDiv = document.getElementById('app') as HTMLElement;
 
 
@@ -26,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Client-side router based on server-validated state
 async function mountApp() {
-  const appConfig = window.APP_CONFIG;
+  const appConfig = getAppConfig();
   const { view } = appConfig;
 
   switch (view) {

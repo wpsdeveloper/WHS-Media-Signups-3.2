@@ -472,6 +472,7 @@ var Store = class {
 function isDeepEqual(obj1, obj2) {
 	if (obj1 === obj2) return true;
 	if (typeof obj1 !== "object" || typeof obj2 !== "object" || obj1 === null || obj2 === null) return false;
+	if (obj1 instanceof Date && obj2 instanceof Date) return obj1.getTime() === obj2.getTime();
 	const keys1 = Object.keys(obj1);
 	const keys2 = Object.keys(obj2);
 	if (keys1.length !== keys2.length) return false;
@@ -628,24 +629,11 @@ var checkFull = (currentScheduleBlock, signups = [], currentMax = 10) => {
 	toggleTutoring(isFull, "Full");
 };
 /**
-* Pure UI View: Checks if current user is on noFlyList and disables options accordingly.
-*/
-var preventSignupForNoFly = (userEmail = "") => {
-	const student = store$2.getState().students.find((st) => st.email === userEmail);
-	if (student === null || student === void 0 ? void 0 : student.noFly) {
-		setDisabled("input#non-intervention", true);
-		setChecked("input#non-intervention", false);
-		setVisible("label[for='non-intervention'] span.type-warning", true);
-		setText("label[for='non-intervention'] span.type-warning", "Not permitted");
-	}
-};
-/**
 * Subscriber: Listens to relevant state changes and validates UI capacity rules.
 */
 var setupCapacityValidationObserver = () => {
 	store$2.subscribe((state) => {
 		checkFull(state.currentScheduleBlock, state.signups, state.currentMax);
-		preventSignupForNoFly(state.currentEmail);
 	}, [
 		"currentDate",
 		"currentPeriod",
@@ -673,15 +661,6 @@ var configureDateSelect = (selector, minDate, maxDate, initialDate) => {
 		if (initialDate) dateInput.value = initialDate;
 	}
 };
-/**
-* Subscriber: Keeps the date input DOM element in sync if state updates externally.
-*/
-var setupDateSelectObserver = (selector) => {
-	store$2.subscribe((state) => {
-		const newDate = parseDateInput(qs(selector).value);
-		if (state.currentDate !== newDate) store$2.setState({ currentDate: newDate });
-	}, ["currentDate"]);
-};
 //#endregion
 //#region src/client/common/period-select.ts
 /**
@@ -698,7 +677,7 @@ var periodChangeHandler$1 = (event) => {
 * */
 var updatePeriodOptions = (currentDate, dailySchedules) => {
 	var _selectElem$options$, _selectElem$options$2;
-	if (!currentDate) return;
+	if (!currentDate || !dailySchedules) return;
 	const oldPeriodVal = store$2.getState().currentPeriod;
 	clearOptions("#period");
 	dailySchedules.forEach((schedule) => {
@@ -6288,10 +6267,7 @@ var initializeApp$2 = function() {
 		showLoadingModal("Retrieving data");
 		initObservers$4();
 		try {
-			const rawData = yield getServerData$2();
-			debugger;
-			const parsedData = parseServerData$2(rawData);
-			console.log("Parsed data:", parsedData);
+			const parsedData = parseServerData$2(yield getServerData$2());
 			store$2.setState(parsedData);
 			yield initializeUi$1();
 			bindEvents$2();
@@ -6308,7 +6284,6 @@ var initializeApp$2 = function() {
 * Registers all UI observers/subscribers to listen to store updates.
 */
 var initObservers$4 = () => {
-	setupDateSelectObserver("#date");
 	setupPeriodOptionsObserver();
 	setupPeriodValueObserver();
 	setupTypeInputObserver();
@@ -6343,9 +6318,9 @@ function parseServerData$2(data) {
 	return {
 		students,
 		studentNames: parseStudentDataList(students),
-		dailySchedules: parsedData.dailySchedules,
-		signups: parsedData.signups,
-		settings: parsedData.settings,
+		dailySchedules: parseDailyBlocks(parsedData.dailySchedules),
+		signups: parseSignups(parsedData.signups),
+		settings: parseSettings(parsedData.settings),
 		defaultMax,
 		currentMax: defaultMax,
 		currentDate: /* @__PURE__ */ new Date(),
@@ -6438,7 +6413,7 @@ function _setMockData$2() {
 		const sampleData = yield __vitePreload(() => Promise.resolve().then(() => (init_sampledata(), sampledata_exports)), void 0, import.meta.url);
 		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 		yield delay(2e3);
-		return JSON.stringify(sampleData.signupData);
+		return sampleData.signupData;
 	});
 	return _setMockData$2.apply(this, arguments);
 }
@@ -7470,7 +7445,7 @@ function mountApp() {
 }
 function _mountApp() {
 	_mountApp = _asyncToGenerator(function* () {
-		const { view } = window.APP_CONFIG;
+		const { view } = getAppConfig();
 		switch (view) {
 			case "attendance":
 				renderAttendance(appDiv);

@@ -51,9 +51,9 @@ export const setupCapacityValidationObserver = () => {
       state.signups,
       state.currentMax
     );
-    preventSignupForNoFly(
-      state.currentEmail
-    );
+    // preventSignupForNoFly(
+    //   state.currentEmail
+    // );
   }, ['currentDate', 'currentPeriod', 'signups', 'currentMax', 'currentEmail']);
 };
 

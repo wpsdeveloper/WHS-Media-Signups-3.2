@@ -19,4 +19,14 @@ type AdminData = {
 
 type SSRow = string[]; 
 
+type AppConfig = {
+  view: 'signup' | 'attendance' | 'admin',
+  wedInt: boolean,
+  s2Date: string,
+  isEditor: boolean,
+  isAdmin: boolean,
+  isStaff: boolean,
+  email: string,
+}
+
 

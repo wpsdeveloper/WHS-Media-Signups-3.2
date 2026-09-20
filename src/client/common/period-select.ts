@@ -19,7 +19,7 @@ export const updatePeriodOptions = (
   currentDate: Date | null, 
   dailySchedules: DailyBlock[]
 ) => {
-  if (!currentDate) return;
+  if (!currentDate || !dailySchedules) return;
   // remembers current selection. If this period is available in the new list,
   const oldPeriodVal = store.getState().currentPeriod;
 

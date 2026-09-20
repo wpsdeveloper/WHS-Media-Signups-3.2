@@ -75,7 +75,7 @@ const MASTER_ROTATION_GRID = [
     { day: 'Day 2', periods: ['7', '8', '1', '2', '3', '4'] },
     { day: 'Day 3', periods: ['5', '6', '7', '8', '1', '2'] },
     { day: 'Day 4', periods: ['3', '4', '5', '6', '7', '8'] },
-    { day: 'Day 5', periods: ['1', '1', '4', '3', '6', '5'] },
+    { day: 'Day 5', periods: ['2', '1', '4', '3', '6', '5'] },
     { day: 'Day 6', periods: ['8', '7', '2', '1', '4', '3'] },
     { day: 'Day 7', periods: ['6', '5', '8', '7', '2', '1'] },
     { day: 'Day 8', periods: ['4', '3', '6', '5', '8', '7'] },

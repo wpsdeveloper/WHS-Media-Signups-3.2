@@ -60,6 +60,11 @@ function isDeepEqual(obj1: any, obj2: any): boolean {
   if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
     return false;
   }
+
+  if (obj1 instanceof Date && obj2 instanceof Date) {
+    return obj1.getTime() === obj2.getTime();
+  }
+  
   const keys1 = Object.keys(obj1);
   const keys2 = Object.keys(obj2);
   

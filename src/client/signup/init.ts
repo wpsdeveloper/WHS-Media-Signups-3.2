@@ -26,9 +26,7 @@ export const initializeApp = async () => {
   
   try {
     const rawData = await getServerData();
-    debugger;
     const parsedData = parseServerData(rawData);
-    console.log('Parsed data:', parsedData);
 
     store.setState(parsedData);
 
@@ -45,7 +43,7 @@ export const initializeApp = async () => {
  * Registers all UI observers/subscribers to listen to store updates.
  */
 export const initObservers = () => {
-  dateSelect.setupDateSelectObserver('#date');
+  // dateSelect.setupDateSelectObserver('#date');
   periodSelect.setupPeriodOptionsObserver();
   periodSelect.setupPeriodValueObserver();
   typeInput.setupTypeInputObserver();
@@ -85,9 +83,9 @@ function parseServerData(data: string): SignupState {
   return {
     students,
     studentNames: parser.parseStudentDataList(students),
-    dailySchedules: parsedData.dailySchedules,
-    signups: parsedData.signups,
-    settings: parsedData.settings,
+    dailySchedules: parser.parseDailyBlocks(parsedData.dailySchedules),
+    signups: parser.parseSignups(parsedData.signups),
+    settings: parser.parseSettings(parsedData.settings),
     defaultMax: defaultMax,
     currentMax: defaultMax,
     currentDate: new Date(),
@@ -200,7 +198,7 @@ async function setMockData(): Promise<string> {
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
 
-  return JSON.stringify(sampleData.signupData);
+  return sampleData.signupData;
 }
 
 

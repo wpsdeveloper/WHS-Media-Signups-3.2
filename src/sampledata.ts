@@ -346,7 +346,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-09-10T04:00:00.000Z",
@@ -1018,7 +1018,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-09-22T04:00:00.000Z",
@@ -1690,7 +1690,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-10-02T04:00:00.000Z",
@@ -2362,7 +2362,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-10-16T04:00:00.000Z",
@@ -3034,7 +3034,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-10-28T04:00:00.000Z",
@@ -3706,7 +3706,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-11-09T05:00:00.000Z",
@@ -4378,7 +4378,7 @@ const sampleData2 = {
     {
       "term": "s1",
       "day": "Day 5",
-      "period": "1",
+      "period": "2",
       "interventionTeachers": [],
       "studyTeachers": [],
       "date": "2026-11-20T05:00:00.000Z",
