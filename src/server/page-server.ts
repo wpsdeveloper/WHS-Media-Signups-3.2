@@ -11,6 +11,12 @@
 
 let email: string;
 
+// function doGet() {
+//   const data = getInitialSignupData();
+//   const stringified = JSON.stringify(data, null, 2);
+//   return ContentService.createTextOutput(stringified);
+// }
+
 /**
  * Creates HTML and client-side script to serve to the user
  */
@@ -60,7 +66,7 @@ function createIndexTemplate() {
   return template;
 }
 
-function getInitialSignupData(): SignupServerData {
+function getInitialSignupData(): string {
   const students = getStudents();
   const dailySchedules = buildFlatScheduleData();
   const signups = getSignups();
@@ -74,7 +80,8 @@ function getInitialSignupData(): SignupServerData {
     signups: signups,
     appSettings: appSettings,
   };
-  return initialData;
+
+  return JSON.stringify(initialData);
 }
 
 

@@ -1,5 +1,6 @@
 import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
+import * as parser from '../common/parsers';
 import * as dates from '../common/dates';
 import * as dataTable from "./data-table";
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
@@ -20,7 +21,7 @@ export const initializeApp = async () => {
   }
 }
 
-const getServerData = async ():Promise<Partial<AttendanceStateRaw>> => {
+const getServerData = async (): Promise<string> => {
   if (DEBUG) {
     return await setMockData();
   } 
@@ -33,12 +34,15 @@ const getServerData = async ():Promise<Partial<AttendanceStateRaw>> => {
   });
 };
 
-function parseServerData(data: Partial<AttendanceStateRaw>): Partial<AttendanceState> {
-  const appConfig: AppConfig = getAppConfig();
-  if (!data || !data.signups || !data.dailySchedules) throw new Error("Error retreiving data from server");
+function parseServerData(data: string): Partial<AttendanceState> {
+  const parsedData = parser.safeJsonParse(data);
+  const signups = parser.parseSignups(parsedData.signups);
+  const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
+  const appConfig = getAppConfig()
+
   return {
-    signups: JSON.parse(data.signups),
-    dailySchedules: JSON.parse(data.dailySchedules),
+    signups,
+    dailySchedules,
     currentEmail: appConfig.email,
     isStaff: appConfig.isStaff,
     isAdmin: appConfig.isAdmin,
@@ -76,6 +80,8 @@ export const refreshData = async () => {
 
   const rawData = await getServerData();
   const parsedData = parseServerData(rawData);
+  console.log('Parsed data:', parsedData);
+
   initDateInput();
 
   store.setState({

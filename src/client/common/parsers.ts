@@ -19,6 +19,7 @@ export const safeJsonParse = (data: string, fallback = []) => {
  *  Receives student data from the server 
  */
 export const parseStudents = (students: Student[]) => {
+  console.log('students', students);
   return Array.isArray(students) ? students : [];
 }
 

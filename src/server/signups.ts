@@ -6,7 +6,7 @@ function getSignups(): Signup[] {
   
   const values = getSignupsRows();
   const signups = filterSignupsByDate(values, twoWeeksAgo, twoWeeksForward)
-  
+
   return signups;
 }
 

@@ -23,10 +23,12 @@ import { DEBUG } from "../common/debug";
 export const initializeApp = async () => {
   messaging.showLoadingModal('Retrieving data');
   initObservers();
-
+  
   try {
     const rawData = await getServerData();
+    debugger;
     const parsedData = parseServerData(rawData);
+    console.log('Parsed data:', parsedData);
 
     store.setState(parsedData);
 
@@ -74,9 +76,10 @@ const getServerData = async (): Promise<string> => {
 };
 
 function parseServerData(data: string): SignupState {
+  console.log('data', data);
   const parsedData = parser.safeJsonParse(data);
   const students = parsedData.students;
-  const defaultMax = parsedData.appSettings.defaultMax;
+  const defaultMax = 10; //parsedData.appSettings.defaultMax;
   const appConfig = getAppConfig()
 
   return {

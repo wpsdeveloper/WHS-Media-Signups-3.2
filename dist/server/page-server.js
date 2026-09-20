@@ -9,6 +9,11 @@
  * and email addresses. This Service requires admin-level access.
  */
 let email;
+// function doGet() {
+//   const data = getInitialSignupData();
+//   const stringified = JSON.stringify(data, null, 2);
+//   return ContentService.createTextOutput(stringified);
+// }
 /**
  * Creates HTML and client-side script to serve to the user
  */
@@ -66,5 +71,5 @@ function getInitialSignupData() {
         signups: signups,
         appSettings: appSettings,
     };
-    return initialData;
+    return JSON.stringify(initialData);
 }

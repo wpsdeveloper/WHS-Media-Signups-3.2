@@ -17,6 +17,8 @@ export const initializeApp = async () => {
     
     const rawData = await getServerData();
     const parsedData = parseServerData(rawData);
+    console.log('Parsed data:', parsedData);
+
     store.setState(parsedData);
     
     await initializeUi();

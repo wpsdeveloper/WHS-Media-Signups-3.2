@@ -14,7 +14,7 @@ function getStudents(): Student[] {
   const students: Student[] = [];
   values.forEach(row => {
     students.push({email: row[0], lastname: row[1], firstname: row[2]});
-  })
+  });
   return students;
 }
 
