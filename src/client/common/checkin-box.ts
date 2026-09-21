@@ -107,6 +107,8 @@ export class CheckinBox {
     this.deleteBtn = this.element.querySelector(".delete-btn") as HTMLButtonElement;
     this.cancelBtn = this.element.querySelector(".cancel-btn") as HTMLButtonElement;
     this.spinner= this.element.querySelector(".spinner") as HTMLElement;
+
+    this.state = this.timeValue ? 'hasData' : 'ready';
     
     const config = CHECKIN_CONFIG[this.type];
     this.label = config.label;
@@ -132,6 +134,7 @@ export class CheckinBox {
   render(): void {
     dom.setText(this.checkinLabel, this.label);
     dom.setText(this.checkinButton, this.buttonText);
+    dom.setText(this.timeValueDiv, this.timeValue);
 
     switch (this.state) {
       case "ready":

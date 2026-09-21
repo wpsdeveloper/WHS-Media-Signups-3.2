@@ -91,8 +91,11 @@ export class AdminDataRow {
     .forEach((type) => {
       const panel = this.attendancePanel.querySelector(`div[data-type="${type}"]`);
       if (panel) {
+        const propName = CHECKIN_CONFIG[type].propName;
+        const timeValue = this.signup[propName] as string || "";
+        
         panel.innerHTML = ''; // Ensure container is clean before appending
-        const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
+        const checkinBox = new CheckinBox(type, this.signup.rowId, timeValue, checkinStore);
         panel.append(checkinBox.element as HTMLElement);
         checkinBox.render();
       }

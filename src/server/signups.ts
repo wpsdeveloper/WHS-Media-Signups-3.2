@@ -14,7 +14,8 @@ function getSignupsRows(): SSRow[] {
   const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   if (!sheet) throw STANDARD_SERVER_ERROR;
 
-  const values = sheet.getDataRange().getValues() as SSRow[];
+  // use of getDisplayValues to force time strings to remain as strings
+  const values = sheet.getDataRange().getDisplayValues() as SSRow[];
   values.shift();
   return values;
 }
