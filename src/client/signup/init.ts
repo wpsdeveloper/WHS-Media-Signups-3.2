@@ -15,8 +15,7 @@ import * as glassRoomsInput from './glass-rooms-input';
 import * as formData from './form-data';
 import { getAppConfig } from '../common/app-config';
 import { SignupState, store } from './signup-store';
-import { DEBUG } from "../common/debug";
-
+import { DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -58,7 +57,7 @@ export const initObservers = () => {
 
 const getServerData = async (): Promise<string> => {
   if (DEBUG) {
-    return await setMockData();
+    return await getMockData('signup');
   } else {
   return new Promise((resolve, reject) => {
     google.script.run
@@ -181,22 +180,6 @@ export const setTooltips = (selector: string) => {
   [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 };
 
-
-async function setMockData(): Promise<string> {
-  dom.setValue('#email', 'wpsdeveloper@walpole.k12.ma.us');
-  dom.setValue('#update-row-id', '');
-  dom.setValue('#is-admin', 'true');
-  dom.setValue('#is-editor', 'true'); 
-  dom.setValue("#wed-int-active", "true");
-  dom.toggleStaffOnlyViews(true);
-  dom.toggleAdminOnlyViews(true);
-
-  const sampleData = await import('../../sampledata');
-  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  await delay(2000);
-
-  return sampleData.signupData;
-}
 
 const setupDailyScheduleBlocksObserver = () => {
   store.subscribe((state: SignupState) => {

@@ -341,12 +341,16 @@ var parseSettings = (settingsJson) => {
 	return hydrateSettings(settings);
 };
 function hydrateDailyBlock(rawData) {
-	return rawData.map((block) => _objectSpread2(_objectSpread2({}, block), {}, { date: new Date(block.date) }));
+	return rawData.map((block) => _objectSpread2(_objectSpread2({}, block), {}, {
+		date: new Date(block.date),
+		period: String(block.period)
+	}));
 }
 function hydrateSignups(rawData) {
 	return rawData.map((block) => _objectSpread2(_objectSpread2({}, block), {}, {
 		date: new Date(block.date),
-		timestamp: new Date(block.timestamp)
+		timestamp: new Date(block.timestamp),
+		period: String(block.period)
 	}));
 }
 function hydrateSettings(rawSettings) {
@@ -538,7 +542,7 @@ var setupPanelsObserver = () => {
 //#endregion
 //#region src/client/signup/type-input.ts
 /**
-*  Responds to a change in the Type field 
+*  Responds to a change in the Type field
 * */
 var typeChangeHandler = (event) => {
 	if (!event) return;
@@ -616,6 +620,18 @@ var setupTypeInputObserver = () => {
 			if (radio) setChecked(radio, true);
 		}
 	}, ["currentType"]);
+	store$2.subscribe((state) => {
+		resetAllTypes();
+		const currentScheduleBlock = state.currentScheduleBlock;
+		if (!currentScheduleBlock) return;
+		const periodIsWedInt = currentScheduleBlock.period === "Wed. PM";
+		if (periodIsWedInt) toggleWednesdayInterventions(periodIsWedInt);
+		toggleInterventions(currentScheduleBlock.allowInterventions);
+		toggleAssessmentMakeups(currentScheduleBlock.allowAssessmentMakeups && !periodIsWedInt);
+		toggleAltSetting(currentScheduleBlock.allowAltSetting);
+		toggleTutoring(currentScheduleBlock.allowTutoring && !periodIsWedInt);
+		toggleNonInterventions(currentScheduleBlock.allowNonInterventions || periodIsWedInt);
+	}, ["currentType"]);
 };
 //#endregion
 //#region src/client/signup/capacity-validation.ts
@@ -661,6 +677,17 @@ var configureDateSelect = (selector, minDate, maxDate, initialDate) => {
 		if (initialDate) dateInput.value = initialDate;
 	}
 };
+/**
+* Subscriber: Keeps the date input DOM element in sync if state updates externally.
+*/
+var setupDateObserver = () => {
+	store$2.subscribe((state) => {
+		const { currentDate } = state;
+		if (!currentDate) return;
+		if (!qs("#date")) return;
+		setValue("#date", toDateInputValue(currentDate));
+	}, ["currentDate"]);
+};
 //#endregion
 //#region src/client/common/period-select.ts
 /**
@@ -695,15 +722,10 @@ var updatePeriodOptions = (currentDate, dailySchedules) => {
 /**
 * Subscriber: Re-renders available options when date or schedule data changes.
 */
-var setupPeriodOptionsObserver = () => {
+var setupPeriodObservers = () => {
 	store$2.subscribe((state) => {
 		updatePeriodOptions(state.currentDate, state.dailySchedules);
 	}, ["currentDate", "dailySchedules"]);
-};
-/**
-* Subscriber: Keeps the select element state synchronized with store.currentPeriod.
-*/
-var setupPeriodValueObserver = () => {
 	store$2.subscribe((state) => {
 		const periodSelect = qs("#period");
 		if (periodSelect && state.currentPeriod && periodSelect.value !== state.currentPeriod) setValue("#period", state.currentPeriod);
@@ -814,7 +836,7 @@ var toggleStudyInputVisibility = (hasOptions) => {
 /**
 * Subscriber: Re-calculates and re-populates options when key state items change.
 */
-var setupStudyOptionsObserver = () => {
+var setupStudyObservers = () => {
 	store$2.subscribe((state) => {
 		updateStudyOptions(state.currentScheduleBlock, state.currentType);
 	}, [
@@ -822,11 +844,6 @@ var setupStudyOptionsObserver = () => {
 		"currentPeriod",
 		"currentType"
 	]);
-};
-/**
-* Subscriber: Synchronizes DOM selection with state.currentStudyTeacher.
-*/
-var setupStudySelectValueObserver = () => {
 	store$2.subscribe((state) => {
 		const selectElem = qs("#study-teacher-select");
 		if (selectElem && state.currentStudyTeacher && selectElem.value !== state.currentStudyTeacher) setValue("#study-teacher-select", state.currentStudyTeacher);
@@ -856,15 +873,10 @@ var updateSubjectOptions = (currentScheduleBlock) => {
 /**
 * Subscriber: Re-calculates and populates subject options when dependencies change.
 */
-var setupSubjectOptionsObserver = () => {
+var setupSubjectObservers = () => {
 	store$2.subscribe((state) => {
 		updateSubjectOptions(state.currentScheduleBlock);
 	}, ["currentScheduleBlock"]);
-};
-/**
-* Subscriber: Synchronizes DOM selection with state.currentSubject.
-*/
-var setupSubjectValueObserver = () => {
 	store$2.subscribe((state) => {
 		const selectElem = qs("#subject-int-select");
 		if (selectElem && state.currentSubject && selectElem.value !== state.currentSubject) setValue("#subject-int-select", state.currentSubject);
@@ -898,51 +910,8 @@ var updateGlassRooms = (currentScheduleBlock, signups = []) => {
 var setupGlassRoomsObserver = () => {
 	store$2.subscribe((state) => {
 		updateGlassRooms(state.currentScheduleBlock, state.signups);
-	}, [
-		"currentDate",
-		"currentPeriod",
-		"signups"
-	]);
+	}, ["currentScheduleBlock", "signups"]);
 };
-//#endregion
-//#region src/client/signup/schedule-rules.ts
-/**
-* Evaluates special schedule rules based on state parameters and updates UI inputs.
-* Returns special max capacity if defined, or null if no special max apply.
-*/
-var evaluateScheduleRules = (currentDate, currentPeriod, dailySchedules = []) => {
-	resetAllTypes();
-	if (!currentDate || !currentPeriod) return null;
-	const periodIsWedInt = currentPeriod === "Wed. PM";
-	if (periodIsWedInt) toggleWednesdayInterventions(periodIsWedInt);
-	const match = dailySchedules.filter((sched) => isSameDate(new Date(sched.date), currentDate) && sched.period === currentPeriod);
-	if (match.length == 0) return null;
-	const sched = match[0];
-	toggleInterventions(sched.allowInterventions);
-	toggleAssessmentMakeups(sched.allowAssessmentMakeups && !periodIsWedInt);
-	toggleAltSetting(sched.allowAltSetting);
-	toggleTutoring(sched.allowTutoring && !periodIsWedInt);
-	toggleNonInterventions(sched.allowNonInterventions || periodIsWedInt);
-	return sched.max;
-};
-/**
-* Subscriber: Applies schedule UI rules and updates state.currentMax if special rules apply.
-*/
-var setupScheduleRulesObserver = () => {
-	store$2.subscribe((state) => {
-		const specialMax = evaluateScheduleRules(state.currentDate, state.currentPeriod, state.dailySchedules);
-		const targetMax = specialMax && specialMax > 0 ? Number(specialMax) : state.defaultMax;
-		if (state.currentMax !== targetMax) store$2.setState({ currentMax: targetMax });
-	}, [
-		"currentDate",
-		"currentPeriod",
-		"dailySchedules"
-	]);
-};
-//#endregion
-//#region src/client/common/debug.ts
-var url = window.location.href;
-var DEBUG = url.indexOf("localhost") >= 0 || url.indexOf("127.0.0.1") >= 0;
 //#endregion
 //#region \0@oxc-project+runtime@0.127.0/helpers/asyncToGenerator.js
 function asyncGeneratorStep(n, t, e, r, o, a, c) {
@@ -968,191 +937,6 @@ function _asyncToGenerator(n) {
 			_next(void 0);
 		});
 	};
-}
-//#endregion
-//#region src/client/signup/form-data.ts
-/**
-*  Sends the form data to the server for submission 
-* */
-var submitForm = function() {
-	var _ref = _asyncToGenerator(function* () {
-		const formData = validateForm(collectData());
-		if (!formData) {
-			console.log("Invalid form data, submission aborted.");
-			return;
-		}
-		showLoadingModal("Submitting");
-		const updateRowId = store$2.getState().updateRowId;
-		try {
-			if (DEBUG) {
-				yield mockSubmit(formData);
-				submitComplete();
-			} else if (!updateRowId) {
-				yield submitNewFormData(formData);
-				submitComplete();
-			} else {
-				formData.rowId = updateRowId;
-				yield submitUpdatedFormData(formData);
-				updateComplete();
-			}
-		} catch (error) {
-			console.error("Error submiting form to server:", error);
-		}
-	});
-	return function submitForm() {
-		return _ref.apply(this, arguments);
-	};
-}();
-function submitNewFormData(_x) {
-	return _submitNewFormData.apply(this, arguments);
-}
-function _submitNewFormData() {
-	_submitNewFormData = _asyncToGenerator(function* (formData) {
-		return new Promise((resolve, reject) => {
-			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(formData);
-		});
-	});
-	return _submitNewFormData.apply(this, arguments);
-}
-function submitUpdatedFormData(_x2) {
-	return _submitUpdatedFormData.apply(this, arguments);
-}
-function _submitUpdatedFormData() {
-	_submitUpdatedFormData = _asyncToGenerator(function* (formData) {
-		return new Promise((resolve, reject) => {
-			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(formData);
-		});
-	});
-	return _submitUpdatedFormData.apply(this, arguments);
-}
-/**
-* Gathers all entered form data in prep for validation and submission 
-* */
-function collectData() {
-	const state = store$2.getState();
-	const data = {};
-	data.email = valueOf("#email");
-	data.firstname = "";
-	data.lastname = "";
-	if (isVisible("#student")) {
-		const student = valueOf("#student");
-		const brackets = student.indexOf(" <") > 0 ? student.split(" <") : [];
-		const names = brackets.length > 0 ? brackets[0].split(", ") : [];
-		data.firstname = names.length > 0 ? names[1] : "";
-		data.lastname = names.length > 0 ? names[0] : "";
-		data.emailStudent = brackets.length == 2 ? brackets[1].trim().substring(0, brackets[1].length - 1) : "";
-	} else data.emailStudent = data.email;
-	if (state.currentDate) data.date = state.currentDate;
-	data.period = state.currentPeriod || valueOf("#period");
-	if (state.currentType) data.type = state.currentType;
-	if (isVisible(".subject-int")) data.subject = valueOf(".subject-int");
-	else if (isVisible("#subject-non-int")) data.subject = valueOf("#subject-non-int");
-	data.purpose = isVisible("#purpose") ? valueOf("#purpose input[type='radio']:checked") : "";
-	data.room = isVisible("#glass-room") ? valueOf("#glass-room input[type='radio']:checked") : null;
-	data.teacherStudy = valueOf(".study-teacher");
-	data.teacherAcad = valueOf("#acad-teacher");
-	data.comments = valueOf("#topic-intervention");
-	return data;
-}
-/**
-*  Checks fields to make sure not required data is missing 
-* */
-function validateForm(formData) {
-	setInvalid("input, select, textarea, div", false);
-	const invalidFields = getInvalidFields(formData);
-	if (invalidFields.length > 0) {
-		setInvalid(invalidFields.join(", "), true);
-		return false;
-	}
-	return _objectSpread2({}, formData);
-}
-/**
-*  Logic for each field to determine if valid or not 
-* 
-* @return {string[]} Array of class names to mark aas invalid
-* */
-function getInvalidFields(data) {
-	const invalidFields = [];
-	if (isVisible("#student")) {
-		if (!data.firstname) invalidFields.push("#student");
-		if (!data.lastname) invalidFields.push("#student");
-	}
-	try {
-		if (!data.date) invalidFields.push("#date");
-		else new Date(data.date);
-	} catch (error) {
-		invalidFields.push("#date");
-	}
-	if (!data.period) invalidFields.push("#period");
-	if (isVisible("#study-teacher") && !data.teacherStudy) invalidFields.push("#study-teacher");
-	if (!data.type) invalidFields.push("#type");
-	else if ([
-		"Non-intervention",
-		"Assessment",
-		"Alt setting"
-	].includes(data.type) && !data.teacherAcad) invalidFields.push("#acad-teacher");
-	return invalidFields;
-}
-/**
-*  Responds to a successful submission notice from the server 
-* */
-function submitComplete() {
-	showSuccessToast("Submission complete");
-	hideLoadingModal();
-	setVisible("#form", false);
-	setVisible("#success-box", true);
-}
-/**
-*  Responds to a successful update notice from the server 
-* */
-function updateComplete() {
-	showSuccessToast("Update complete.");
-	hideLoadingModal();
-	setVisible("#form", false);
-	setVisible("#success-update-box", true);
-}
-/**
-* Resets the page for another submission 
-* */
-var startOver = () => {
-	store$2.setState({
-		currentType: null,
-		currentStudyTeacher: null,
-		currentSubject: "",
-		currentStudentName: ""
-	});
-	setValue("#student", "");
-	setValue("#study-teacher-input", "");
-	setValue("#acad-teacher", "");
-	setValue("#topic-intervention", "");
-	setValue("#subject-int-select", "");
-	setVisible("#form", true);
-	setVisible("#success-box", false);
-};
-function mockSubmit(_x3) {
-	return _mockSubmit.apply(this, arguments);
-}
-function _mockSubmit() {
-	_mockSubmit = _asyncToGenerator(function* (data) {
-		console.log("Debug mode: Form data to submit:", data);
-		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-		yield delay(2e3);
-	});
-	return _mockSubmit.apply(this, arguments);
-}
-//#endregion
-//#region src/client/common/app-config.ts
-function getAppConfig() {
-	if (DEBUG) return {
-		view: "signup",
-		wedInt: true,
-		s2Date: "2026-01-25",
-		isEditor: true,
-		isAdmin: true,
-		isStaff: true,
-		email: "wpsdeveloper@walpole.k12.ma.us"
-	};
-	return window.APP_CONFIG;
 }
 //#endregion
 //#region \0vite/preload-helper.js
@@ -1379,11 +1163,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Tavares (Alt-Setting)"],
 				"studyTeachers": ["CAF O'Brien"],
 				"date": "2026-09-03T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1399,11 +1183,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["Reichheld 2218"],
 				"date": "2026-09-03T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1424,11 +1208,11 @@ var init_sampledata = __esmMin((() => {
 					"Schwartz 1328"
 				],
 				"date": "2026-09-03T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1450,11 +1234,11 @@ var init_sampledata = __esmMin((() => {
 					"Hackett 2311"
 				],
 				"date": "2026-09-03T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1473,11 +1257,11 @@ var init_sampledata = __esmMin((() => {
 					"Ostaszewski 2321"
 				],
 				"date": "2026-09-03T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1499,11 +1283,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar  LMC"
 				],
 				"date": "2026-09-03T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1513,11 +1297,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Geary (Alt-Setting)"],
 				"studyTeachers": ["CAF O'Toole"],
 				"date": "2026-09-08T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1534,11 +1318,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["P. Ryan 1326", "O'Connor 2309"],
 				"date": "2026-09-08T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1558,11 +1342,11 @@ var init_sampledata = __esmMin((() => {
 					"W. O'Malley 2311"
 				],
 				"date": "2026-09-08T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1582,11 +1366,11 @@ var init_sampledata = __esmMin((() => {
 					"Eagleton 2318"
 				],
 				"date": "2026-09-08T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1606,11 +1390,11 @@ var init_sampledata = __esmMin((() => {
 					"Ringler 1328"
 				],
 				"date": "2026-09-08T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1632,11 +1416,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar LMC"
 				],
 				"date": "2026-09-08T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1646,11 +1430,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Ruggiero (Alt-Setting)"],
 				"studyTeachers": ["CAF Vigneau"],
 				"date": "2026-09-09T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1666,11 +1450,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["Kwasnik 1333", "Gibson 3134"],
 				"date": "2026-09-09T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1694,11 +1478,11 @@ var init_sampledata = __esmMin((() => {
 					"Ferraro 3137"
 				],
 				"date": "2026-09-09T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1721,11 +1505,11 @@ var init_sampledata = __esmMin((() => {
 					"Butler 2311"
 				],
 				"date": "2026-09-09T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1745,11 +1529,11 @@ var init_sampledata = __esmMin((() => {
 					"W. O'Malley 2311"
 				],
 				"date": "2026-09-09T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1770,11 +1554,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar LMC"
 				],
 				"date": "2026-09-09T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1784,11 +1568,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Hanlon (Alt-Setting)"],
 				"studyTeachers": ["CAF  T. Connolly"],
 				"date": "2026-09-10T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1808,11 +1592,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["O'Connor 2124"],
 				"date": "2026-09-10T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1834,11 +1618,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar2319"
 				],
 				"date": "2026-09-10T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1857,11 +1641,11 @@ var init_sampledata = __esmMin((() => {
 					"Yurgold 2321"
 				],
 				"date": "2026-09-10T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1883,11 +1667,11 @@ var init_sampledata = __esmMin((() => {
 					"C. Giblin 2311"
 				],
 				"date": "2026-09-10T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1908,11 +1692,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar LMC"
 				],
 				"date": "2026-09-10T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1922,11 +1706,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Tavares (Alt-Setting)"],
 				"studyTeachers": ["CAF Campbell"],
 				"date": "2026-09-11T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1941,11 +1725,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["Balkus 3117"],
 				"date": "2026-09-11T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1969,11 +1753,11 @@ var init_sampledata = __esmMin((() => {
 					"S. Wick 2311"
 				],
 				"date": "2026-09-11T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -1995,11 +1779,11 @@ var init_sampledata = __esmMin((() => {
 					"Cannon 2317"
 				],
 				"date": "2026-09-11T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2018,11 +1802,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar 2319"
 				],
 				"date": "2026-09-11T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2043,11 +1827,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar LMC"
 				],
 				"date": "2026-09-11T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2057,11 +1841,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Donlan (Alt-Setting)"],
 				"studyTeachers": ["CAF Dolan"],
 				"date": "2026-09-14T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2076,11 +1860,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["Watters 2321", "C. Sullivan 2131"],
 				"date": "2026-09-14T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2099,11 +1883,11 @@ var init_sampledata = __esmMin((() => {
 					"Tringali 2318"
 				],
 				"date": "2026-09-14T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2126,11 +1910,11 @@ var init_sampledata = __esmMin((() => {
 					"Milne 2311"
 				],
 				"date": "2026-09-14T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2153,11 +1937,11 @@ var init_sampledata = __esmMin((() => {
 					"O'Farell A240"
 				],
 				"date": "2026-09-14T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2176,11 +1960,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar LMC"
 				],
 				"date": "2026-09-14T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2190,11 +1974,11 @@ var init_sampledata = __esmMin((() => {
 				"interventionTeachers": ["Tavares (Alt-Setting)"],
 				"studyTeachers": ["CAF Thornton"],
 				"date": "2026-09-15T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2211,11 +1995,11 @@ var init_sampledata = __esmMin((() => {
 				],
 				"studyTeachers": ["Ostaszwski 2321"],
 				"date": "2026-09-15T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2237,11 +2021,11 @@ var init_sampledata = __esmMin((() => {
 					"C. Giblin 2311"
 				],
 				"date": "2026-09-15T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2264,11 +2048,11 @@ var init_sampledata = __esmMin((() => {
 					"Pitrus 3137"
 				],
 				"date": "2026-09-15T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2287,11 +2071,11 @@ var init_sampledata = __esmMin((() => {
 					"Tringali 2318"
 				],
 				"date": "2026-09-15T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -2313,11 +2097,11 @@ var init_sampledata = __esmMin((() => {
 					"Lamar LMC"
 				],
 				"date": "2026-09-15T04:00:00.000Z",
-				"allowInterventions": false,
-				"allowAssessmentMakeups": false,
-				"allowAltSetting": false,
-				"allowTutoring": false,
-				"allowNonInterventions": false,
+				"allowInterventions": true,
+				"allowAssessmentMakeups": true,
+				"allowAltSetting": true,
+				"allowTutoring": true,
+				"allowNonInterventions": true,
 				"max": null
 			},
 			{
@@ -9237,6 +9021,216 @@ var init_sampledata = __esmMin((() => {
 	adminAudit = "[{\"timestamp\":\"2026-09-02T14:52:13.448Z\",\"email\":\"zzdemow34@wpsma.org\",\"emailStudent\":\"zzdemow34@wpsma.org\",\"lastname\":\"Zzdemo\",\"firstname\":\"Ariella\",\"date\":\"2026-09-10T04:00:00.000Z\",\"period\":4,\"type\":\"Non-intervention\",\"teacherStudy\":\"Yurgold 2234\",\"subject\":\"\",\"purpose\":\"Research\",\"teacherAcad\":\"Mr.kowalski\",\"room\":\"2\",\"comments\":\"\",\"rowId\":\"6cebcf43-adda-4872-895b-5d1cea396104\",\"studyIn1\":\"\",\"mediaIn\":\"\",\"mediaOut\":\"\",\"studyIn2\":\"\"},{\"timestamp\":\"2026-09-02T14:52:51.443Z\",\"email\":\"zzdemow34@wpsma.org\",\"emailStudent\":\"zzdemow34@wpsma.org\",\"lastname\":\"Zzdemo\",\"firstname\":\"Gabrielle\",\"date\":\"2026-09-10T04:00:00.000Z\",\"period\":4,\"type\":\"Non-intervention\",\"teacherStudy\":\"Yurgold 2234\",\"subject\":\"\",\"purpose\":\"Research\",\"teacherAcad\":\"Mrs Rafferty\",\"room\":\"\",\"comments\":\"\",\"rowId\":\"56ade28b-766f-4d6d-ae4e-c8a15c08132c\",\"studyIn1\":\"\",\"mediaIn\":\"\",\"mediaOut\":\"\",\"studyIn2\":\"\"},{\"timestamp\":\"2026-09-03T13:50:21.565Z\",\"email\":\"zzdemow34@wpsma.org\",\"emailStudent\":\"zzdemow34@wpsma.org\",\"lastname\":\"Zzdemo\",\"firstname\":\"Mason\",\"date\":\"2026-09-03T04:00:00.000Z\",\"period\":1,\"type\":\"Non-intervention\",\"teacherStudy\":\"Stein 2321\",\"subject\":\"\",\"purpose\":\"Research\",\"teacherAcad\":\"None.\",\"room\":\"\",\"comments\":\"\",\"rowId\":\"7977f72e-c751-437a-8a6b-ebb523c4e3be\",\"studyIn1\":\"\",\"mediaIn\":\"\",\"mediaOut\":\"\",\"studyIn2\":\"\"}]";
 }));
 //#endregion
+//#region src/client/common/debug.ts
+var url = window.location.href;
+var DEBUG = url.indexOf("localhost") >= 0 || url.indexOf("127.0.0.1") >= 0;
+var getMockData = function() {
+	var _ref = _asyncToGenerator(function* (type) {
+		const sampleDataImport = yield __vitePreload(() => Promise.resolve().then(() => (init_sampledata(), sampledata_exports)), void 0, import.meta.url);
+		let sampleData;
+		switch (type) {
+			case "admin":
+				sampleData = sampleDataImport.adminData;
+				break;
+			case "attendance":
+				sampleData = sampleDataImport.attendanceData;
+				break;
+			default: sampleData = sampleDataImport.signupData;
+		}
+		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+		yield delay(2e3);
+		return sampleData;
+	});
+	return function getMockData(_x) {
+		return _ref.apply(this, arguments);
+	};
+}();
+//#endregion
+//#region src/client/signup/form-data.ts
+/**
+*  Sends the form data to the server for submission 
+* */
+var submitForm = function() {
+	var _ref = _asyncToGenerator(function* () {
+		const formData = validateForm(collectData());
+		if (!formData) {
+			console.log("Invalid form data, submission aborted.");
+			return;
+		}
+		showLoadingModal("Submitting");
+		const updateRowId = store$2.getState().updateRowId;
+		try {
+			if (DEBUG) {
+				yield mockSubmit(formData);
+				submitComplete();
+			} else if (!updateRowId) {
+				yield submitNewFormData(formData);
+				submitComplete();
+			} else {
+				formData.rowId = updateRowId;
+				yield submitUpdatedFormData(formData);
+				updateComplete();
+			}
+		} catch (error) {
+			console.error("Error submiting form to server:", error);
+		}
+	});
+	return function submitForm() {
+		return _ref.apply(this, arguments);
+	};
+}();
+function submitNewFormData(_x) {
+	return _submitNewFormData.apply(this, arguments);
+}
+function _submitNewFormData() {
+	_submitNewFormData = _asyncToGenerator(function* (formData) {
+		return new Promise((resolve, reject) => {
+			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(formData);
+		});
+	});
+	return _submitNewFormData.apply(this, arguments);
+}
+function submitUpdatedFormData(_x2) {
+	return _submitUpdatedFormData.apply(this, arguments);
+}
+function _submitUpdatedFormData() {
+	_submitUpdatedFormData = _asyncToGenerator(function* (formData) {
+		return new Promise((resolve, reject) => {
+			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(formData);
+		});
+	});
+	return _submitUpdatedFormData.apply(this, arguments);
+}
+/**
+* Gathers all entered form data in prep for validation and submission 
+* */
+function collectData() {
+	const state = store$2.getState();
+	const data = {};
+	data.email = valueOf("#email");
+	data.firstname = "";
+	data.lastname = "";
+	if (isVisible("#student")) {
+		const student = valueOf("#student");
+		const brackets = student.indexOf(" <") > 0 ? student.split(" <") : [];
+		const names = brackets.length > 0 ? brackets[0].split(", ") : [];
+		data.firstname = names.length > 0 ? names[1] : "";
+		data.lastname = names.length > 0 ? names[0] : "";
+		data.emailStudent = brackets.length == 2 ? brackets[1].trim().substring(0, brackets[1].length - 1) : "";
+	} else data.emailStudent = data.email;
+	if (state.currentDate) data.date = state.currentDate;
+	data.period = state.currentPeriod || valueOf("#period");
+	if (state.currentType) data.type = state.currentType;
+	if (isVisible(".subject-int")) data.subject = valueOf(".subject-int");
+	else if (isVisible("#subject-non-int")) data.subject = valueOf("#subject-non-int");
+	data.purpose = isVisible("#purpose") ? valueOf("#purpose input[type='radio']:checked") : "";
+	data.room = isVisible("#glass-room") ? valueOf("#glass-room input[type='radio']:checked") : null;
+	data.teacherStudy = valueOf(".study-teacher");
+	data.teacherAcad = valueOf("#acad-teacher");
+	data.comments = valueOf("#topic-intervention");
+	return data;
+}
+/**
+*  Checks fields to make sure not required data is missing 
+* */
+function validateForm(formData) {
+	setInvalid("input, select, textarea, div", false);
+	const invalidFields = getInvalidFields(formData);
+	if (invalidFields.length > 0) {
+		setInvalid(invalidFields.join(", "), true);
+		return false;
+	}
+	return _objectSpread2({}, formData);
+}
+/**
+*  Logic for each field to determine if valid or not 
+* 
+* @return {string[]} Array of class names to mark aas invalid
+* */
+function getInvalidFields(data) {
+	const invalidFields = [];
+	if (isVisible("#student")) {
+		if (!data.firstname) invalidFields.push("#student");
+		if (!data.lastname) invalidFields.push("#student");
+	}
+	try {
+		if (!data.date) invalidFields.push("#date");
+		else new Date(data.date);
+	} catch (error) {
+		invalidFields.push("#date");
+	}
+	if (!data.period) invalidFields.push("#period");
+	if (isVisible("#study-teacher") && !data.teacherStudy) invalidFields.push("#study-teacher");
+	if (!data.type) invalidFields.push("#type");
+	else if ([
+		"Non-intervention",
+		"Assessment",
+		"Alt setting"
+	].includes(data.type) && !data.teacherAcad) invalidFields.push("#acad-teacher");
+	return invalidFields;
+}
+/**
+*  Responds to a successful submission notice from the server 
+* */
+function submitComplete() {
+	showSuccessToast("Submission complete");
+	hideLoadingModal();
+	setVisible("#form", false);
+	setVisible("#success-box", true);
+}
+/**
+*  Responds to a successful update notice from the server 
+* */
+function updateComplete() {
+	showSuccessToast("Update complete.");
+	hideLoadingModal();
+	setVisible("#form", false);
+	setVisible("#success-update-box", true);
+}
+/**
+* Resets the page for another submission 
+* */
+var startOver = () => {
+	store$2.setState({
+		currentType: null,
+		currentStudyTeacher: null,
+		currentSubject: "",
+		currentStudentName: ""
+	});
+	setValue("#student", "");
+	setValue("#study-teacher-input", "");
+	setValue("#acad-teacher", "");
+	setValue("#topic-intervention", "");
+	setValue("#subject-int-select", "");
+	setVisible("#form", true);
+	setVisible("#success-box", false);
+};
+function mockSubmit(_x3) {
+	return _mockSubmit.apply(this, arguments);
+}
+function _mockSubmit() {
+	_mockSubmit = _asyncToGenerator(function* (data) {
+		console.log("Debug mode: Form data to submit:", data);
+		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+		yield delay(2e3);
+	});
+	return _mockSubmit.apply(this, arguments);
+}
+//#endregion
+//#region src/client/common/app-config.ts
+function getAppConfig() {
+	if (DEBUG) return {
+		view: "signup",
+		wedInt: true,
+		s2Date: "2026-01-25",
+		isEditor: true,
+		isAdmin: true,
+		isStaff: true,
+		email: "wpsdeveloper@walpole.k12.ma.us"
+	};
+	return window.APP_CONFIG;
+}
+//#endregion
 //#region src/client/signup/init.ts
 var initializeApp$2 = function() {
 	var _ref = _asyncToGenerator(function* () {
@@ -9256,28 +9250,22 @@ var initializeApp$2 = function() {
 		return _ref.apply(this, arguments);
 	};
 }();
-/**
-* Registers all UI observers/subscribers to listen to store updates.
-*/
 var initObservers$4 = () => {
-	setupPeriodOptionsObserver();
-	setupPeriodValueObserver();
+	setupStudentInputObserver();
+	setupDailyScheduleBlocksObserver();
+	setupDateObserver();
+	setupPeriodObservers();
 	setupTypeInputObserver();
 	setupPanelsObserver();
-	setupGlassRoomsObserver();
-	setupStudyOptionsObserver();
-	setupStudySelectValueObserver();
-	setupSubjectOptionsObserver();
-	setupSubjectValueObserver();
 	setupInterventionTeacherObserver();
-	setupStudentInputObserver();
-	setupScheduleRulesObserver();
+	setupStudyObservers();
+	setupSubjectObservers();
+	setupGlassRoomsObserver();
 	setupCapacityValidationObserver();
-	setupDailyScheduleBlocksObserver();
 };
 var getServerData$2 = function() {
 	var _ref2 = _asyncToGenerator(function* () {
-		if (DEBUG) return yield setMockData$2();
+		if (DEBUG) return yield getMockData("signup");
 		else return new Promise((resolve, reject) => {
 			google.script.run.withFailureHandler(reject).withSuccessHandler(resolve).getInitialSignupData();
 		});
@@ -9287,16 +9275,22 @@ var getServerData$2 = function() {
 	};
 }();
 function parseServerData$2(data) {
+	var _defaultMaxSetting$va;
 	const parsedData = safeJsonParse(data);
 	const students = parsedData.students;
-	const defaultMax = 10;
+	const studentNames = parseStudentDataList(students);
+	const dailySchedules = parseDailyBlocks(parsedData.dailySchedules);
+	const signups = parseSignups(parsedData.signups);
+	const settings = parseSettings(parsedData.settings);
+	const defaultMaxSetting = settings.find((s) => s.key === "Max_Signups_Default");
+	const defaultMax = (_defaultMaxSetting$va = defaultMaxSetting === null || defaultMaxSetting === void 0 ? void 0 : defaultMaxSetting.value) !== null && _defaultMaxSetting$va !== void 0 ? _defaultMaxSetting$va : 10;
 	const appConfig = getAppConfig();
 	return {
 		students,
-		studentNames: parseStudentDataList(students),
-		dailySchedules: parseDailyBlocks(parsedData.dailySchedules),
-		signups: parseSignups(parsedData.signups),
-		settings: parseSettings(parsedData.settings),
+		studentNames,
+		dailySchedules,
+		signups,
+		settings,
 		defaultMax,
 		currentMax: defaultMax,
 		currentDate: /* @__PURE__ */ new Date(),
@@ -9374,25 +9368,6 @@ var setUpdateStatus = function() {
 var setTooltips = (selector) => {
 	[...qsa(selector)].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
 };
-function setMockData$2() {
-	return _setMockData$2.apply(this, arguments);
-}
-function _setMockData$2() {
-	_setMockData$2 = _asyncToGenerator(function* () {
-		setValue("#email", "wpsdeveloper@walpole.k12.ma.us");
-		setValue("#update-row-id", "");
-		setValue("#is-admin", "true");
-		setValue("#is-editor", "true");
-		setValue("#wed-int-active", "true");
-		toggleStaffOnlyViews(true);
-		toggleAdminOnlyViews(true);
-		const sampleData = yield __vitePreload(() => Promise.resolve().then(() => (init_sampledata(), sampledata_exports)), void 0, import.meta.url);
-		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-		yield delay(2e3);
-		return sampleData.signupData;
-	});
-	return _setMockData$2.apply(this, arguments);
-}
 var setupDailyScheduleBlocksObserver = () => {
 	store$2.subscribe((state) => {
 		var _dailyScheduleBlocks$;
@@ -9987,7 +9962,7 @@ var initObservers$1 = () => {
 };
 var getServerData$1 = function() {
 	var _ref2 = _asyncToGenerator(function* () {
-		if (DEBUG) return yield setMockData$1();
+		if (DEBUG) return yield getMockData("admin");
 		else return new Promise((resolve, reject) => {
 			google.script.run.withFailureHandler(reject).withSuccessHandler(resolve).getInitialAdminData();
 		});
@@ -10051,22 +10026,6 @@ function initializeTabs() {
 		panels.forEach((content) => content.classList.remove("active"));
 		target.classList.add("active");
 	});
-}
-function setMockData$1() {
-	return _setMockData$1.apply(this, arguments);
-}
-function _setMockData$1() {
-	_setMockData$1 = _asyncToGenerator(function* () {
-		setValue("#email", "wpsdeveloper@walpole.k12.ma.us");
-		setValue("#is-editor", "true");
-		setValue("#wed-int-active", "true");
-		toggleEditorOnlyViews(true);
-		const sampleData = yield __vitePreload(() => Promise.resolve().then(() => (init_sampledata(), sampledata_exports)), void 0, import.meta.url);
-		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-		yield delay(2e3);
-		return JSON.stringify(sampleData.adminData);
-	});
-	return _setMockData$1.apply(this, arguments);
 }
 var store = new Store({
 	dailySchedules: [],
@@ -10325,7 +10284,7 @@ var initializeApp = function() {
 }();
 var getServerData = function() {
 	var _ref2 = _asyncToGenerator(function* () {
-		if (DEBUG) return yield setMockData();
+		if (DEBUG) return yield getMockData("attendance");
 		return new Promise((resolve, reject) => {
 			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getInitialAttendanceData();
 		});
@@ -10391,25 +10350,6 @@ var refreshData = function() {
 		return _ref3.apply(this, arguments);
 	};
 }();
-function setMockData() {
-	return _setMockData.apply(this, arguments);
-}
-function _setMockData() {
-	_setMockData = _asyncToGenerator(function* () {
-		setValue("#email", "wpsdeveloper@walpole.k12.ma.us");
-		setValue("#update-row-id", "");
-		setValue("#is-admin", "true");
-		setValue("#is-editor", "true");
-		setValue("#wed-int-active", "true");
-		toggleEditorOnlyViews(true);
-		toggleAdminOnlyViews(true);
-		const sampleData = yield __vitePreload(() => Promise.resolve().then(() => (init_sampledata(), sampledata_exports)), void 0, import.meta.url);
-		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-		yield delay(2e3);
-		return sampleData.attendanceData;
-	});
-	return _setMockData.apply(this, arguments);
-}
 //#endregion
 //#region src/client/main.ts
 /** ======= CLIENT CODE  ======== 

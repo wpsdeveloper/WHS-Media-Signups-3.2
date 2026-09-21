@@ -6,8 +6,8 @@ import * as settingsTable from "./settings-table";
 import * as data from './data';
 import * as studentInput from '../common/student-input';
 import { AdminState, store } from './admin-store';
-import { DEBUG } from "../common/debug";
 import { getAppConfig } from '../common/app-config';
+import { DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -42,7 +42,7 @@ export const initObservers = () => {
 
 const getServerData = async (): Promise<string> => {
   if (DEBUG) {
-    return await setMockData();
+    return await getMockData('admin');
   } else {
   return new Promise((resolve, reject) => {
     google.script.run

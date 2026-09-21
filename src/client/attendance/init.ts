@@ -4,9 +4,9 @@ import * as parser from '../common/parsers';
 import * as dates from '../common/dates';
 import * as dataTable from "./data-table";
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
-import { DEBUG } from '../common/debug';
 import { AppConfig, getAppConfig } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
+import { DEBUG, getMockData } from '../common/debug';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -23,7 +23,7 @@ export const initializeApp = async () => {
 
 const getServerData = async (): Promise<string> => {
   if (DEBUG) {
-    return await setMockData();
+    return await getMockData('attendance');
   } 
 
   return new Promise((resolve, reject) => {
@@ -97,24 +97,6 @@ export const refreshData = async () => {
   
   messaging.hideLoadingModal();
 };
-
-async function setMockData() {
-  dom.setValue('#email', 'wpsdeveloper@walpole.k12.ma.us');
-  // dom.setValue('#email', 'zzdemow23@wpsma.org');
-  dom.setValue('#update-row-id', '');
-  dom.setValue('#is-admin', 'true');
-  dom.setValue('#is-editor', 'true'); 
-  dom.setValue("#wed-int-active", "true");
-  dom.toggleEditorOnlyViews(true);
-  dom.toggleAdminOnlyViews(true);
-
-  const sampleData = await import("../../sampledata");
-  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  await delay(2000);
-
-  return sampleData.attendanceData;
-}
-
 
 
 
