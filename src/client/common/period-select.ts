@@ -50,16 +50,13 @@ export const updatePeriodOptions = (
  /**
  * Subscriber: Re-renders available options when date or schedule data changes.
  */
-export const setupPeriodOptionsObserver = () => {
+export const setupPeriodObservers = () => {
+  // updates the period selectbox options when date or schedule changes
   store.subscribe((state: SignupState) => {
     updatePeriodOptions(state.currentDate, state.dailySchedules);
   }, ['currentDate', 'dailySchedules']);
-};
 
-/**
- * Subscriber: Keeps the select element state synchronized with store.currentPeriod.
- */
-export const setupPeriodValueObserver = () => {
+  // updates the selected period ui id data is changed externally
   store.subscribe((state: SignupState) => {
     const periodSelect = dom.qs("#period") as HTMLSelectElement;
     if (periodSelect && state.currentPeriod && periodSelect.value !== state.currentPeriod) {

@@ -12,7 +12,6 @@ import * as interventionTeacherSelect from './interventions-teacher-select';
 import * as studySelect from './study-select';
 import * as subjectSelect from './subject-select';
 import * as glassRoomsInput from './glass-rooms-input';
-import * as scheduleRules from './schedule-rules';
 import * as formData from './form-data';
 import { getAppConfig } from '../common/app-config';
 import { SignupState, store } from './signup-store';
@@ -27,7 +26,6 @@ export const initializeApp = async () => {
   try {
     const rawData = await getServerData();
     const parsedData = parseServerData(rawData);
-
     store.setState(parsedData);
 
     await initializeUi();
@@ -39,27 +37,24 @@ export const initializeApp = async () => {
   messaging.hideLoadingModal();
 }
 
-/**
- * Registers all UI observers/subscribers to listen to store updates.
- */
+// Registers all UI observers/subscribers to listen to store updates.
 export const initObservers = () => {
-  // dateSelect.setupDateSelectObserver('#date');
-  periodSelect.setupPeriodOptionsObserver();
-  periodSelect.setupPeriodValueObserver();
+  studentInput.setupStudentInputObserver();
+  
+  setupDailyScheduleBlocksObserver();
+  dateSelect.setupDateObserver();
+  periodSelect.setupPeriodObservers();
+  
   typeInput.setupTypeInputObserver();
   panels.setupPanelsObserver();
-  glassRoomsInput.setupGlassRoomsObserver();
-  studySelect.setupStudyOptionsObserver();
-  studySelect.setupStudySelectValueObserver();
-  subjectSelect.setupSubjectOptionsObserver();
-  subjectSelect.setupSubjectValueObserver();
+  
   interventionTeacherSelect.setupInterventionTeacherObserver();
-  studentInput.setupStudentInputObserver();
-  scheduleRules.setupScheduleRulesObserver();
+  studySelect.setupStudyObservers();
+  subjectSelect.setupSubjectObservers();
+  glassRoomsInput.setupGlassRoomsObserver();
+  
   capacity.setupCapacityValidationObserver();
-  setupDailyScheduleBlocksObserver();
 };
-
 
 const getServerData = async (): Promise<string> => {
   if (DEBUG) {
@@ -75,18 +70,19 @@ const getServerData = async (): Promise<string> => {
 };
 
 function parseServerData(data: string): SignupState {
-  console.log('data', data);
   const parsedData = parser.safeJsonParse(data);
   const students = parsedData.students;
-  const defaultMax = 10; //parsedData.appSettings.defaultMax;
+  const studentNames = parser.parseStudentDataList(students);
+  const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
+  const signups = parser.parseSignups(parsedData.signups);
+  const settings = parser.parseSettings(parsedData.settings); 
+
+  const defaultMaxSetting = settings.find(s => s.key === "Max_Signups_Default");
+  const defaultMax = defaultMaxSetting?.value as number ?? 10;
   const appConfig = getAppConfig()
 
   return {
-    students,
-    studentNames: parser.parseStudentDataList(students),
-    dailySchedules: parser.parseDailyBlocks(parsedData.dailySchedules),
-    signups: parser.parseSignups(parsedData.signups),
-    settings: parser.parseSettings(parsedData.settings),
+    students, studentNames, dailySchedules, signups, settings,
     defaultMax: defaultMax,
     currentMax: defaultMax,
     currentDate: new Date(),

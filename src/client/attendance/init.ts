@@ -41,8 +41,7 @@ function parseServerData(data: string): Partial<AttendanceState> {
   const appConfig = getAppConfig()
 
   return {
-    signups,
-    dailySchedules,
+    signups, dailySchedules, 
     currentEmail: appConfig.email,
     isStaff: appConfig.isStaff,
     isAdmin: appConfig.isAdmin,

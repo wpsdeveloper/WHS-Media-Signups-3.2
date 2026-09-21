@@ -118,6 +118,7 @@ function hydrateDailyBlock(rawData: RawDailyBlock[]): DailyBlock[] {
   return rawData.map((block: any) => ({
     ...block,
     date: new Date(block.date),
+    period: String(block.period),
   }));
 }
 
@@ -126,6 +127,7 @@ function hydrateSignups(rawData: RawSignup[]): Signup[] {
     ...block,
     date: new Date(block.date),
     timestamp: new Date(block.timestamp),
+    period: String(block.period),
   }));
 }
 

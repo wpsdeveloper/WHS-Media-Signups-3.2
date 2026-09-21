@@ -89,11 +89,11 @@ function parseSpecialRows(rows: SSRow[]): SpecialRaw[] {
     specials.push({
       date: row[0],
       period: String(row[1]) as Period,
-      allowInterventions: String(row[2]),
-      allowAssessmentMakeups: String(row[3]),
-      allowAltSetting: String(row[4]),
-      allowTutoring: String(row[5]),
-      allowNonInterventions: String(row[6]),
+      allowInterventions: String(row[2] === ""),
+      allowAssessmentMakeups: String(row[2] === ""),
+      allowAltSetting: String(row[2] === ""),
+      allowTutoring: String(row[2] === ""),
+      allowNonInterventions: String(row[2] === ""),
       max: String(row[7]),
     })
   });

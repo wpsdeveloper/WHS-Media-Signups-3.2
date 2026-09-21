@@ -34,18 +34,15 @@ export const updateSubjectOptions = (
 /**
  * Subscriber: Re-calculates and populates subject options when dependencies change.
  */
-export const setupSubjectOptionsObserver = () => {
+export const setupSubjectObservers = () => {
+  // updates subject selectbox options based on date/period selection
   store.subscribe((state: SignupState) => {
     updateSubjectOptions(
       state.currentScheduleBlock,
     );
   }, ['currentScheduleBlock']);
-};
-
-/**
- * Subscriber: Synchronizes DOM selection with state.currentSubject.
- */
-export const setupSubjectValueObserver = () => {
+  
+  // updates study teacher if the data is changed externally
   store.subscribe((state: SignupState) => {
     const selectElem = dom.qs("#subject-int-select") as HTMLInputElement;
     if (selectElem && state.currentSubject && selectElem.value !== state.currentSubject) {

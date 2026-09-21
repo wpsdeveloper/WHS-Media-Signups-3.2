@@ -48,5 +48,5 @@ export const updateGlassRooms = (
 export const setupGlassRoomsObserver = () => {
   store.subscribe((state: SignupState) => {
     updateGlassRooms(state.currentScheduleBlock, state.signups);
-  }, ['currentDate', 'currentPeriod', 'signups']);
+  }, ['currentScheduleBlock', 'signups']);
 };

@@ -1,4 +1,4 @@
-import { parseDateInput } from '../common/dates';
+import { parseDateInput, toDateInputValue } from '../common/dates';
 import * as dom from '../common/dom';
 import { SignupState, store } from './signup-store';
 
@@ -31,15 +31,15 @@ import { SignupState, store } from './signup-store';
  /**
  * Subscriber: Keeps the date input DOM element in sync if state updates externally.
  */
-export const setupDateSelectObserver = (selector: string) => {
+export const setupDateObserver = () => {
+  // updates date field if data is changed externally
   store.subscribe((state: SignupState) => {
-    const dateInput = dom.qs(selector) as HTMLInputElement;
-    if (!dateInput) return;
+    const { currentDate } = state;
+    if (!currentDate) return;
 
-    const newDate = parseDateInput(dateInput.value);
-    if (state.currentDate !== newDate) {
-      store.setState({ currentDate: newDate });
-    }
+    const dateInput = dom.qs('#date') as HTMLInputElement;
+    if (!dateInput) return;
+    dom.setValue('#date', toDateInputValue(currentDate));
   }, ['currentDate']);
 };
 

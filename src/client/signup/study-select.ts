@@ -53,18 +53,16 @@ export const toggleStudyInputVisibility = (hasOptions: boolean) => {
 /**
  * Subscriber: Re-calculates and re-populates options when key state items change.
  */
-export const setupStudyOptionsObserver = () => {
+export const setupStudyObservers = () => {
+  // sets study teacher options based on date/period selection
   store.subscribe((state: SignupState) => {
     updateStudyOptions(
       state.currentScheduleBlock,
       state.currentType,    );
-  }, ['currentScheduleBlock', 'currentPeriod', 'currentType']);
-};
-
-/**
- * Subscriber: Synchronizes DOM selection with state.currentStudyTeacher.
- */
-export const setupStudySelectValueObserver = () => {
+    }, ['currentScheduleBlock', 'currentPeriod', 'currentType']);
+    
+    
+  // updates selectbox choice is data is changed externally
   store.subscribe((state: SignupState) => {
     const selectElem = dom.qs("#study-teacher-select") as HTMLSelectElement;
     if (selectElem && state.currentStudyTeacher && selectElem.value !== state.currentStudyTeacher) {

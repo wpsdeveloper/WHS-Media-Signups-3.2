@@ -62,13 +62,8 @@ function parseServerData(data: string): AdminState {
   const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
   const appConfig = getAppConfig()
   
-
   return {
-    students,
-    studentNames,
-    dailySchedules,
-    signups,
-    settings,
+    students, studentNames, dailySchedules, signups, settings,
     currentStudentName: '',
     currentSortField: 'date', 
     currentSortOrder: 'desc', 

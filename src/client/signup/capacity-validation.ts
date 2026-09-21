@@ -21,8 +21,8 @@ export const checkFull = (
     )
   );
   const isFull = matching.length >= currentMax;
-  toggleNonInterventions(isFull, "Full");
-  toggleTutoring(isFull, "Full");
+  toggleNonInterventions(!isFull, "Full");
+  toggleTutoring(!isFull, "Full");
 }
 
 /**
