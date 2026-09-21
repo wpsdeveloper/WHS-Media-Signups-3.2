@@ -4,10 +4,10 @@ import * as parser from '../common/parsers';
 import * as dataTable from "./data-table";
 import * as settingsTable from "./settings-table";
 import * as data from './data';
-import * as studentInput from '../common/student-input';
+import * as studentInput from './student-input';
 import { AdminState, store } from './admin-store';
 import { getAppConfig } from '../common/app-config';
-import { DEBUG, getMockData } from "../common/debug";
+import { IS_DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -41,7 +41,7 @@ export const initObservers = () => {
 };
 
 const getServerData = async (): Promise<string> => {
-  if (DEBUG) {
+  if (IS_DEBUG) {
     return await getMockData('admin');
   } else {
   return new Promise((resolve, reject) => {

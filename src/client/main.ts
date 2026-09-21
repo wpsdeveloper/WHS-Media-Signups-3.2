@@ -17,7 +17,7 @@ import { initializeApp as initializeAdmin } from "./admin/init";
 import { initializeApp as initializeAttendance } from "./attendance/init";
 
 import { getAppConfig } from './common/app-config';
-import { DEBUG } from './common/debug';
+import { IS_DEBUG } from './common/debug';
 
 
 const appDiv = document.getElementById('app') as HTMLElement;
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Client-side router based on server-validated state
 async function mountApp() {
   const appConfig = getAppConfig();
-  const view = DEBUG ? 'attendance' : appConfig.view;
+  const view = IS_DEBUG ? 'admin' : appConfig.view;
 
   switch (view) {
     case 'attendance':

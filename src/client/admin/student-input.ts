@@ -1,5 +1,5 @@
-import * as dom from './dom';
-import { store } from '../signup/signup-store';
+import * as dom from '../common/dom';
+import { store } from './admin-store';
 
 /**
  * Publisher: Listens to input changes in the student text field and updates store state.

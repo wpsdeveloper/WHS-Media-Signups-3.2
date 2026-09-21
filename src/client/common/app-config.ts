@@ -1,7 +1,7 @@
-import { DEBUG } from './debug';
+import { IS_DEBUG } from './debug';
 
 export function getAppConfig(): AppConfig {
-  if (DEBUG) {
+  if (IS_DEBUG) {
     return {
       view: 'signup', 
       wedInt: true,

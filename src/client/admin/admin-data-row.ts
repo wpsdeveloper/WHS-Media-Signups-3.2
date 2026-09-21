@@ -8,8 +8,8 @@ export class AdminDataRow {
   signup: Signup;
   rowId: string = '';
   state: 'attendance' | 'settings' = 'attendance';
-  studentPanel: HTMLElement;
-  settingsPanel: HTMLElement;
+  attendancePanel: HTMLElement;
+  detailsPanel: HTMLElement;
   
   constructor(rowId: string, signup: Signup) {
     this.rowId = rowId;
@@ -28,15 +28,12 @@ export class AdminDataRow {
     this.element.removeAttribute('id');
     this.element.classList.add('data-row');
 
-    const studentPanel: HTMLElement = this.element.querySelector('#student-panel') as HTMLElement; 
-    const settingsPanel: HTMLElement = this.element.querySelector('#settings-panel') as HTMLElement; 
-    if (!studentPanel || !settingsPanel) throw new Error("panel missing");
+    const attendancePanel: HTMLElement = this.element.querySelector('.attendance-info') as HTMLElement; 
+    const detailsPanel: HTMLElement = this.element.querySelector('.details-info') as HTMLElement; 
+    if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
 
-    this.studentPanel = studentPanel;
-    this.settingsPanel = settingsPanel;
-
-    
-    dom.setAttribute(this.element, 'dataset.signupId', this.rowId);
+    this.attendancePanel = attendancePanel;
+    this.detailsPanel = detailsPanel;
   }
 
   populate() {
@@ -86,13 +83,13 @@ export class AdminDataRow {
   this.mountCheckinBoxes();
   }
 
-  mountCheckinBoxes() {
-    if (!this.studentPanel) return;
-    
+ mountCheckinBoxes() {
+    if (!this.attendancePanel) return;
+
     const checkinType = Object.keys(CHECKIN_CONFIG);
     checkinType
     .forEach((type) => {
-      const panel = this.studentPanel.querySelector(`div[data-type="${CHECKIN_CONFIG[type].className}"]`);
+      const panel = this.attendancePanel.querySelector(`div[data-type="${type}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
         const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);

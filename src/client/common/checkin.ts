@@ -1,7 +1,7 @@
 import * as dom from '../common/dom';
 import * as dates from "../common/dates";
 import * as messaging from "../common/messaging";
-import { DEBUG } from '../common/debug';
+import { IS_DEBUG } from '../common/debug';
 import { CHECKIN_CONFIG, CheckinBox } from './checkin-box';
 
 /**
@@ -9,7 +9,7 @@ import { CHECKIN_CONFIG, CheckinBox } from './checkin-box';
  * */
 export const checkin = async(checkinBox: CheckinBox, time: string): Promise<string> => {
   // sets the value to the current time
-  if (DEBUG) return time; // simulates instant success in debug mode
+  if (IS_DEBUG) return time; // simulates instant success in debug mode
 
   // sends the checkin request to the server for async processing
   await setCheckin(checkinBox.type, checkinBox.rowId, time);
@@ -151,7 +151,7 @@ export const checkinSuccess = (returnVal: {type: CheckinBox['type'], id: Checkin
  * @param {string} value The value to store, typically a time or ""
  * */
 export const setCheckin = async (type: CheckinBox['type'], id: CheckinBox['rowId'], value: string) => {
-  if (DEBUG) {
+  if (IS_DEBUG) {
     checkinSuccess({ type: type, id: id, value: value });
     return;
   }

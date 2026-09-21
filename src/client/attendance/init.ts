@@ -6,7 +6,7 @@ import * as dataTable from "./data-table";
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
 import { AppConfig, getAppConfig } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
-import { DEBUG, getMockData } from '../common/debug';
+import { IS_DEBUG, getMockData } from '../common/debug';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -22,7 +22,7 @@ export const initializeApp = async () => {
 }
 
 const getServerData = async (): Promise<string> => {
-  if (DEBUG) {
+  if (IS_DEBUG) {
     return await getMockData('attendance');
   } 
 

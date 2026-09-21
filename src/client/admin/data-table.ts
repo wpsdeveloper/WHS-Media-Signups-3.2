@@ -101,8 +101,8 @@ export const showAttendance = () => {
 export const showSignupInfo =() => {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const AttendancePanel = dom.qs(".header-row .attendance-info") as HTMLElement;
-  const width = AttendancePanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
+  const attendancePanel = dom.qs(".header-row .attendance-info") as HTMLElement;
+  const width = attendancePanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
 
   // animates the panel
   const panels = dom.qsa(".panel") as HTMLElement[];

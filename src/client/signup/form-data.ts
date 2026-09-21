@@ -1,7 +1,7 @@
 import * as dom from "../common/dom";
 import * as messaging from '../common/messaging';
 import { store } from './signup-store';
-import { DEBUG } from "../common/debug";
+import { IS_DEBUG } from "../common/debug";
 
 /**
  *  Sends the form data to the server for submission 
@@ -21,7 +21,7 @@ export const submitForm = async () => {
   const updateRowId = store.getState().updateRowId;
 
   try {
-    if (DEBUG) {
+    if (IS_DEBUG) {
       await mockSubmit(formData);
       submitComplete();
     } else if (!updateRowId) {

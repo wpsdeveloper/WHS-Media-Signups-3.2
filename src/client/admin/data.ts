@@ -2,6 +2,7 @@ import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
 import { store } from './admin-store';
+import { IS_DEBUG, getMockData } from '../common/debug';
 
 export const getAuditHandler = async () => {
   try {
@@ -32,7 +33,9 @@ export const getStudentAudit = async (emailStudent: string): Promise<string> => 
   // breaks apart the line selected in the student datalist
   try {
     messaging.showLoadingModal("Getting student data");
-    
+    if (IS_DEBUG) {
+      return getMockData('audit');
+    }
     return new Promise((resolve, reject) => {
       google.script.run
       .withSuccessHandler(resolve)
@@ -52,17 +55,11 @@ export const getStudentAudit = async (emailStudent: string): Promise<string> => 
 export const setupAuditObserver = () => {
   store.subscribe(async (state) => {
     const auditData = await getStudentAudit(state.currentStudentName);
-    const signups = parser.parseSignups(auditData);
+    const parsedData = parser.safeJsonParse(auditData);
+    const signups = parser.parseSignups(parsedData.signups);
     store.setState({signups: signups});
     
     messaging.hideLoadingModal();
   }, ['requestedStudentEmail']);
 };
 
-async function setMockData() {
-  const sampleData = await import('../../sampledata');
-  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  await delay(2000);
-
-  return sampleData.adminAudit;
-}

@@ -7,7 +7,7 @@ import * as capacity from './capacity-validation';
 import * as dateSelect from './date-select';
 import * as periodSelect from '../common/period-select';
 import * as typeInput from './type-input';
-import * as studentInput from '../common/student-input';
+import * as studentInput from './student-input';
 import * as interventionTeacherSelect from './interventions-teacher-select';
 import * as studySelect from './study-select';
 import * as subjectSelect from './subject-select';
@@ -15,7 +15,7 @@ import * as glassRoomsInput from './glass-rooms-input';
 import * as formData from './form-data';
 import { getAppConfig } from '../common/app-config';
 import { SignupState, store } from './signup-store';
-import { DEBUG, getMockData } from "../common/debug";
+import { IS_DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -56,7 +56,7 @@ export const initObservers = () => {
 };
 
 const getServerData = async (): Promise<string> => {
-  if (DEBUG) {
+  if (IS_DEBUG) {
     return await getMockData('signup');
   } else {
   return new Promise((resolve, reject) => {
