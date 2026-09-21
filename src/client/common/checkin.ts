@@ -7,12 +7,12 @@ import { CHECKIN_CONFIG, CheckinBox } from './checkin-box';
 /**
  *  Responds to a Checkin button click 
  * */
-export const checkin = (checkinBox: CheckinBox, time: string): string => {
+export const checkin = async(checkinBox: CheckinBox, time: string): Promise<string> => {
   // sets the value to the current time
   if (DEBUG) return time; // simulates instant success in debug mode
 
   // sends the checkin request to the server for async processing
-  setCheckin(checkinBox.type, checkinBox.rowId, time);
+  await setCheckin(checkinBox.type, checkinBox.rowId, time);
 
   return time;
 }

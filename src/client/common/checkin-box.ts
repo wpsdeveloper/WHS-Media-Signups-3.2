@@ -241,19 +241,15 @@ export class CheckinBox {
   }
 
   updateSignups(rowId: Signup['rowId'], newValue: string): Signup[] {
-    const signups = this.store.getSignups() as Signup[];
-    if (!signups) [] as Signup[];
+    // 1. Fallback to an empty array immediately to avoid the early return bug
+    const signups = (this.store.getSignups() as Signup[]) || [];
     
-    const thisSignup = signups.find(su => su.rowId === rowId);
-    if (!thisSignup) return signups;
-
     const propName = CHECKIN_CONFIG[this.type].propName;
+
+    // 2. Map handles the iteration and replacement cleanly
     return signups.map(signup =>
       signup.rowId === rowId
-        ? {
-            ...signup,
-            [propName]: newValue,
-          }
+        ? { ...signup, [propName]: newValue }
         : signup
     );
   }

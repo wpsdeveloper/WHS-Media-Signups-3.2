@@ -47,7 +47,7 @@ export const initObservers = () => {
 
     // Update state with new rows
     store.setState({ dataRows: newRows } as Partial<AttendanceState>);
-  }, ["currentDate", "currentPeriod", "signups", "currentSortField", "currentSortOrder"]);
+  }, ["currentDate", "currentPeriod", "currentSortField", "currentSortOrder"]);
 
   // toggle row visibility and wed UI when period changes
   store.subscribe((state: AttendanceState)  => {
@@ -101,7 +101,7 @@ export const dateChangeHandler = () => {
   if (!newDate) return;
 
   store.setState({ 
-    currentDate: new Date(newDate) 
+    currentDate: parseDateInput(newDate) 
   });
 };
 

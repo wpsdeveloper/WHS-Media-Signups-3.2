@@ -117,17 +117,3 @@ export const setTooltips = (selector: string) => {
 };
 
 
-async function setMockData() {
-  dom.setValue('#email', 'wpsdeveloper@walpole.k12.ma.us');
-  dom.setValue('#is-editor', 'true'); 
-  dom.setValue("#wed-int-active", "true");
-  dom.toggleEditorOnlyViews(true);
-
-  const sampleData = await import('../../sampledata');
-  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-  await delay(2000);
-
-  return JSON.stringify(sampleData.adminData);
-}
-
-

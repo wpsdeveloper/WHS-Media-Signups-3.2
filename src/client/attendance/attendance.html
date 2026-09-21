@@ -161,174 +161,176 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->
+<section id="templates" style="display:none">
+    
+  <!-- Tri-state button (not currently used)  -->
+  <div id="custom-checkbox-template">
+    <div class="custom-checkbox mb-2 d-flex">
+      <span type="checkbox" class="form-check-input tri-state" ></span>
+      <label for="feedback" class="form-check-label ms-1">
+      </label>
+    </div>
   </div>
 
-  <!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->
-  <section id="templates" style="display:none">
-    
-    <!-- Tri-state button (not currently used)  -->
-    <div id="custom-checkbox-template">
-      <div class="custom-checkbox mb-2 d-flex">
-        <span type="checkbox" class="form-check-input tri-state" ></span>
-        <label for="feedback" class="form-check-label ms-1">
-        </label>
-      </div>
-    </div>
-
     <!-- Student row of data  -->
-    <template id="student-row-template" >
-      <div class="row data-row student-row mb-2">
+  <template id="student-row-template" >
+    <div class="row data-row student-row mb-2">
 
-        <!-- Column 1  -->
-        <div class="col col-12 col-lg-3 mb-2">
-          
-          <!-- Edit icons (shown to editors only) -->
-          <div class="edit-icons d-none me-1 text-secondary">
-            <a class="edit-link" href="#?page=update" target="_top"><i class="fas fa-edit"></i></a> 
-          </div>
-          
-          <!-- Student name  -->
-          <div class="student-name d-inline">
-          </div>
-        </div>
-        
-        <!-- Column 2  -->
-        <!-- Study hall teacher  -->
-        <div class="study-teacher col col-12 col-lg-2 mb-2"></div>
-        
-        <!-- Column 3  -->
-        <div id="slider-wrapper" class="col col-12 col-lg-7 mb-2" data-items="2">
-          <div class="slider">
-            
-            <!-- Panel: Attendance  -->
-            <div class="panel attendance-info">
-              <div class="row">
-                <div data-type="study-checkin" class="checkin-box study-checkin col-6 col-xl-3 order-1 text-center"></div>
-                <div data-type="media-checkin" class="checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center"></div>
-                <div data-type="media-checkout" class="checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center"></div>
-                <div data-type="study-return" class="checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center"></div>
-              </div>
-            </div>
-            
-            <!-- Panel: Details  -->
-            <div class="panel details-info">
-              <div class="row">
-                <div class="type col-12 col-lg-6"></div>
-                <div class="room col-12 col-lg-6"></div>
-                <div class="comments col-12"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-    
-    <template id="checkin-box">
-      <div>
-        <label class="checkin-box-label">Study Return</label>
-      </div>
-
-      <!-- UI elements  -->
-      <button class="checkin-btn btn btn-light" >Return</button>
-      <div class="time d-none">
-        <span class="time-value text-success"></span>
-        <span class="time-edit d-none">
-          <input class="text-center" type="time"></input> 
-          <i class="save-btn edit fa-solid fa-check text-success" ></i>
-          <i class="cancel-btn edit fa-solid fa-ban text-danger" ></i>
-          <i class="delete-btn cancel fa-solid fa-trash text-danger"></i>
-        </span>
-        <span class="primary-buttons ms-1">
-          <i class="edit-start-btn edit fa-solid fa-edit text-primary" ></i>
-        </span>
-      </div>
-      <div class="spinner d-none">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    </template>
-
-    <!-- Staff row of data  -->
-    <div id="staff-row-template" class="row data-row staff-row mb-2">
-      
       <!-- Column 1  -->
-      <div class="col col-12 col-lg-5 mb-2">
-
+      <div class="col col-12 col-lg-3 mb-2">
+        
         <!-- Edit icons (shown to editors only) -->
         <div class="edit-icons d-none me-1 text-secondary">
           <a class="edit-link" href="#?page=update" target="_top"><i class="fas fa-edit"></i></a> 
         </div>
-
+        
         <!-- Student name  -->
         <div class="student-name d-inline">
         </div>
       </div>
-
+      
       <!-- Column 2  -->
-      <!-- none  -->
-
+      <!-- Study hall teacher  -->
+      <div class="study-teacher col col-12 col-lg-2 mb-2"></div>
+      
       <!-- Column 3  -->
-      <div class="signup-info col col-12 col-lg-7 mb-2">
-        <div class="row">
-          <div class="type col-12"></div>
-          <div class="room col-12 col-lg-6"></div>
-          <div class="comments col-12"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Modal: Loading -->
-  <div class="modal fade" id="loading-modal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-body">
-          <div class="d-flex">
-            <div class="spinner-border text-primary me-3" role="status">
-              <span class="visually-hidden">Loading...</span>
+      <div id="slider-wrapper" class="col col-12 col-lg-7 mb-2" data-items="2">
+        <div class="slider">
+          
+          <!-- Panel: Attendance  -->
+          <div class="panel attendance-info">
+            <div class="row">
+              <div data-type="study-checkin" class="checkin-box study-checkin col-6 col-xl-3 order-1 text-center"></div>
+              <div data-type="media-checkin" class="checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center"></div>
+              <div data-type="media-checkout" class="checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center"></div>
+              <div data-type="study-return" class="checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center"></div>
             </div>
-            <div class="loading-text">
-              
+          </div>
+          
+          <!-- Panel: Details  -->
+          <div class="panel details-info">
+            <div class="row">
+              <div class="type col-12 col-lg-6"></div>
+              <div class="room col-12 col-lg-6"></div>
+              <div class="comments col-12"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </template>
+    
+  <template id="checkin-box">
+    <div>
+
+      <div>
+        <label class="checkin-box-label">Study Return</label>
+      </div>
+      
+      <!-- UI elements  -->
+    <button class="checkin-btn btn btn-light" >Return</button>
+    <div class="time d-none">
+      <span class="time-value text-success"></span>
+      <span class="time-edit d-none">
+        <input class="text-center" type="time"></input> 
+        <i class="save-btn edit fa-solid fa-check text-success" ></i>
+        <i class="cancel-btn edit fa-solid fa-ban text-danger" ></i>
+        <i class="delete-btn cancel fa-solid fa-trash text-danger"></i>
+      </span>
+      <span class="primary-buttons ms-1">
+        <i class="edit-start-btn edit fa-solid fa-edit text-primary" ></i>
+      </span>
+    </div>
+    <div class="spinner d-none">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  </div>
+  </template>
+    
+    <!-- Staff row of data  -->
+  <div id="staff-row-template" class="row data-row staff-row mb-2">
+    
+    <!-- Column 1  -->
+    <div class="col col-12 col-lg-5 mb-2">
+
+      <!-- Edit icons (shown to editors only) -->
+      <div class="edit-icons d-none me-1 text-secondary">
+        <a class="edit-link" href="#?page=update" target="_top"><i class="fas fa-edit"></i></a> 
+      </div>
+
+      <!-- Student name  -->
+      <div class="student-name d-inline">
+      </div>
+    </div>
+
+    <!-- Column 2  -->
+    <!-- none  -->
+
+    <!-- Column 3  -->
+    <div class="signup-info col col-12 col-lg-7 mb-2">
+      <div class="row">
+        <div class="type col-12"></div>
+        <div class="room col-12 col-lg-6"></div>
+        <div class="comments col-12"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- Modal: Loading -->
+<div class="modal fade" id="loading-modal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="d-flex">
+          <div class="spinner-border text-primary me-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <div class="loading-text">
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast (green): Success -->
-  <div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
-    <div id="success-toast" class="toast text-bg-success align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body">
-          Submission complete!
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+<div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
+  <div id="success-toast" class="toast text-bg-success align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Submission complete!
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
+</div>
 
-  <!-- Toast (red): Error  -->
-  <div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
-    <div id="error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body">
-          Error completing submission.
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+<!-- Toast (red): Error  -->
+<div class="toast-container position-fixed p-5 top-0 start-50 translate-middle-x">
+  <div id="error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Error completing submission.
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
+</div>
 
-  <!-- Toast (red): Invalid data (not used)  -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="validation-error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body">
-          Please complete the missing information.
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+<!-- Toast (red): Invalid data (not used)  -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="validation-error-toast" class="toast text-bg-danger align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body">
+        Please complete the missing information.
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
 </div>

@@ -65,7 +65,7 @@ export class AttendanceDataRow {
     const { element, signup } = this;
 
     // assigns current-date or current-period tags if appropriate
-    if (currentPeriod && String(currentDate) === String(signup.period)) {
+    if (currentPeriod && currentPeriod === signup.period) {
       element.classList.add('current-period');
     }
 
@@ -123,7 +123,7 @@ export class AttendanceDataRow {
     const checkinType = Object.keys(CHECKIN_CONFIG);
     checkinType
     .forEach((type) => {
-      const panel = this.attendancePanel.querySelector(`div[data-type="${CHECKIN_CONFIG[type].className}"]`);
+      const panel = this.attendancePanel.querySelector(`div[data-type="${type}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
         const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
