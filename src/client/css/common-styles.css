@@ -11,7 +11,7 @@ font-family: 'Roboto Slab', serif;
 */
 
 html {
-  font-size: 1.0rem;
+  font-size: 0.9rem;
 }
 
 body {
@@ -21,6 +21,11 @@ body {
 
 h1, h2, h3, h4 {
   font-family: 'Roboto Slab', serif;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  text-align: start;
 }
 
 .page-title h1 {
@@ -57,7 +62,7 @@ header {
 }
 
 header .logo img {
-  width: 95px;
+  height: 75px;
   margin: 0 auto;
   padding: 10px;
 }
@@ -106,30 +111,6 @@ h1, header h1 {
   font-size: 75%;
 }
 
-.signup .main-label {
-  font-weight: bold;
-}
-
-.signup .info-icon {
-  color: #8AAEE3;
-}
-
-.signup #type a[data-bs-toggle="tooltip"] {
-  text-decoration: none;
-  color: inherit;
-}
-
-.signup #type .schedule-link {
-  font-size: 80%;
-}
-
-.signup #type .staff-only-type {
-  font-style: italic;
-}
-
-.signup .editor-only {
-  display: none;
-}
 
 .attendance .data-row,
 .attendance .data-row.student-row-empty {

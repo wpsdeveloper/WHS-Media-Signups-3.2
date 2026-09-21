@@ -128,7 +128,7 @@ export const initializeUi = async () => {
 function bindEvents() {
   dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler(e as MouseEvent));
   dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler(e as MouseEvent));
-  dom.addEventListener("input[name='signup-type'], .purpose", "change", (e) => typeInput.typeChangeHandler(e as MouseEvent));
+  dom.addEventListener("#type-select, .purpose", "change", (e) => typeInput.typeChangeHandler(e as MouseEvent));
   dom.addEventListener("#study-teacher-select", "change", (e) => studySelect.studyTeacherChangeHandler(e as MouseEvent));
   dom.addEventListener("#subject-int-select", "change", (e) => subjectSelect.subjectChangeHandler(e as MouseEvent));
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e as InputEvent));

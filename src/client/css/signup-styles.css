@@ -1,0 +1,42 @@
+.main-label {
+  font-weight: bold;
+}
+
+.info-icon {
+  color: #8AAEE3;
+}
+
+#type a[data-bs-toggle="tooltip"] {
+  text-decoration: none;
+  color: inherit;
+}
+
+#type .schedule-link {
+  font-size: 80%;
+}
+
+#type .staff-only-type {
+  font-style: italic;
+}
+
+.editor-only {
+  display: none;
+}
+
+body {
+  background: #EBF3FF; /*pale blue background*/
+}
+
+h2.step-header {
+  font-size: 1.3rem;
+  padding-bottom: 8px;
+  color: #01256F; /* WPS Text Blue */
+}
+
+.step-card {
+  background: #fff;
+  border: 1px #aaa solid;
+  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 20px;
+}

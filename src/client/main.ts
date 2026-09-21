@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Client-side router based on server-validated state
 async function mountApp() {
   const appConfig = getAppConfig();
-  const view = IS_DEBUG ? 'admin' : appConfig.view;
+  const view = IS_DEBUG ? 'signup' : appConfig.view;
 
   switch (view) {
     case 'attendance':

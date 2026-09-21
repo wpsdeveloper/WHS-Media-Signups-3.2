@@ -6,7 +6,7 @@ import { SignupState, store } from './signup-store';
  * */
 export const typeChangeHandler = (event: MouseEvent) => {
   if (!event) return;
-  const target = event.target as HTMLInputElement;
+  const target = event.target as HTMLSelectElement;
   const selectedType = target.value as SignupType;
   store.setState({ currentType: selectedType });
 };
@@ -20,51 +20,51 @@ export const resetAllTypes = () => {
 };
 
 export const toggleInterventions = (show: boolean, message?: string) => {
-  dom.setDisabled('input#intervention', !show);
-  if (!show) {
-    dom.setChecked('input#intervention', false);
-    dom.setVisible("label[for='intervention'] span.type-warning", true);
-    dom.setText(
-      "label[for='intervention'] span.type-warning",
-      message || 'Not available',
-    );
-  }
+  dom.setDisabled('input[value="intervention"]', !show);
+  // if (!show) {
+  //   // dom.setChecked('input[value="Intervention"]', false);
+  //   dom.setVisible("label[for='intervention'] span.type-warning", true);
+  //   dom.setText(
+  //     "label[for='intervention'] span.type-warning",
+  //     message || 'Not available',
+  //   );
+  // }
 };
 
 export const toggleAssessmentMakeups = (show: boolean, message?: string) => {
-  dom.setDisabled('input#assessment', !show);
-  if (!show) {
-    dom.setChecked('input#assessment', false);
-    dom.setVisible("label[for='assessment'] span.type-warning", true);
-    dom.setText(
-      "label[for='assessment'] span.type-warning",
-      message || 'Not available',
-    );
-  }
+  dom.setDisabled('input[value="assessment"]', !show);
+  // if (!show) {
+  //   // dom.setChecked('input[value="assessment', false);
+  //   dom.setVisible("label[for='assessment'] span.type-warning", true);
+  //   dom.setText(
+  //     "label[for='assessment'] span.type-warning",
+  //     message || 'Not available',
+  //   );
+  // }
 };
 
 export const toggleAltSetting = (show: boolean, message?: string) => {
-  dom.setDisabled('input#alt-setting', !show);
-  if (!show) {
-    dom.setChecked('input#alt-setting', false);
-    dom.setVisible("label[for='alt-setting'] span.type-warning", true);
-    dom.setText(
-      "label[for='alt-setting'] span.type-warning",
-      message || 'Not available',
-    );
-  }
+  dom.setDisabled('input[value="alt-setting"]', !show);
+  // if (!show) {
+  //   // dom.setChecked('input#alt-setting', false);
+  //   dom.setVisible("label[for='alt-setting'] span.type-warning", true);
+  //   dom.setText(
+  //     "label[for='alt-setting'] span.type-warning",
+  //     message || 'Not available',
+  //   );
+  // }
 };
 
 export const toggleTutoring = (show: boolean, message?: string) => {
-  dom.setDisabled('input#tutoring', !show);
-  if (!show) {
-    dom.setChecked('input#tutoring', false);
-    dom.setVisible("label[for='tutoring'] span.type-warning", true);
-    dom.setText(
-      "label[for='tutoring'] span.type-warning",
-      message || 'Not available',
-    );
-  }
+  dom.setDisabled('input[value="Tutoring"]', !show);
+  // if (!show) {
+  //   // dom.setChecked('input#tutoring', false);
+  //   dom.setVisible("label[for='tutoring'] span.type-warning", true);
+  //   dom.setText(
+  //     "label[for='tutoring'] span.type-warning",
+  //     message || 'Not available',
+  //   );
+  // }
 };
 
 export const toggleWednesdayInterventions = (
@@ -72,26 +72,26 @@ export const toggleWednesdayInterventions = (
   message?: string,
 ) => {
   dom.setDisabled('input#non-intervention', !show);
-  if (!show) {
-    dom.setChecked('input#non-intervention', false);
-    dom.setVisible("label[for='non-intervention'] span.type-warning", true);
-    dom.setText(
-      "label[for='non-intervention'] span.type-warning",
-      message || 'Not available',
-    );
-  }
+  // if (!show) {
+  //   // dom.setChecked('input#non-intervention', false);
+  //   dom.setVisible("label[for='non-intervention'] span.type-warning", true);
+  //   dom.setText(
+  //     "label[for='non-intervention'] span.type-warning",
+  //     message || 'Not available',
+  //   );
+  // }
 };
 
 export const toggleNonInterventions = (show: boolean, message?: string) => {
   dom.setDisabled("input#non-intervention, input[name='purpose']", !show);
-  if (!show) {
-    dom.setChecked("input#non-intervention, input[name='purpose'", false);
-    dom.setVisible("label[for='purpose'] span.type-warning", true);
-    dom.setText(
-      "label[for='purpose'] span.type-warning",
-      message || 'Not available',
-    );
-  }
+  // if (!show) {
+  //   dom.setChecked("input#non-intervention, input[name='purpose'", false);
+  //   dom.setVisible("label[for='purpose'] span.type-warning", true);
+  //   dom.setText(
+  //     "label[for='purpose'] span.type-warning",
+  //     message || 'Not available',
+  //   );
+  // }
 };
 
 export const toggleInterventionsLink = () => {

@@ -1,5 +1,6 @@
 <!-- Main display -->
-<div class="body signup">
+  <link rel="stylesheet" href="./css/signup-styles.css" />
+  <div class="body signup">
 
   <!-- Header/masthead -->
   <header class="mb-4">
@@ -7,19 +8,16 @@
       <div class="row pb-2 pt-2 align-items-center">
 
         <!-- Logo image -->
-        <div class="logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center">
+        <div class="logo col-12 col-sm-1 col-lg-1 d-flex flex-row align-items-center">
           <img id="logo-image" src="https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc" data-logo-id="" alt="Walpole Public Schools">
-          <div class="ms-3 d-none d-lg-inline">
-            <span class="d-inline d-md-block">Walpole </span><span class="public-schools d-inline d-md-block">Public Schools</span>
-          </div>
         </div>
-
-        <!-- Page title  -->
         <div class="col text-center page-title">
           <h1>
             Intervention & Media Center <span class="d-inline d-md-none"><br></span>Sign Up
           </h1>
         </div>
+
+        <!-- Page title  -->
         
         <!-- Buttons/links to other pages  -->
         <div class="link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center ">
@@ -35,283 +33,227 @@
     
     <!-- Main form  -->
     <div id="form" class="">
-      <div class="row">
+      <div class="row g-4 mb-4">
         
-        <!-- Left-hand panel  -->
-        <div class="col-12 col-lg-6">
-          
-          <!-- Email address  -->
-          <div class="mb-4 admin-email-div">
-            <label for="email" class="form-label main-label">
-              My email  
-              <a href="#" class="editors-only" data-bs-toggle="tooltip" data-bs-title="Only editors can changes the email address" data-bs-placement="right">
-                <i class="info-icon fa-solid fa-circle-info"></i>
-              </a>
-            </label>
-            <input type="email" class="form-control disabled" id="email" value="" disabled></input>
-          </div>
-          
-          <!-- Student name (shown for staff ) -->
-          <div class="col col-12 staff-only ">
-            <div class="mb-4 intervention-only assessment-only tutoring-only non-intervention-only alt-setting-only">
-              <label for="student" class="form-label main-label">
-                Student
-              </label>
-              <input type="text" class="form-control disabled student-autocomplete" id="student"></input>
-            </div>
-          </div>
+        <!-- Step 1 -->
+        <div class="col-12 col-lg-3">
+          <div class="step-card h-100">
 
-          <div class="row">
-            <!-- Date requested  -->
-            <div class="mb-4 col-12 col-lg-6">
-              <div class="mb-4">
-                <label for="date" class="form-label main-label required">
-                  Date Requested
-                </label>
-                <input type="date" class="form-control date-input required" id="date"></input>
-              </div>
-            </div>
-
-            <!-- Period requested  -->
-            <div class="mb-4 col-12 col-lg-6">
-              <div class="mb-4">
-                <label for="date" class="form-label main-label required">
-                  Period Requested
-                </label>
-                <select class="form-select required" id="period"></select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Signup type  -->
-          <div class="row mb-4" id="type">
-            <div class="col" >
-              <label class="mb-2 main-label">Signup Type</label>
-              
-              <!-- Interventions  -->
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="signup-type" id="intervention" value="Intervention"/>
-                <label class="form-check-label" for="intervention">
-                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For extra help with academic learning" data-bs-placement="right">
-                    Intervention 
-                    <a class="int-link schedule-link d-none" href="#" data-doc-id="" target="_blank">(schedule)</a> 
-                  </a>
-                </label>
-              </div>
-
-              <!-- Assessment makeup  -->
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="signup-type" id="assessment" value="Assessment"/>
-                <label class="form-check-label" for="assessment">
-                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For a quiet place to makeup a test, quiz, or other work" data-bs-placement="right">
-                    Assessment make-up 
-                  </a>
-                </label>
-              </div>
-
-              <!-- NHS Tutoring  -->
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="signup-type" id="tutoring" value="Tutoring"/>
-                <label class="form-check-label" for="tutoring">
-                  <a href="#" data-bs-toggle="tooltip" data-bs-title="During March, get academic help from National Honor Society students" data-bs-placement="right">
-                    NHS tutoring 
-                    <a class="tut-link schedule-link d-none" href="#" data-doc-id="" target="_blank">(schedule)</a> 
-                  </a>
-                </label>
-              </div>
-
-              <!-- Non-intervention  -->
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="signup-type" id="non-intervention" value="Non-intervention" checked />
-                <label class="form-check-label" for="non-intervention">
-                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For independent study, group work, and using library resources" data-bs-placement="right">
-                    Non-intervention 
-                  </a>
-                </label>
-              </div>
-            </div>
-            <div class="col" >
-              <!-- Label for Staff-only Types  -->
-              <label class="staff-only staff-only-type">
-                Staff-only options  
-                <a href="#" data-bs-toggle="tooltip" data-bs-title="Only staff can see these options" data-bs-placement="right">
+            <h2 class="step-header">
+              <i class="fa-solid fa-address-card"></i>
+              Your Details
+            </h2>
+            
+            <!-- Email address  -->
+            <div class="mb-4 admin-email-div">
+              <label for="email" class="form-label main-label">
+                My email  
+                <a href="#" class="editors-only" data-bs-toggle="tooltip" data-bs-title="Only editors can changes the email address" data-bs-placement="right">
                   <i class="info-icon fa-solid fa-circle-info"></i>
                 </a>
               </label>
-
-              <!-- Alt Setting (shown to staff only)  -->
-              <div class="form-check staff-only">
-                <input class="form-check-input" type="radio" name="signup-type" id="alt-setting" value="Alt setting"/>
-                <label class="form-check-label" for="alt-setting">
-                  <a href="#" data-bs-toggle="tooltip" data-bs-title="For alt setting work" data-bs-placement="right">
-                    Alt setting
-                  </a>
+              <input type="email" class="form-control disabled" id="email" value="" disabled></input>
+            </div>
+            
+            <!-- Student name (shown for staff ) -->
+            <div class="mb-4 staff-only ">
+              <div class="intervention-only assessment-only tutoring-only non-intervention-only alt-setting-only">
+                <label for="student" class="form-label main-label">
+                  Student
                 </label>
-              </div>
-
-              <!-- Staff Reservation (shown to staff only)  -->
-              <div class="form-check staff-only">
-                <input class="form-check-input" type="radio" name="signup-type" id="staff-reservation" value="Staff reservation"/>
-                <label class="form-check-label" for="staff-reservation">
-                  <a href="#" data-bs-toggle="tooltip" data-bs-title="To book media center resources or Glass Rooms" data-bs-placement="right">
-                    Staff reservation
-                  </a>
-                </label>
+                <input type="text" class="form-control disabled student-autocomplete" id="student"></input>
               </div>
             </div>
+            
           </div>
-
         </div>
+        
+        <!-- Step 2 -->
+        <div class="col-12 col-lg-3">
+          <div class="step-card h-100">
 
-        <!-- Right-hand panel  -->
-        <div class="col-12 col-lg-6 d-flex flex-column">
+            <h2 class="step-header">
+              <i class="fa-solid fa-calendar-days"></i>
+              Date & Time
+            </h2>
+
+            <!-- Date requested  -->
+            <div class="mb-4">
+              <label for="date" class="form-label main-label required">
+                Date Requested
+              </label>
+              <input type="date" class="form-control date-input required" id="date"></input>
+            </div>
+              
+              <!-- Period requested  -->
+            <div class="mb-4">
+              <label for="date" class="form-label main-label required">
+                Period Requested
+              </label>
+              <select class="form-select required" id="period"></select>
+            </div>
+
+
+          </div>
+        </div>
+        
+        <!-- Step 3 -->
+        <div class="col-12 col-lg-3">
+          <div class="step-card h-100">
+
+            <h2 class="step-header">
+              <i class="fa-solid fa-book-open"></i>
+              Reason
+            </h2>
+            <!-- Signup type  -->
+            <div class="mb-4">
+              <div class="mb-4 student-types">
+
+                <label class="mb-2 main-label">Signup Type</label>
+                <select class="form-select required" id="type-select">
+                  <option value="Intervention">Intervention</option>
+                  <option value="Assessment">Assessment make-up</option>
+                  <option value="Tutoring">NHS tutoring</option>
+                  <option value="Non-intervention">Non-intervention</option>
+                  <option value="Alt setting">Alt setting</option>
+                  <option value="Staff reservation">Staff reservation</option>
+
+                </select>
+              </div>
+            </div>
+
           
-          <!-- Teacher & Subject for interventions  -->
-          <div class="mb-4 intervention-only">
-            <label for="subject" class="form-label main-label">
-              Teacher & Subject
-            </label>
-            <select id="subject-int-select" class="form-select subject-int" name="subject-int">
-            </select>
+            <!-- Non-intervention purpose  -->
+            <div class="mb-4 non-intervention-only" id="purpose">
+              <label class="mb-2 main-label">Purpose</label>
 
-            <!-- Fallback input if select box is broken -->
-            <input class="form-control d-none subject-int" id="subject-int-input" name="subject-int"></input> 
-          </div>
+              <!-- Group project  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="purpose" id="group-project" value="Group project" />
+                <label class="form-check-label" for="purpose">
+                  Group project <br><span class="hint">You will need to be working on a legitimate project and may need to produce a note from your teacher.</span>
+                </label>
+              </div>
+              
+              <!-- Individual research  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="purpose" id="research" value="Research" checked/>
+                <label class="form-check-label" for="purpose">
+                  Individual research project/use of library resources
+                </label>
+              </div>
 
-          <!-- Subject for other types  -->
-          <div class="mb-4 tutoring-only assessment-only alt-setting-only">
-            <label for="subject" class="form-label main-label">
-              Subject
-            </label>
-            <select id="subject-non-int" class="form-select">
-              <option value="Business">Business</option>
-              <option value="English">English</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="Physical Education & Health">Physical Education & Health</option>
-              <option value="Science">Science</option>
-              <option value="Social Studies">Social Studies</option>
-              <option value="Technology">Technology</option>
-              <option value="World Language">World Language</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+              <!-- Software Use  -->
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="purpose" id="software" value="Software"/>
+                <label class="form-check-label" for="purpose">
+                  Software on desktop computers
+                </label>
+              </div>
 
-          <!-- Topic/comments -->
-          <div class="mb-4 intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only">
-            <label class="main-label intervention-only assessment-only tutoring-only alt-setting-only" for="topic-intervention">
-              Topic for help/name of assessment/reason for assistance
-            </label>
-            <label class="main-label staff-reservation-only" for="topic-intervention">
-              Reason for visit
-            </label>
-            <label class="intervention-only assessment-only tutoring-only alt-setting-only" for="topic-intervention">
-              Please be as specific as possible.
-            </label>
-            <textarea class="form-control intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only" id="topic-intervention"></textarea>
-          </div>
-
-          <!-- Non-intervention purpose  -->
-          <div class="mb-4 non-intervention-only" id="purpose">
-            <label class="mb-2 main-label">Purpose</label>
-
-            <!-- Group project  -->
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="purpose" id="group-project" value="Group project" />
-              <label class="form-check-label" for="purpose">
-                Group project <br><span class="hint">You will need to be working on a legitimate project and may need to produce a note from your teacher.</span>
-              </label>
-            </div>
-            
-            <!-- Individual research  -->
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="purpose" id="research" value="Research" checked/>
-              <label class="form-check-label" for="purpose">
-                Individual research project/use of library resources
-              </label>
+              <!-- Phys Ed  -->
+              <div class="form-check ">
+                <input class="form-check-input phys-ed" type="radio" name="purpose" id="phys-ed" value="Phys Ed" />
+                <label class="form-check-label phys-ed" for="purpose">
+                  Physical education
+                </label>
+              </div>
+              
+              <!-- Art  -->
+              <div class="form-check ">
+                <input class="form-check-input art" type="radio" name="purpose" id="art" value="Art" />
+                <label class="form-check-label art" for="purpose">
+                  Art
+                </label>
+              </div>
             </div>
 
-            <!-- Software Use  -->
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="purpose" id="software" value="Software"/>
-              <label class="form-check-label" for="purpose">
-                Software on desktop computers
+            <!-- Subject for other types  -->
+            <div class="mb-4 tutoring-only assessment-only alt-setting-only">
+              <label for="subject" class="form-label main-label">
+                Subject
               </label>
+              <select id="subject-non-int" class="form-select">
+                <option value="Business">Business</option>
+                <option value="English">English</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Physical Education & Health">Physical Education & Health</option>
+                <option value="Science">Science</option>
+                <option value="Social Studies">Social Studies</option>
+                <option value="Technology">Technology</option>
+                <option value="World Language">World Language</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
 
-            <!-- Phys Ed  -->
-            <div class="form-check ">
-              <input class="form-check-input phys-ed" type="radio" name="purpose" id="phys-ed" value="Phys Ed" />
-              <label class="form-check-label phys-ed" for="purpose">
-                Physical education
+            <!-- Teacher & Subject for interventions  -->
+            <div class="mb-4 intervention-only">
+              <label for="subject" class="form-label main-label">
+                Teacher & Subject
               </label>
-            </div>
-            
-            <!-- Art  -->
-            <div class="form-check ">
-              <input class="form-check-input art" type="radio" name="purpose" id="art" value="Art" />
-              <label class="form-check-label art" for="purpose">
-                Art
-              </label>
-            </div>
-          </div>
-
-          <!-- Study Hall teacher  -->
-          <div class="row intervention-only assessment-only tutoring-only alt-setting-only non-intervention-only">
-            <div id="study-div" class="mb-4 col">
-              <label for="study-teacher" class="form-label main-label intervention-only assessment-only tutoring-only non-intervention-only">
-                Study hall teacher
-              </label>
-              <label for="study-teacher" class="form-label main-label alt-setting-only">
-                Reporting from (Study Hall or class)
-              </label>
-              <select class="form-select study-teacher" id="study-teacher-select" name="study-teacher"></select>
+              <select id="subject-int-select" class="form-select subject-int" name="subject-int">
+              </select>
 
               <!-- Fallback input if select box is broken -->
-              <input class="form-control d-none " id="study-teacher-input" name="study-teacher"></input> 
+              <input class="form-control d-none subject-int" id="subject-int-input" name="subject-int"></input> 
             </div>
 
-            <!-- Academic teacher  -->
-            <div class="mb-4 col col-12 col-lg-6 assessment-only non-intervention-only alt-setting-only">
-              <label for="acad-teacher" class="form-label main-label">
-                Teacher you are doing work for
+            <!-- Topic/comments -->
+            <div class="mb-4 intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only">
+              <label class="main-label intervention-only assessment-only tutoring-only alt-setting-only" for="topic-intervention">
+                Topic for help/name of assessment/reason for assistance
               </label>
-              <input type="text" class="form-control" id="acad-teacher"></input>
-            </div>
-          </div>
-
-          <!-- Glass room reservation  -->
-          <div class="mb-4 non-intervention-only staff-reservation-only" id="glass-room">
-            <label class="mb-2 main-label">Glass Room reservations 
-              <a href="#" data-bs-toggle="tooltip" data-bs-title="Glass Rooms can only be requested by WHS staff members. Students should request assistance from a teacher to request a Glass Room reservation." data-bs-placement="right">
-                <i class="info-icon fa-solid fa-circle-info"></i>
-              </a>
-            </label> 
-
-            <!-- No room  -->
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="glass-room" id="glass-room-none" value="" checked />
-              <label class="form-check-label" for="glass-room">
-                None
+              <label class="main-label staff-reservation-only" for="topic-intervention">
+                Reason for visit
               </label>
+              <label class="intervention-only assessment-only tutoring-only alt-setting-only" for="topic-intervention">
+                Please be as specific as possible.
+              </label>
+              <textarea class="form-control intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only" id="topic-intervention"></textarea>
             </div>
 
-            <!-- Glass Room 1 -->
-            <div class="form-check staff-only">
-              <input class="form-check-input" type="radio" name="glass-room" id="glass-room-1" value="1" />
-              <label class="form-check-label" for="glass-room" id="glass-room-1-label">
-                Glass room 1 (<span class="availability">Available</span>)
-              </label>
-            </div>
-
-            <!-- Glass Room 2  -->
-            <div class="form-check staff-only">
-              <input class="form-check-input" type="radio" name="glass-room" id="glass-room-2" value="2" />
-              <label class="form-check-label" for="glass-room" id="glass-room-2-label">
-                Glass room 2 (<span class="availability">Available</span>)
-              </label>
-            </div>
           </div>
         </div>
+        
+        <!-- Step 4 -->
+        <div class="col-12 col-lg-3">
+          <div class="step-card h-100">
+
+            <h2 class="step-header">
+              <i class="fa-solid fa-person-chalkboard"></i>
+              Staff
+            </h2>
+
+            
+
+            
+            <!-- Study Hall teacher  -->
+            <div class="intervention-only assessment-only tutoring-only alt-setting-only non-intervention-only">
+              <div id="study-div" class="mb-4">
+                <label for="study-teacher" class="form-label main-label intervention-only assessment-only tutoring-only non-intervention-only">
+                  Study hall teacher
+                </label>
+                <label for="study-teacher" class="form-label main-label alt-setting-only">
+                  Reporting from (Study Hall or class)
+                </label>
+                <select class="form-select study-teacher" id="study-teacher-select" name="study-teacher"></select>
+
+                <!-- Fallback input if select box is broken -->
+                <input class="form-control d-none " id="study-teacher-input" name="study-teacher"></input> 
+              </div>
+
+              <!-- Academic teacher  -->
+              <div class="mb-4 assessment-only non-intervention-only alt-setting-only">
+                <label for="acad-teacher" class="form-label main-label">
+                  Teacher you are doing work for
+                </label>
+                <input type="text" class="form-control" id="acad-teacher"></input>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
       <!-- Full-width column for submit buttons  -->
