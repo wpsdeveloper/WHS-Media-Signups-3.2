@@ -18,12 +18,15 @@ export const studyTeacherChangeHandler = (event: MouseEvent) => {
 export const updateStudyOptions = (
   currentScheduleBlock: DailyBlock | null, 
   currentType: SignupType | null,
+  currentStudyTeacher: string | null,
 ) => {
   dom.clearOptions("#study-teacher-select");
-  if (!currentScheduleBlock ) {
+  if (!currentScheduleBlock) {
     return;
   }
   toggleStudyInputVisibility(false);
+
+  if (!currentType) return;
   
   // Toggle outer section visibility for Wed. PM
   dom.setVisible("#study-div", currentScheduleBlock.period !== "Wed. PM");
@@ -37,6 +40,15 @@ export const updateStudyOptions = (
   availableTeachers.forEach(teacher => {
     dom.appendOption("#study-teacher-select", teacher, teacher, false);
   });
+  
+  if (currentScheduleBlock.period !== "Wed. PM" 
+    && !["Non-intervention", "Intervention"].includes(currentType)) {
+    dom.appendOption("#study-teacher-select", "Coming from class", "Coming from class", false);
+  }
+  
+  if (currentStudyTeacher && !availableTeachers.includes(currentStudyTeacher)) {
+    dom.appendOption("#study-teacher-select", currentStudyTeacher, currentStudyTeacher, true);
+  }
 
   // State-driven UI toggle
   toggleStudyInputVisibility(availableTeachers.length > 0);
@@ -58,7 +70,9 @@ export const setupStudyObservers = () => {
   store.subscribe((state: SignupState) => {
     updateStudyOptions(
       state.currentScheduleBlock,
-      state.currentType,    );
+      state.currentType,
+      state.currentStudyTeacher ,   
+    );
     }, ['currentScheduleBlock', 'currentPeriod', 'currentType']);
     
     

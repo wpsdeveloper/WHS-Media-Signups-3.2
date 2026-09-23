@@ -8,9 +8,12 @@ import { CHECKIN_CONFIG, CheckinBox } from './checkin-box';
  *  Responds to a Checkin button click 
  * */
 export const checkin = async(checkinBox: CheckinBox, time: string): Promise<string> => {
+  
   // sets the value to the current time
-  if (IS_DEBUG) return time; // simulates instant success in debug mode
-
+  if (IS_DEBUG) {
+    console.debug(checkinBox.type, checkinBox.rowId, time);
+      return time; // simulates instant success in debug mode
+  }
   // sends the checkin request to the server for async processing
   await setCheckin(checkinBox.type, checkinBox.rowId, time);
 
@@ -72,9 +75,6 @@ export const formatCheckin = (type: CheckinType, id: CheckinBox['rowId'], timeVa
 
 /**
  * Responds to a checkin cancel X button click
- * 
- * @param {string} type The specific category of checkin (e.g. "mediaOut")
- * @type {button} button The button that was clicked 
  * */
 export const cancelCheckin = (type: CheckinType, button: HTMLButtonElement) => {
   // determines the rowId of the signup belonging to that button

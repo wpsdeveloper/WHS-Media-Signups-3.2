@@ -6,7 +6,7 @@ import * as panels from './panels';
 import * as capacity from './capacity-validation';
 import * as dateSelect from './date-select';
 import * as periodSelect from '../common/period-select';
-import * as typeInput from './type-input';
+import * as typeInput from './type-select';
 import * as studentInput from './student-input';
 import * as interventionTeacherSelect from './interventions-teacher-select';
 import * as studySelect from './study-select';
@@ -14,7 +14,7 @@ import * as subjectSelect from './subject-select';
 import * as glassRoomsInput from './glass-rooms-input';
 import * as formData from './form-data';
 import { getAppConfig } from '../common/app-config';
-import { SignupState, store } from './signup-store';
+import { SignupState, store, registerUpdateData } from './signup-store';
 import { IS_DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
@@ -75,6 +75,7 @@ function parseServerData(data: string): SignupState {
   const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
   const signups = parser.parseSignups(parsedData.signups);
   const settings = parser.parseSettings(parsedData.settings); 
+  const updateData = parsedData.updateData ? parser.safeJsonParse(parsedData.updateData) : null;
 
   const defaultMaxSetting = settings.find(s => s.key === "Max_Signups_Default");
   const defaultMax = defaultMaxSetting?.value as number ?? 10;
@@ -96,19 +97,18 @@ function parseServerData(data: string): SignupState {
     isStaff: appConfig.isStaff,
     isAdmin: appConfig.isAdmin,
     isEditor: appConfig.isEditor, 
-    updateData: null,
+    updateData: updateData,
     updateRowId: null,
   };
 }
 
 export const initializeUi = async () => {
   const { isStaff, isAdmin, currentDate, currentEmail } = store.getState();
-  await setUpdateStatus();
-
+  
   setTooltips('[data-bs-toggle="tooltip"]');
   dom.toggleStaffOnlyViews(isStaff);
   dom.toggleAdminOnlyViews(isAdmin);
-
+  
   // sets limits on dates allowed in Date field
   const today = new Date();
   dateSelect.configureDateSelect(
@@ -117,12 +117,13 @@ export const initializeUi = async () => {
     dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
     dates.toDateInputValue(today),
   );
-
+  
   dom.setValue("#email", currentEmail);
-
+  
   // Toggle static URL links
   typeInput.toggleInterventionsLink();
   typeInput.toggleTutoringLink();
+  await setUpdateStatus();
 };
 
 function bindEvents() {
@@ -142,36 +143,20 @@ function bindEvents() {
  * */
 export const setUpdateStatus = async () => {
   // requires that user is an editor and that and update row was provided
-  const updateRowId = dom.valueOf('#update-row-id');
   const state = store.getState();
+  const isEditor = state.isEditor;
+  const updateData = state.updateData;
 
-  if (!state.isEditor || !updateRowId) {
+  if (!isEditor || !updateData) {
     return;
   }
 
-  store.setState({ updateRowId });
-
-  dom.setDisabled('#email', !state.isEditor);
-  dom.toggleEditorOnlyViews(state.isEditor);
+  dom.setDisabled('#email', !isEditor);
+  dom.toggleEditorOnlyViews(isEditor);
   dom.setVisible('#btn-submit', false);
   dom.setVisible('#btn-update', true);
 
-  // requests the signup data for this row id
-  try {
-    const updateDataJson = await new Promise<string>((resolve, reject) => {
-      google.script.run
-        .withSuccessHandler(resolve)
-        .withFailureHandler(reject)
-        .getSignupByRow(updateRowId);
-    });
-    const updateData: Signup = parser.safeJsonParse(updateDataJson);
-    store.setState({updateData });
-    dom.setVisible('#btn-submit', true);
-    dom.setVisible('#btn-update', false);
-
-  } catch (error) {
-    messaging.processError((error as Error), "Failed to retrieve data for udpate:");
-  }
+  registerUpdateData(updateData);
 };
 
 

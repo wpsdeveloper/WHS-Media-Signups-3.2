@@ -1,7 +1,7 @@
 import * as dom from "../common/dom";
 import * as dates from "../common/dates";
 import { SignupState, store } from './signup-store';
-import { toggleNonInterventions, toggleTutoring } from "./type-input";
+import { toggleNonInterventions, toggleTutoring } from "./type-select";
 
 /**
  * Calculates if a given date/period is full (too many existing reservations) 

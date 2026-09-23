@@ -1,4 +1,6 @@
 import { Store } from "../common/store";
+import * as dom from "../common/dom";
+import * as glassRoom from '../signup/glass-rooms-input';
 import { CheckinBox, CheckinStore } from "../common/checkin-box";
 
 const initialState: SignupState = {
@@ -64,4 +66,36 @@ export interface SignupState {
 export type SignupStateRaw = Omit<SignupState, 'signups' | 'dailySchedules'> & {
   dailySchedules: string,
   signups: string,
+}
+
+export const registerUpdateData = (updateData: Signup) => {
+  if (!updateData) return;
+
+  const signups = store.getState().signups;
+  const alreadyexists = signups.find(su => su.rowId === updateData.rowId);
+  if (!alreadyexists) store.setState({
+    signups: [...signups, updateData]
+  });
+  
+
+  const studentRecord = store.getState().students.find(st => st.email === updateData.emailStudent);
+  if (!studentRecord) return;
+
+  
+  dom.setValue("#student", `${studentRecord.lastname}, ${studentRecord.firstname} <${studentRecord.email}>` || "");
+  dom.setValue("#email", updateData.email || "");
+  dom.setValue("#comments, #topic-intervention", updateData.comments || "");
+  dom.setValue("#acad-teacher", updateData.teacherAcad || "");
+  glassRoom.directSet(updateData.room);
+  
+  store.setState({
+    currentDate: new Date(updateData.date),
+    currentPeriod: updateData.period as Period,
+    currentType: updateData.type,
+    currentStudyTeacher: updateData.teacherStudy,
+    currentInterventionTeacher: updateData.teacherAcad,
+    currentSubject: updateData.subject,
+    currentStudentName: updateData.emailStudent,
+    currentScheduleBlock: null,
+  });
 }

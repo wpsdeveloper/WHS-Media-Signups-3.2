@@ -20,6 +20,7 @@ export const subjectChangeHandler = (event: MouseEvent) => {
  * */
 export const updateSubjectOptions = (
   currentScheduleBlock: DailyBlock | null,
+  currentSubject: string | null
 ) => {
   // clears previous options
    dom.clearOptions("#subject-int-select");
@@ -29,6 +30,10 @@ export const updateSubjectOptions = (
   availableTeachers.forEach(teacher => {
     dom.appendOption("#subject-int-select", teacher, teacher);
   });
+
+  if (currentSubject && !availableTeachers.includes(currentSubject)) {
+    dom.appendOption("#subject-int-select", currentSubject, currentSubject, true);
+  }
 }
 
 /**
@@ -39,6 +44,7 @@ export const setupSubjectObservers = () => {
   store.subscribe((state: SignupState) => {
     updateSubjectOptions(
       state.currentScheduleBlock,
+      state.currentSubject,
     );
   }, ['currentScheduleBlock']);
   

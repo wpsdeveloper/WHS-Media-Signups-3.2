@@ -236,6 +236,27 @@ const sampleData2 = {
       dataType: 'string',
     },
   ],
+  updateData: {
+      timestamp: '2026-09-05T13:19:34.209Z',
+      email: 'zzdemow34@wpsma.org',
+      emailStudent: 'zzdemow34@wpsma.org',
+      lastname: 'Zzdemo',
+      firstname: 'Sample Student',
+      date: '2026-09-10T04:00:00.000Z',
+      period: 5,
+      type: 'Staff reservation',
+      teacherStudy: "O'Connor 2214",
+      subject: 'Other',
+      purpose: 'Art',
+      teacherAcad: 'Reeve',
+      room: '2',
+      comments: 'I am the NHS Tutor',
+      rowId: '3358693e-b4b3-4c4e-aaca-73065a6eaab1',
+      studyIn1: '9:45 AM',
+      mediaIn: '9:50 AM',
+      mediaOut: '11:02 AM',
+      studyIn2: '11:10: AM',
+    },
 };
 
 export const signupData = JSON.stringify({
@@ -243,6 +264,8 @@ export const signupData = JSON.stringify({
   dailySchedules: sampleData2.dailySchedules,
   signups: sampleData2.signups,
   settings: sampleData2.appSettings,
+  // updateData: sampleData2.updateData,
+  
 });
 
 export const attendanceData = JSON.stringify({

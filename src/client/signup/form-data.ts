@@ -90,7 +90,7 @@ function collectData() {
     data.subject = dom.valueOf("#subject-non-int");
   }
 
-  data.purpose = dom.isVisible("#purpose") ? dom.valueOf("#purpose input[type='radio']:checked") : "";
+  data.purpose = dom.isVisible("#purpose") ? dom.valueOf("#purpose select") : "";
   data.room = dom.isVisible("#glass-room") ? dom.valueOf("#glass-room input[type='radio']:checked") as Signup['room'] : null;
   data.teacherStudy = dom.valueOf(".study-teacher");
   data.teacherAcad = dom.valueOf("#acad-teacher");

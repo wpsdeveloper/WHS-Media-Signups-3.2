@@ -42,6 +42,11 @@ export const updateGlassRooms = (
   });
 }
 
+export const directSet = (room: string | null) => {
+  dom.setText(`#glass-room-${room}-label .availability`, "");
+  dom.setChecked(`#glass-room-${room}`, true);
+}
+
 /**
  * Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
  */

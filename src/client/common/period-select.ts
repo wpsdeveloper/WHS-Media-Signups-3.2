@@ -1,5 +1,6 @@
 import * as dom from './dom';
 import { parseDateInput, isSameDate } from './dates';
+import { getAppConfig } from './app-config';
 import { SignupState, store } from '../signup/signup-store';
 
 /**
@@ -72,7 +73,9 @@ function wednesdayInterventions(date: Date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = dom.valueOf("#wed-int-active") === "true";
+  
+  const appConfig = getAppConfig();
+  const wedIntActive = appConfig.wedInt;
 
   // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
   return dateIsWednesday && wedIntActive;
