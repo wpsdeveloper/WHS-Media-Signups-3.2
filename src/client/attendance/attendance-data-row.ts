@@ -28,8 +28,6 @@ export class AttendanceDataRow {
     this.element.removeAttribute('id');
     this.element.classList.add('data-row');
     
-    dom.setAttribute(this.element, 'dataset.signupId', this.rowId);
-
     const attendancePanel: HTMLElement = this.element.querySelector('.attendance-info') as HTMLElement; 
     const detailsPanel: HTMLElement = this.element.querySelector('.details-info') as HTMLElement; 
     if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
