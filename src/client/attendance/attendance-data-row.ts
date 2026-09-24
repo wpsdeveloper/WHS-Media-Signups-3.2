@@ -2,14 +2,15 @@ import * as dom from '../common/dom';
 import * as dates from '../common/dates';
 import { AttendanceState, store, checkinStore } from "./attendance-store";
 import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
+import { getRoomBadge } from './glass-rooms-status';
 
 export class AttendanceDataRow {
   element: HTMLElement;
   signup: Signup;
   rowId: string = '';
   state: 'attendance' | 'details' = 'attendance';
-  attendancePanel: HTMLElement;
-  detailsPanel: HTMLElement;
+  attendancePanel: HTMLElement | null = null;
+  detailsPanel: HTMLElement | null = null;;
   
   constructor(rowId: string, signup: Signup) {
     this.rowId = rowId;
@@ -27,13 +28,14 @@ export class AttendanceDataRow {
     this.element = firstChild;
     this.element.removeAttribute('id');
     this.element.classList.add('data-row');
+    this.element.setAttribute('row-id', rowId);
     
     const attendancePanel: HTMLElement = this.element.querySelector('.attendance-info') as HTMLElement; 
     const detailsPanel: HTMLElement = this.element.querySelector('.details-info') as HTMLElement; 
-    if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
-
-    this.attendancePanel = attendancePanel;
-    this.detailsPanel = detailsPanel;
+    if (signup.type != 'Staff reservation') {
+      this.attendancePanel = attendancePanel;
+      this.detailsPanel = detailsPanel;
+    }
   }
 
   render() {
@@ -116,12 +118,13 @@ export class AttendanceDataRow {
   }
 
   mountCheckinBoxes() {
-    if (!this.attendancePanel) return;
+    const attendancePanel = this.attendancePanel;
+    if (!attendancePanel) return;
 
     const checkinType = Object.keys(CHECKIN_CONFIG);
     checkinType
     .forEach((type) => {
-      const panel = this.attendancePanel.querySelector(`div[data-type="${type}"]`);
+      const panel = attendancePanel.querySelector(`div[data-type="${type}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
         const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
@@ -147,17 +150,6 @@ export class AttendanceDataRow {
 // =====================================================================
 // PURE HELPER FUNCTIONS
 // =====================================================================
-
-function getRoomBadge(room: Signup['room']) {
-  const roomNum = String(room);
-  if (roomNum === '1') {
-    return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
-  }
-  if (roomNum === '2') {
-    return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
-  }
-  return '';
-}
 
 function getSignupTypeLabel(signup: Signup) {
   switch (signup.type) {

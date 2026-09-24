@@ -1,7 +1,7 @@
 import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
-import * as dataTable from "./data-table";
+import * as dataTable from "./admin-data-table";
 import * as settingsTable from "./settings-table";
 import * as data from './data';
 import * as studentInput from './student-input';

@@ -65,7 +65,7 @@
     <div id="form" class="row g-2">
       <!-- Step 1 -->
       <div class="col-12 col-lg-3">
-        <div class="step-card h-100">
+        <div class="step-card">
           <h2 class="step-header">
             <i class="fa-solid fa-calendar-days"></i>
             Controls
@@ -73,12 +73,6 @@
 
           <!-- Date selection -->
           <div class="d-block mb-2 d-lg-inline">
-            <label
-              for="date"
-              class="form-label main-label required text-end text-white d-inline me-2"
-            >
-              Date
-            </label>
             <input
               type="date"
               class="form-control date-input required d-inline"
@@ -88,24 +82,12 @@
 
           <!-- Period selection  -->
           <div class="d-block mt-2 mb-2">
-            <label
-              for="period"
-              class="form-label main-label required text-end text-white d-inline ms-lg-4 me-2"
-            >
-              Period
-            </label>
             <select class="form-select required d-inline" id="period"></select>
           </div>
 
           <!-- Group selection  -->
           <div class="d-block mt-2 mb-2">
-            <label
-              for="study"
-              class="form-label main-label required text-end text-white d-inline ms-lg-4 me-2"
-            >
-              Period
-            </label>
-            <select class="form-select required d-inline" id="study"></select>
+            <select class="form-select required d-inline" id="study-select"></select>
           </div>
 
           <!-- Data refresh button -->
@@ -120,10 +102,28 @@
       <!-- Step 2 -->
       <div class="col-12 col-lg-6">
         <div class="step-card h-100">
-          <h2 class="step-header">
-            <i class="fa-solid fa-address-card"></i>
-            Students
-          </h2>
+          <div class="d-flex flex-row">
+            <div class="flex-grow-1">
+
+              <h2 class="step-header">
+                <i class="fa-solid fa-address-card"></i>
+                Students
+              </h2>
+            </div>
+            <div class="flex-grow-0">
+              <div>
+                <span class="active panel-link attendance-panel-link">
+                  Attendance
+                </span>  |  
+                <span class="panel-link details-panel-link">
+                  Details
+                </span>  |  
+                <span class="panel-link list-panel-link">
+                  List
+                </span>
+              </div>
+            </div>
+          </div>
 
           <!-- Main data table  -->
           <div id="student-table" class="">
@@ -138,95 +138,42 @@
       <!-- Step 3 -->
       <div class="col-12 col-lg-3">
         <div class="row g-2">
-          <div class="col">
-            <div class="step-card">
+          <div class="col-12">
+            <div id="glass-rooms-status" class="step-card">
               <h2 class="step-header">
-                <i class="fa-solid fa-address-card"></i>
+                <i class="fa-solid fa-person-chalkboard"></i>
                 Glass Rooms
               </h2>
 
-              <!-- Date selection -->
-              <div class="d-block d-lg-inline">
-                <label
-                  for="date"
-                  class="form-label main-label required text-end text-white d-inline me-2"
-                >
-                  Date
-                </label>
-                <input
-                  type="date"
-                  class="form-control date-input required d-inline"
-                  id="date"
-                />
+              <!-- Room 1 Status -->
+              <div class="d-block room room-1">
+                <span class="badge text-bg-success room-badge">Room 1</span>
+                <span class="status"></span>
               </div>
 
-              <!-- Period selection  -->
-              <div class="d-block d-lg-inline mt-2 mt-lg-0">
-                <label
-                  for="period"
-                  class="form-label main-label required text-end text-white d-inline ms-lg-4 me-2"
-                >
-                  Period
-                </label>
-                <select
-                  class="form-select required d-inline"
-                  id="period"
-                ></select>
+              <!-- Room 2 Status -->
+              <div class="d-block room room-2">
+                <span class="badge text-bg-danger room-badge">Room 2</span>
+                <span class="status"></span>
               </div>
             </div>
           </div>
+
           <div class="col">
             <div class="step-card">
               <h2 class="step-header">
-                <i class="fa-solid fa-address-card"></i>
+                <i class="fa-solid fa-school"></i>
                 Staff Reservations
               </h2>
 
-              <!-- Date selection -->
-              <div class="d-block d-lg-inline">
-                <label
-                  for="date"
-                  class="form-label main-label required text-end text-white d-inline me-2"
-                >
-                  Date
-                </label>
-                <input
-                  type="date"
-                  class="form-control date-input required d-inline"
-                  id="date"
-                />
-              </div>
-
-              <!-- Period selection  -->
-              <div class="d-block d-lg-inline mt-2 mt-lg-0">
-                <label
-                  for="period"
-                  class="form-label main-label required text-end text-white d-inline ms-lg-4 me-2"
-                >
-                  Period
-                </label>
-                <select
-                  class="form-select required d-inline"
-                  id="period"
-                ></select>
+              <!-- Main data table  -->
+              <div id="staff-table" class="">
+                <!-- Data not found row  -->
+                <div class="row staff-row-empty d-none">
+                  <div class="col">No records found</div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Main data table  -->
-      <div id="staff-table" class="mt-4 d-none">
-        <!-- Table header row  -->
-        <div class="row header-row mb-2">
-          <!-- Student header  -->
-          <div class="col col-12 col-lg-5 d-lg-flex">
-            <h4>Staff</h4>
-          </div>
-
-          <!-- Panel header: Details  -->
-          <div class="col col-12 col-lg-7 signup-info">
-            <h4>Details</h4>
           </div>
         </div>
       </div>
@@ -247,7 +194,7 @@
   <!-- Student row of data  -->
   <template id="student-row-template">
     <div class="data-row student-row mb-2">
-      <div class="row pt-4 mb-2">
+      <div class="row mb-2">
         <!-- Column 1  -->
         <div class="col-8">
           <!-- Edit icons (shown to editors only) -->
@@ -265,7 +212,7 @@
       </div>
 
       <div class="row">
-        <div id="slider-wrapper" class="col col-12 mb-2" data-items="2">
+        <div id="" class="slider-wrapper col col-12 mb-2" data-items="2">
           <div class="slider">
             <!-- Panel: Attendance  -->
             <div class="panel attendance-info">
@@ -276,15 +223,15 @@
                 ></div>
                 <div
                   data-type="media-checkin"
-                  class="checkin-box media-checkin col-6 col-lg-3 order-3 order-xl-2 text-center"
+                  class="checkin-box media-checkin col-6 col-lg-3 order-3 order-lg-2 text-center"
                 ></div>
                 <div
                   data-type="media-checkout"
-                  class="checkin-box media-checkout not-wed-int col-6 col-lg-3 order-4 order-xl-3 text-center"
+                  class="checkin-box media-checkout not-wed-int col-6 col-lg-3 order-4 order-lg-3 text-center"
                 ></div>
                 <div
                   data-type="study-return"
-                  class="checkin-box study-return not-wed-int col-6 col-lg-3 order-2 order-xl-4 text-center"
+                  class="checkin-box study-return not-wed-int col-6 col-lg-3 order-2 order-lg-4 text-center"
                 ></div>
               </div>
             </div>
@@ -292,14 +239,12 @@
             <!-- Panel: Details  -->
             <div class="panel details-info">
               <div class="row">
-                <div class="type col-12 col-lg-6"></div>
-                <div class="room col-12 col-lg-6"></div>
+                <div class="type col-12"></div>
                 <div class="comments col-12"></div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </template>
@@ -336,32 +281,28 @@
   </template>
 
   <!-- Staff row of data  -->
-  <div id="staff-row-template" class="row data-row staff-row mb-2">
-    <!-- Column 1  -->
-    <div class="col col-12 col-lg-5 mb-2">
-      <!-- Edit icons (shown to editors only) -->
-      <div class="edit-icons d-none me-1 text-secondary">
-        <a class="edit-link" href="#?page=update" target="_top"
-          ><i class="fas fa-edit"></i
-        ></a>
+  <template id="staff-row-template">
+    <div class="row data-row staff-row mb-2">
+      <!-- Column 1  -->
+      <div class="col col-12 mb-2">
+        <!-- Edit icons (shown to editors only) -->
+        <div class="edit-icons d-none me-1 text-secondary">
+          <a class="edit-link" href="#?page=update" target="_top"
+            ><i class="fas fa-edit"></i
+          ></a>
+        </div>
+
+        <!-- Student name  -->
+        <div class="student-name d-inline"></div>
       </div>
 
-      <!-- Student name  -->
-      <div class="student-name d-inline"></div>
-    </div>
+      <!-- Column 2  -->
+      <!-- none  -->
 
-    <!-- Column 2  -->
-    <!-- none  -->
-
-    <!-- Column 3  -->
-    <div class="signup-info col col-12 col-lg-7 mb-2">
-      <div class="row">
-        <div class="type col-12"></div>
-        <div class="room col-12 col-lg-6"></div>
-        <div class="comments col-12"></div>
-      </div>
+      <!-- Column 3  -->
+      <div class="comments col-12"></div>
     </div>
-  </div>
+  </template>
 </section>
 
 <!-- Modal: Loading -->

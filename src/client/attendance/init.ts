@@ -2,7 +2,9 @@ import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
 import * as dates from '../common/dates';
-import * as dataTable from "./data-table";
+import * as dataTable from "./attendance-data-table";
+import * as glassRooms from './glass-rooms-status';
+import * as studySelect from './study-select';
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
 import { AppConfig, getAppConfig } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
@@ -12,6 +14,8 @@ import { IS_DEBUG, getMockData } from '../common/debug';
 export const initializeApp = async () => {
   try {
     dataTable.initObservers();
+    glassRooms.setupGlassRoomsObserver();
+    studySelect.setupStudyObservers();
     bindEvents();
     
     await refreshData();
@@ -69,8 +73,10 @@ function initDateInput() {
 function bindEvents() {
   dom.addEventListener("#date", "change", (e) => dataTable.dateChangeHandler());
   dom.addEventListener("#period", "change", (e) => dataTable.periodChangeHandler());
-  dom.addEventListener("#attendance-link", "click", (e) => dataTable.showAttendance());
-  dom.addEventListener("#details-link", "click", (e) => dataTable.showSignupInfo());
+  dom.addEventListener("#study-select", "change", (e) => studySelect.studyTeacherChangeHandler(e as MouseEvent));
+  dom.addEventListener(".attendance-panel-link", "click", (e) => dataTable.showAttendance());
+  dom.addEventListener(".details-panel-link", "click", (e) => dataTable.showSignupInfo());
+  dom.addEventListener(".list-panel-link", "click", (e) => dataTable.showListView());
   dom.addEventListener('#refresh-data-btn', 'click', () => refreshData());
 }
 
@@ -82,12 +88,12 @@ export const refreshData = async () => {
   console.log('Parsed data:', parsedData);
 
   initDateInput();
-
+  
   store.setState({
     ...parsedData,
-    currentDate: dates.parseDateInput(dom.valueOf("#date")),
-    currentPeriod: null,
+    currentDate: dates.parseDateInput(dom.valueOf("#date"))
   });
+  dataTable.periodChangeHandler();
 
   const isEditor = parsedData.isEditor ?? false;
   const isAdmin = parsedData.isAdmin ?? false;

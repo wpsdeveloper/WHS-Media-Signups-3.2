@@ -25,8 +25,15 @@ export const initObservers = () => {
     
     const targetDate = currentDate;
     
-    const sortedSignups = sortSignups(signups, currentSortField, currentSortOrder);
-    const currentSignups = sortedSignups.filter(su => (isSameDate(new Date(su.date), targetDate)));
+    const currentSignups = signups.filter(su => 
+      (isSameDate(new Date(su.date), targetDate))
+      && su.period === currentPeriod
+      && ((state.currentStudy === su.teacherStudy) 
+      || state.currentStudy === 'All studies'
+      || su.type === 'Staff reservation')
+    );
+  
+    const sortedSignups = sortSignups(currentSignups, currentSortField, currentSortOrder);
     
     dom.qsa("#student-table .student-row, #staff-table .staff-row").forEach(row => row.remove());
 
@@ -35,7 +42,7 @@ export const initObservers = () => {
     const staffTable = dom.qs("#staff-table") as HTMLElement;
     const newRows: DataRow[] = [];
 
-    currentSignups.forEach(signup => {
+    sortedSignups.forEach(signup => {
       // adds a new empty student row
       const dataRow = new DataRow(signup.rowId, signup);
   
@@ -47,32 +54,34 @@ export const initObservers = () => {
 
     // Update state with new rows
     store.setState({ dataRows: newRows } as Partial<AttendanceState>);
-  }, ["currentDate", "currentPeriod", "currentSortField", "currentSortOrder"]);
+  }, ["currentDate", "currentPeriod", "currentSortField", "currentSortOrder", "currentStudy"]);
 
-  // toggle row visibility and wed UI when period changes
-  store.subscribe((state: AttendanceState)  => {
-    const { currentDate, currentPeriod, dataRows } = state;
-    if (!currentDate || !currentPeriod) return;
 
-    // update Wednesday-specific UI
-    const isWednesdayPM = currentPeriod === "Wed. PM";
-    dom.setVisible(".wed-int", isWednesdayPM);
-    dom.setVisible(".not-wed-int", !isWednesdayPM);
-    dom.setText(".study-checkin button", isWednesdayPM ? "Done" : "Check in");
+  // // toggle row visibility and wed UI when period changes
+  // store.subscribe((state: AttendanceState)  => {
+  //   const { currentDate, currentPeriod, dataRows, currentStudy } = state;
+  //   if (!currentDate || !currentPeriod) return;
+
+  //   // update Wednesday-specific UI
+  //   const isWednesdayPM = currentPeriod === "Wed. PM";
+  //   dom.setVisible(".wed-int", isWednesdayPM);
+  //   dom.setVisible(".not-wed-int", !isWednesdayPM);
+  //   dom.setText(".study-checkin button", isWednesdayPM ? "Done" : "Check in");
     
-    // update row highlight and visibility
-    updateRowVisibility(dataRows, currentDate, currentPeriod);
+  //   // update row highlight and visibility
+  //   updateRowVisibility(dataRows, currentDate, currentPeriod, currentStudy);
 
-    // if no current date/time data for students, shows the "No records" row
-    const activeStudentRows = dom.qsa(".student-row.current-period.current-date");
-    const activeStaffRows = dom.qsa(".staff-row.current-period.current-date");
+  //   // if no current date/time data for students, shows the "No records" row
+  //   const activeStudentRows = dom.qsa(".student-row.current-period.current-date");
+  //   const activeStaffRows = dom.qsa(".staff-row.current-period.current-date");
     
-    const hasStudentRows = Array.isArray(activeStudentRows) && activeStudentRows.length > 0;
-    const hasStaffRows = Array.isArray(activeStaffRows) && activeStaffRows.length > 0;
+  //   const hasStudentRows = Array.isArray(activeStudentRows) && activeStudentRows.length > 0;
+  //   const hasStaffRows = Array.isArray(activeStaffRows) && activeStaffRows.length > 0;
 
-    dom.setVisible(".student-row-empty", !hasStudentRows);
-    dom.setVisible("#staff-table", hasStaffRows);
-  }, ["currentDate", "currentPeriod", "dataRows"]);
+  //   dom.setVisible(".student-row-empty", !hasStudentRows);
+  //   dom.setVisible("#staff-table", hasStaffRows);
+  // }, ["currentDate", "currentPeriod", "dataRows", 'currentStudy']);
+
 
   // updates the sort header ui
   store.subscribe((state: AttendanceState) => {
@@ -113,6 +122,14 @@ export const periodChangeHandler = () => {
   } as Partial<AttendanceState>);
 };
 
+export const studyChangeHandler = () => {
+  const newStudy = dom.valueOf("#study-select");
+  if (!newStudy) return;
+  store.setState({ 
+    currentStudy: newStudy 
+  } as Partial<AttendanceState>);
+};
+
 export const resort = (field: (AttendanceState['currentSortField'])) => {
   const { currentSortField, currentSortOrder } = store.getState();
   
@@ -128,20 +145,33 @@ export const resort = (field: (AttendanceState['currentSortField'])) => {
 // PURE UTILITIES & VISUAL TOGGLES
 // =====================================================================
 
-const updateRowVisibility = (dataRows: AttendanceDataRow[], selectedDate: Date, period: string) => {
+const updateRowVisibility = (
+  dataRows: AttendanceDataRow[], 
+  selectedDate: Date, 
+  period: string,
+  selectedStudy: string,
+) => {
   dataRows.forEach(row => {
     const signup = row.signup;
     const suDate = typeof signup.date === "string" ? new Date(signup.date) : signup.date;
     const suPeriod = String(signup.period);
+    const suStudy = signup.teacherStudy;
+    const suType = signup.type;
+
+    const element = row.element as HTMLElement;
 
     const isMatchDate = isSameDate(selectedDate, suDate);
     const isMatchPeriod = period === suPeriod;
-    const isMatch = isMatchDate && isMatchPeriod;
+    const isMatchStudy = (selectedStudy === suStudy) 
+      || selectedStudy === 'All studies'
+      || suType === 'Staff reservation';
+    const isMatch = isMatchDate && isMatchPeriod && isMatchStudy;
 
-    row.element.classList.toggle("current-date", isMatchDate);
-    row.element.classList.toggle("current-period", isMatchPeriod);
+    // element.classList.toggle("current-date", isMatchDate);
+    // element.classList.toggle("current-period", isMatchPeriod);
     
-    dom.setVisible(row.element, isMatch);
+    // THIS IS SET TO FALSE FOR DEBUGGING, BUT DOES NOT WORK
+    dom.setVisible(element, isMatch);
   });
 };
 
@@ -175,12 +205,13 @@ export const sortSignups = (
  * */
 export const showAttendance = () => {
   // slide animation back to "original" position
-  const panels = dom.qsa(".panel") as HTMLElement[];
-  panels.forEach(panel => panel.style.transform = "translate(0, 0)");
-
+  dom.setVisible(".slider-wrapper", true);
+  dom.setVisible('.panel', false);
+  dom.setVisible(".attendance-info", true)
+  
   // updates the header
-  dom.setVisible(".header-row .signup-info", false);
-  dom.setVisible(".header-row .attendance-info", true);
+  dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
+  dom.qs(".attendance-panel-link")?.classList.add('active');
 }
 
 /**
@@ -189,16 +220,23 @@ export const showAttendance = () => {
 export const showSignupInfo =() => {
   // gets the width of the panel. Note: uses the header, because width
   // calculations work best if the element is visible
-  const attPanel = dom.qs(".header-row .attendance-info") as HTMLElement;
-  const width = attPanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
-
-  // animates the panel
-  const panels = dom.qsa(".panel") as HTMLElement[];
-  panels.forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
+  dom.setVisible(".slider-wrapper", true);
+  dom.setVisible('.panel', false);
+  dom.setVisible(".details-info", true)
 
   // updates the header
-  dom.setVisible(".header-row .signup-info", true);
-  dom.setVisible(".header-row .attendance-info", false);
+  dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
+  dom.qs(".details-panel-link")?.classList.add('active');
+}
+
+/**
+ *  Hides both attendance and details panels
+ * */
+export const showListView =() => {
+  dom.setVisible(".slider-wrapper", false);
+  // updates the header
+  dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
+  dom.qs(".list-panel-link")?.classList.add('active');
 }
 
 

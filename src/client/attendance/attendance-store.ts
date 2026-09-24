@@ -16,6 +16,7 @@ const initialState: AttendanceState = {
   
   currentSortField: 'student', 
   currentSortOrder: 'asc', 
+  currentStudy: 'All studies',
   
   dataRows: [],
 };
@@ -47,5 +48,6 @@ export interface AttendanceState {
   dataRows: AttendanceDataRow[],
 
   currentDate: Date | null,
-  currentPeriod: string | null,
+  currentPeriod: Period | null,
+  currentStudy: string,
 };

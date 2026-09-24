@@ -28,7 +28,8 @@ export const updatePeriodOptions = (
 
   dailySchedules.forEach(schedule => {
     if (isSameDate(schedule.date, currentDate)) {
-      dom.appendOption("#period", schedule.period, schedule.period);
+      const periodName = schedule.period.length === 1 ? `Period ${schedule.period}` : schedule.period;
+      dom.appendOption("#period", schedule.period, periodName);
     }
   })
 
