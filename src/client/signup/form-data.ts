@@ -44,7 +44,7 @@ async function submitNewFormData(formData: Signup) {
     google.script.run
       .withSuccessHandler(resolve)
       .withFailureHandler(reject)
-      .submitForm(formData);
+      .submitForm(JSON.stringify(formData));;
     });
 }
 
@@ -53,7 +53,7 @@ async function submitUpdatedFormData(formData: Signup) {
     google.script.run
     .withSuccessHandler(resolve)
     .withFailureHandler(reject)
-    .submitForm(formData);
+    .submitForm(JSON.stringify(formData));
   })
 };
 

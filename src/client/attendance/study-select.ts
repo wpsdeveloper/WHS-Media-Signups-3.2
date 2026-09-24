@@ -29,7 +29,6 @@ export const updateStudyOptions = (
   studiesAvailable.add("All studies");
 
   signups.forEach(su => {
-    console.log(su.teacherStudy);
     if (dates.isSameDate(su.date, currentDate)
     && su.period === currentPeriod
     && su.teacherStudy !== "") {

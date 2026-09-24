@@ -6,7 +6,7 @@ import * as dataTable from "./attendance-data-table";
 import * as glassRooms from './glass-rooms-status';
 import * as studySelect from './study-select';
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
-import { AppConfig, getAppConfig } from '../common/app-config';
+import { AppConfig, getAppConfig, updateScriptLinks } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
 import { IS_DEBUG, getMockData } from '../common/debug';
 
@@ -100,6 +100,7 @@ export const refreshData = async () => {
 
   dom.toggleEditorOnlyViews(isEditor);
   dom.toggleAdminOnlyViews(isAdmin);
+  updateScriptLinks();
   
   messaging.hideLoadingModal();
 };

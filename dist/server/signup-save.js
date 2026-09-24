@@ -3,13 +3,14 @@
  * Saves form data into the spreadsheet
  */
 function submitForm(submittedSignup) {
-    let signup = { ...submittedSignup };
-    if (submittedSignup.firstname === "" || submittedSignup.lastname === "") {
-        const { firstname, lastname } = lookupStudentName(submittedSignup);
+    const parsed = safeJsonParse(submittedSignup);
+    let signup = hydrateSignup(parsed);
+    if (signup.firstname === "" || signup.lastname === "") {
+        const { firstname, lastname } = lookupStudentName(signup);
         signup = { ...signup, firstname, lastname };
     }
     // if row is blank, make a new signup entry. Otherwise, update the existing record.
-    const rowIdExists = signup.hasOwnProperty("rowId") && (typeof signup.rowId === "string") && (submittedSignup.rowId.length > 0);
+    const rowIdExists = signup.hasOwnProperty("rowId") && (typeof signup.rowId === "string") && (signup.rowId.length > 0);
     if (rowIdExists) {
         return updateReservation(signup);
     }

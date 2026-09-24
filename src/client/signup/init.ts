@@ -13,7 +13,7 @@ import * as studySelect from './study-select';
 import * as subjectSelect from './subject-select';
 import * as glassRoomsInput from './glass-rooms-input';
 import * as formData from './form-data';
-import { getAppConfig } from '../common/app-config';
+import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { SignupState, store, registerUpdateData } from './signup-store';
 import { IS_DEBUG, getMockData } from "../common/debug";
 
@@ -123,6 +123,7 @@ export const initializeUi = async () => {
   // Toggle static URL links
   typeInput.toggleInterventionsLink();
   typeInput.toggleTutoringLink();
+  updateScriptLinks();
   await setUpdateStatus();
 };
 

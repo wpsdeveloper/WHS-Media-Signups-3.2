@@ -34,7 +34,7 @@ interface ServerFunctions {
   getInitialAdminData(): string;
 
   getSignupByRow(id: string): string;
-  submitForm(formData: Signup): void;
+  submitForm(formData: string): void;
   getStudentAudit(studentId: string): Signup[];
 }
 
@@ -61,6 +61,7 @@ type AppConfig = {
   isAdmin: boolean,
   isStaff: boolean,
   email: string,
+  scriptUrl: string,
 }
 
 export {};

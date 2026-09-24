@@ -50,6 +50,7 @@ export const initObservers = () => {
       targetTable.append(dataRow.element);
       dataRow.populate(currentDate, currentPeriod);
       newRows.push(dataRow);
+      console.log(signup);
     });
 
     // Update state with new rows

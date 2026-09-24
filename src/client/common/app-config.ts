@@ -1,4 +1,5 @@
 import { IS_DEBUG } from './debug';
+import * as dom from './dom';
 
 export function getAppConfig(): AppConfig {
   if (IS_DEBUG) {
@@ -10,8 +11,10 @@ export function getAppConfig(): AppConfig {
       isAdmin: true,
       isStaff: true,
       email: 'wpsdeveloper@walpole.k12.ma.us',
+      scriptUrl: '#',
     };
   }
+  console.log('window.APP_CONFIG', window.APP_CONFIG);
   return window.APP_CONFIG;
 }
 
@@ -23,4 +26,15 @@ export interface AppConfig {
   isAdmin: boolean,
   isStaff: boolean,
   email: string,
+  scriptUrl: string,
+}
+
+export const updateScriptLinks = () => {
+  const scriptUrl = getAppConfig().scriptUrl;
+  if (!scriptUrl) return;
+
+  dom.qsa('.script-link').forEach(link => {
+    const href= link.getAttribute("href");
+    link.setAttribute("href", `${scriptUrl}${href}`);
+  });
 }

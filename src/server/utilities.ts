@@ -33,3 +33,23 @@ function getEmail() {
   if (!email) email = Session.getActiveUser().getEmail();
   return email;
 }
+
+const safeJsonParse = (data: string, fallback = []) => {
+  if (data === null || data === undefined) return fallback;
+  if (typeof data !== 'string') return data;
+  try {
+    return JSON.parse(data) || fallback;
+  } catch (error) {
+    console.error("Failed to parse JSON string:", error);
+    return fallback;
+  }
+};
+
+function hydrateSignup(rawData: RawSignup): Signup {
+  return {
+    ...rawData,
+    date: new Date(rawData.date),
+    timestamp: new Date(rawData.timestamp),
+    period: String(rawData.period),
+  };
+}

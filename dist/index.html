@@ -4,10 +4,11 @@
   <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
   <title>Document 1</title>
 
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
-
+  
   <script type="module" crossorigin>//#region \0vite/modulepreload-polyfill.js
 (function polyfill() {
 	const relList = document.createElement("link").relList;
@@ -40,13 +41,13 @@
 })();
 //#endregion
 //#region src/client/attendance/attendance.html?raw
-var attendance_default = " \x3C!-- HTML for the Attendance Page  -->\n<script>\n  if (window.trustedTypes && window.trustedTypes.createPolicy) {\n    window.trustedTypes.createPolicy('default', {\n      createHTML: string => string,\n      createScriptURL: string => string,\n      createScript: string => string,\n    });\n  }\n<\/script>\n\n\x3C!-- CSS files -->\n<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN\" crossorigin=\"anonymous\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n\x3C!-- Main display -->\n<div class=\"body attendance\">\n\n  \x3C!-- Header/masthead -->\n  <header >\n    <div class=\"container-fluid\">\n      <div class=\"row pb-2 pt-2 align-items-center\">\n\n        \x3C!-- Logo image -->\n        <div class=\"logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center\">\n          <img id=\"logo-image\" src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\" alt=\"Walpole Public Schools\">\n          <div class=\"ms-3 d-none d-lg-inline\">\n            <span class=\"d-inline d-md-block\">Walpole </span><span class=\"public-schools d-inline d-md-block\">Public Schools</span>\n          </div>\n        </div>\n\n        \x3C!-- Page title  -->\n        <div class=\"col text-center page-title\">\n          <h1>\n            WHS Intervention & Media Center Attendance\n          </h1>\n        </div>\n\n        \x3C!-- Buttons/links to other pages  -->\n        <div class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center \">\n          <a id=\"attendance-link\" class=\"staff-only btn btn-light\" href=\"#\" target=\"_top\">Signup Form</a>\n          <a id=\"admin-link\" class=\"admin-only btn btn-light ms-1\" href=\"#?page=admin\" target=\"_top\">Admin</a>\n        </div>\n      </div>\n    </div>\n  </header>\n\n  \x3C!-- Date and period section  -->\n  <div class=\"subheader p-3 mb-4\">\n    <div class=\"container\">\n      <div class=\"row justify-content-center \">\n        <div class=\"col col-12 d-flex justify-content-center\">\n          <div>\n\n            \x3C!-- Date selection -->\n            <div class=\"d-block d-lg-inline\">\n              <label for=\"date\" class=\"form-label main-label required text-end text-white d-inline me-2\">\n                Date\n              </label>\n              <input type=\"date\" class=\"form-control date-input required d-inline\" id=\"date\" >\n            </div>\n\n            \x3C!-- Period selection  -->\n            <div class=\"d-block d-lg-inline mt-2 mt-lg-0\">\n              <label for=\"period\" class=\"form-label main-label required text-end text-white d-inline ms-lg-4 me-2\">\n                Period\n              </label>\n              <select class=\"form-select required d-inline\" id=\"period\"></select>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Main body container  -->\n  <div class=\"container\">\n\n    \x3C!-- Main data table  -->\n    <div id=\"student-table\" class=\"\">\n\n      \x3C!-- Table header row  -->\n      <div class=\"row header-row mb-2\">\n\n        \x3C!-- Student header  -->\n        <div class=\"col col-12 col-lg-3 d-none d-lg-flex\">\n          <h4 class=\"sortable\">Student \n            <span class=\"sort-icon\">\n              <i class=\"sort-student fa-solid\"></i>\n            </span>\n          </h4>\n        </div>\n\n        \x3C!-- Study header  -->\n        <div class=\"col col-12 col-lg-2 d-none d-lg-flex\">\n          <h4 class=\"sortable\" >Study \n            <span class=\"sort-icon\">\n              <i class=\"sort-study fa-solid fa-caret-down direction active\"></i>\n            </span>\n          </h4>\n        </div>\n\n        \x3C!-- Panel header: Attendance  -->\n        <div class=\"col col-12 col-lg-7 attendance-info \">\n          <div class=\"row\">\n            <div class=\"col col-8\">\n              <h4>Attendance  |  \n                <span id=\"details-link\" class=\"panel-link\">Details</span>\n              </h4>\n            </div>\n\n            \x3C!-- Data refresh button -->\n            <div class=\"col col-4 text-end\">\n              <button id=\"refresh-data-btn\" class=\"btn btn-primary\">Refresh</button>\n            </div>\n          </div>\n        </div>\n\n        \x3C!-- Panel header: Details  -->\n        <div class=\"col col-12 col-lg-7 signup-info d-none\">\n          <div class=\"row\">\n            <div class=\"col col-8\">\n              <h4>\n                <span id=\"attendance-link\" class=\"panel-link\">Attendance</span>\n                 | Details\n              </h4>\n            </div>\n\n            \x3C!-- Data refresh button -->\n            <div class=\"col col-4 text-end\">\n              <button class=\"btn btn-primary\" >Refresh</button>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      \x3C!-- Data not found row  -->\n      <div class=\"row student-row-empty d-none\">\n        <div class=\"col\">No records found</div>\n      </div>\n    </div>\n\n    \x3C!-- Main data table  -->\n    <div id=\"staff-table\" class=\"mt-4 d-none\">\n\n      \x3C!-- Table header row  -->\n      <div class=\"row header-row mb-2\">\n\n        \x3C!-- Student header  -->\n        <div class=\"col col-12 col-lg-5 d-lg-flex\">\n          <h4>Staff \n          </h4>\n        </div>\n\n        \x3C!-- Panel header: Details  -->\n        <div class=\"col col-12 col-lg-7 signup-info\">\n          <h4>Details \n          </h4>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->\n<section id=\"templates\" style=\"display:none\">\n    \n  \x3C!-- Tri-state button (not currently used)  -->\n  <div id=\"custom-checkbox-template\">\n    <div class=\"custom-checkbox mb-2 d-flex\">\n      <span type=\"checkbox\" class=\"form-check-input tri-state\" ></span>\n      <label for=\"feedback\" class=\"form-check-label ms-1\">\n      </label>\n    </div>\n  </div>\n\n    \x3C!-- Student row of data  -->\n  <template id=\"student-row-template\" >\n    <div class=\"row data-row student-row mb-2\">\n\n      \x3C!-- Column 1  -->\n      <div class=\"col col-12 col-lg-3 mb-2\">\n        \n        \x3C!-- Edit icons (shown to editors only) -->\n        <div class=\"edit-icons d-none me-1 text-secondary\">\n          <a class=\"edit-link\" href=\"#?page=update\" target=\"_top\"><i class=\"fas fa-edit\"></i></a> \n        </div>\n        \n        \x3C!-- Student name  -->\n        <div class=\"student-name d-inline\">\n        </div>\n      </div>\n      \n      \x3C!-- Column 2  -->\n      \x3C!-- Study hall teacher  -->\n      <div class=\"study-teacher col col-12 col-lg-2 mb-2\"></div>\n      \n      \x3C!-- Column 3  -->\n      <div id=\"slider-wrapper\" class=\"col col-12 col-lg-7 mb-2\" data-items=\"2\">\n        <div class=\"slider\">\n          \n          \x3C!-- Panel: Attendance  -->\n          <div class=\"panel attendance-info\">\n            <div class=\"row\">\n              <div data-type=\"study-checkin\" class=\"checkin-box study-checkin col-6 col-xl-3 order-1 text-center\"></div>\n              <div data-type=\"media-checkin\" class=\"checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center\"></div>\n              <div data-type=\"media-checkout\" class=\"checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center\"></div>\n              <div data-type=\"study-return\" class=\"checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center\"></div>\n            </div>\n          </div>\n          \n          \x3C!-- Panel: Details  -->\n          <div class=\"panel details-info\">\n            <div class=\"row\">\n              <div class=\"type col-12 col-lg-6\"></div>\n              <div class=\"room col-12 col-lg-6\"></div>\n              <div class=\"comments col-12\"></div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </template>\n    \n  <template id=\"checkin-box\">\n    <div>\n\n      <div>\n        <label class=\"checkin-box-label\">Study Return</label>\n      </div>\n      \n      \x3C!-- UI elements  -->\n    <button class=\"checkin-btn btn btn-light\" >Return</button>\n    <div class=\"time d-none\">\n      <span class=\"time-value text-success\"></span>\n      <span class=\"time-edit d-none\">\n        <input class=\"text-center\" type=\"time\"></input> \n        <i class=\"save-btn edit fa-solid fa-check text-success\" ></i>\n        <i class=\"cancel-btn edit fa-solid fa-ban text-danger\" ></i>\n        <i class=\"delete-btn cancel fa-solid fa-trash text-danger\"></i>\n      </span>\n      <span class=\"primary-buttons ms-1\">\n        <i class=\"edit-start-btn edit fa-solid fa-edit text-primary\" ></i>\n      </span>\n    </div>\n    <div class=\"spinner d-none\">\n      <div class=\"spinner-border spinner-border-sm text-primary\" role=\"status\">\n        <span class=\"visually-hidden\">Loading...</span>\n      </div>\n    </div>\n  </div>\n  </template>\n    \n    \x3C!-- Staff row of data  -->\n  <div id=\"staff-row-template\" class=\"row data-row staff-row mb-2\">\n    \n    \x3C!-- Column 1  -->\n    <div class=\"col col-12 col-lg-5 mb-2\">\n\n      \x3C!-- Edit icons (shown to editors only) -->\n      <div class=\"edit-icons d-none me-1 text-secondary\">\n        <a class=\"edit-link\" href=\"#?page=update\" target=\"_top\"><i class=\"fas fa-edit\"></i></a> \n      </div>\n\n      \x3C!-- Student name  -->\n      <div class=\"student-name d-inline\">\n      </div>\n    </div>\n\n    \x3C!-- Column 2  -->\n    \x3C!-- none  -->\n\n    \x3C!-- Column 3  -->\n    <div class=\"signup-info col col-12 col-lg-7 mb-2\">\n      <div class=\"row\">\n        <div class=\"type col-12\"></div>\n        <div class=\"room col-12 col-lg-6\"></div>\n        <div class=\"comments col-12\"></div>\n      </div>\n    </div>\n  </div>\n</section>\n\n  \x3C!-- Modal: Loading -->\n<div class=\"modal fade\" id=\"loading-modal\" tabindex=\"-1\" aria-labelledby=\"loadingModalLabel\" aria-hidden=\"true\">\n  <div class=\"modal-dialog modal-lg\">\n    <div class=\"modal-content\">\n      <div class=\"modal-body\">\n        <div class=\"d-flex\">\n          <div class=\"spinner-border text-primary me-3\" role=\"status\">\n            <span class=\"visually-hidden\">Loading...</span>\n          </div>\n          <div class=\"loading-text\">\n            \n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (green): Success -->\n<div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\n  <div id=\"success-toast\" class=\"toast text-bg-success align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n    <div class=\"d-flex\">\n      <div class=\"toast-body\">\n        Submission complete!\n      </div>\n      <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Toast (red): Error  -->\n<div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\n  <div id=\"error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n    <div class=\"d-flex\">\n      <div class=\"toast-body\">\n        Error completing submission.\n      </div>\n      <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Toast (red): Invalid data (not used)  -->\n<div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\n  <div id=\"validation-error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n    <div class=\"d-flex\">\n      <div class=\"toast-body\">\n        Please complete the missing information.\n      </div>\n      <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Helper area for storing data sent from the server -->\n<div class=\"d-none hidden-data\">\n  <input id=\"is-editor\" type=\"checkbox\" value=\"false\" />\n  <input id=\"is-admin\" type=\"checkbox\" value=\"false\" />\n  <input id=\"wed-int-active\" type=\"checkbox\" value=\"true\" />\n</div>\n\n\x3C!-- Javacript libraries and files -->\n<script src=\"https://kit.fontawesome.com/1a74660f3b.js\" crossorigin=\"anonymous\"><\/script>\n\n<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL\" crossorigin=\"anonymous\"><\/script>\n";
+var attendance_default = "\x3C!-- Main display -->\n<div class=\"body attendance\">\n  \x3C!-- Header/masthead -->\n  <header>\n    <div class=\"container-fluid\">\n      <div class=\"row pb-2 pt-2 align-items-center\">\n        \x3C!-- Logo image -->\n        <div\n          class=\"logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center\"\n        >\n          <img\n            id=\"logo-image\"\n            src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\"\n            alt=\"Walpole Public Schools\"\n          />\n          <div class=\"ms-3 d-none d-lg-inline\">\n            <span class=\"d-inline d-md-block\">Walpole </span\n            ><span class=\"public-schools d-inline d-md-block\"\n              >Public Schools</span\n            >\n          </div>\n        </div>\n\n        \x3C!-- Page title  -->\n        <div class=\"col text-center page-title\">\n          <h1>WHS Intervention & Media Center Attendance</h1>\n        </div>\n\n        \x3C!-- Buttons/links to other pages  -->\n        <div\n          class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center\"\n        >\n          <a\n            id=\"attendance-link\"\n            class=\"staff-only btn btn-light script-link\"\n            href=\"?page=signup\"\n            target=\"_top\"\n            >Signup Form</a\n          >\n          <a\n            id=\"admin-link\"\n            class=\"admin-only btn btn-light ms-1 script-link\"\n            href=\"?page=admin\"\n            target=\"_top\"\n            >Admin</a\n          >\n        </div>\n      </div>\n    </div>\n  </header>\n\n  \x3C!-- Date and period section  -->\n  <div class=\"subheader p-3 mb-4\">\n    <div class=\"container\">\n      <div class=\"row justify-content-center\">\n        <div class=\"col col-12 d-flex justify-content-center\">\n          <div></div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Main body container  -->\n  <div class=\"container\">\n    <div id=\"form\" class=\"row g-2\">\n      \x3C!-- Step 1 -->\n      <div class=\"col-12 col-lg-3\">\n        <div class=\"step-card\">\n          <h2 class=\"step-header\">\n            <i class=\"fa-solid fa-calendar-days\"></i>\n            Controls\n          </h2>\n\n          \x3C!-- Date selection -->\n          <div class=\"d-block mb-2 d-lg-inline\">\n            <input\n              type=\"date\"\n              class=\"form-control date-input required d-inline\"\n              id=\"date\"\n            />\n          </div>\n\n          \x3C!-- Period selection  -->\n          <div class=\"d-block mt-2 mb-2\">\n            <select class=\"form-select required d-inline\" id=\"period\"></select>\n          </div>\n\n          \x3C!-- Group selection  -->\n          <div class=\"d-block mt-2 mb-2\">\n            <select class=\"form-select required d-inline\" id=\"study-select\"></select>\n          </div>\n\n          \x3C!-- Data refresh button -->\n          <div class=\"d-block text-end\">\n            <button id=\"refresh-data-btn\" class=\"btn btn-primary\">\n              Refresh\n            </button>\n          </div>\n        </div>\n      </div>\n\n      \x3C!-- Step 2 -->\n      <div class=\"col-12 col-lg-6\">\n        <div class=\"step-card h-100\">\n          <div class=\"d-flex flex-row\">\n            <div class=\"flex-grow-1\">\n\n              <h2 class=\"step-header\">\n                <i class=\"fa-solid fa-address-card\"></i>\n                Students\n              </h2>\n            </div>\n            <div class=\"flex-grow-0\">\n              <div>\n                <span class=\"active panel-link attendance-panel-link\">\n                  Attendance\n                </span>  |  \n                <span class=\"panel-link details-panel-link\">\n                  Details\n                </span>  |  \n                <span class=\"panel-link list-panel-link\">\n                  List\n                </span>\n              </div>\n            </div>\n          </div>\n\n          \x3C!-- Main data table  -->\n          <div id=\"student-table\" class=\"\">\n            \x3C!-- Data not found row  -->\n            <div class=\"row student-row-empty d-none\">\n              <div class=\"col\">No records found</div>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      \x3C!-- Step 3 -->\n      <div class=\"col-12 col-lg-3\">\n        <div class=\"row g-2\">\n          <div class=\"col-12\">\n            <div id=\"glass-rooms-status\" class=\"step-card\">\n              <h2 class=\"step-header\">\n                <i class=\"fa-solid fa-person-chalkboard\"></i>\n                Glass Rooms\n              </h2>\n\n              \x3C!-- Room 1 Status -->\n              <div class=\"d-block room room-1\">\n                <span class=\"badge text-bg-success room-badge\">Room 1</span>\n                <span class=\"status\"></span>\n              </div>\n\n              \x3C!-- Room 2 Status -->\n              <div class=\"d-block room room-2\">\n                <span class=\"badge text-bg-danger room-badge\">Room 2</span>\n                <span class=\"status\"></span>\n              </div>\n            </div>\n          </div>\n\n          <div class=\"col\">\n            <div class=\"step-card\">\n              <h2 class=\"step-header\">\n                <i class=\"fa-solid fa-school\"></i>\n                Staff Reservations\n              </h2>\n\n              \x3C!-- Main data table  -->\n              <div id=\"staff-table\" class=\"\">\n                \x3C!-- Data not found row  -->\n                <div class=\"row staff-row-empty d-none\">\n                  <div class=\"col\">No records found</div>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->\n<section id=\"templates\" style=\"display: none\">\n  \x3C!-- Tri-state button (not currently used)  -->\n  <div id=\"custom-checkbox-template\">\n    <div class=\"custom-checkbox mb-2 d-flex\">\n      <span type=\"checkbox\" class=\"form-check-input tri-state\"></span>\n      <label for=\"feedback\" class=\"form-check-label ms-1\"> </label>\n    </div>\n  </div>\n\n  \x3C!-- Student row of data  -->\n  <template id=\"student-row-template\">\n    <div class=\"data-row student-row mb-2\">\n      <div class=\"row mb-2\">\n        \x3C!-- Column 1  -->\n        <div class=\"col-8\">\n          \x3C!-- Edit icons (shown to editors only) -->\n          <div class=\"edit-icons d-none me-1 text-secondary\">\n            <a class=\"edit-link script-link\" href=\"?page=update\" target=\"_top\"\n              ><i class=\"fas fa-edit\"></i\n            ></a>\n            \x3C!-- Student name  -->\n            <div class=\"student-name d-inline\"></div>\n          </div>\n        </div>\n\n        \x3C!-- Study hall teacher  -->\n        <div class=\"study-teacher col-4 text-end\"></div>\n      </div>\n\n      <div class=\"row\">\n        <div id=\"\" class=\"slider-wrapper col col-12 mb-2\" data-items=\"2\">\n          <div class=\"slider\">\n            \x3C!-- Panel: Attendance  -->\n            <div class=\"panel attendance-info\">\n              <div class=\"row\">\n                <div\n                  data-type=\"study-checkin\"\n                  class=\"checkin-box study-checkin col-6 col-lg-3 order-1 text-center\"\n                ></div>\n                <div\n                  data-type=\"media-checkin\"\n                  class=\"checkin-box media-checkin col-6 col-lg-3 order-3 order-lg-2 text-center\"\n                ></div>\n                <div\n                  data-type=\"media-checkout\"\n                  class=\"checkin-box media-checkout not-wed-int col-6 col-lg-3 order-4 order-lg-3 text-center\"\n                ></div>\n                <div\n                  data-type=\"study-return\"\n                  class=\"checkin-box study-return not-wed-int col-6 col-lg-3 order-2 order-lg-4 text-center\"\n                ></div>\n              </div>\n            </div>\n\n            \x3C!-- Panel: Details  -->\n            <div class=\"panel details-info\">\n              <div class=\"row\">\n                <div class=\"type col-12\"></div>\n                <div class=\"comments col-12\"></div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </template>\n\n  <template id=\"checkin-box\">\n    <div>\n      <div>\n        <label class=\"checkin-box-label\">Study Return</label>\n      </div>\n\n      \x3C!-- UI elements  -->\n      <button class=\"checkin-btn btn btn-light\">Return</button>\n      <div class=\"time d-none\">\n        <span class=\"time-value text-success\"></span>\n        <span class=\"time-edit d-none\">\n          <input class=\"text-center\" type=\"time\" />\n          <i class=\"save-btn edit fa-solid fa-check text-success\"></i>\n          <i class=\"cancel-btn edit fa-solid fa-ban text-danger\"></i>\n          <i class=\"delete-btn cancel fa-solid fa-trash text-danger\"></i>\n        </span>\n        <span class=\"primary-buttons ms-1\">\n          <i class=\"edit-start-btn edit fa-solid fa-edit text-primary\"></i>\n        </span>\n      </div>\n      <div class=\"spinner d-none\">\n        <div\n          class=\"spinner-border spinner-border-sm text-primary\"\n          role=\"status\"\n        >\n          <span class=\"visually-hidden\">Loading...</span>\n        </div>\n      </div>\n    </div>\n  </template>\n\n  \x3C!-- Staff row of data  -->\n  <template id=\"staff-row-template\">\n    <div class=\"row data-row staff-row mb-2\">\n      \x3C!-- Column 1  -->\n      <div class=\"col col-12 mb-2\">\n        \x3C!-- Edit icons (shown to editors only) -->\n        <div class=\"edit-icons d-none me-1 text-secondary\">\n          <a class=\"edit-link script-link\" href=\"?page=update\" target=\"_top\"\n            ><i class=\"fas fa-edit\"></i\n          ></a>\n        </div>\n\n        \x3C!-- Student name  -->\n        <div class=\"student-name d-inline\"></div>\n      </div>\n\n      \x3C!-- Column 2  -->\n      \x3C!-- none  -->\n\n      \x3C!-- Column 3  -->\n      <div class=\"comments col-12\"></div>\n    </div>\n  </template>\n</section>\n\n\x3C!-- Modal: Loading -->\n<div\n  class=\"modal fade\"\n  id=\"loading-modal\"\n  tabindex=\"-1\"\n  aria-labelledby=\"loadingModalLabel\"\n  aria-hidden=\"true\"\n>\n  <div class=\"modal-dialog modal-lg\">\n    <div class=\"modal-content\">\n      <div class=\"modal-body\">\n        <div class=\"d-flex\">\n          <div class=\"spinner-border text-primary me-3\" role=\"status\">\n            <span class=\"visually-hidden\">Loading...</span>\n          </div>\n          <div class=\"loading-text\"></div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (green): Success -->\n  <div\n    class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\"\n  >\n    <div\n      id=\"success-toast\"\n      class=\"toast text-bg-success align-items-center\"\n      role=\"alert\"\n      aria-live=\"assertive\"\n      aria-atomic=\"true\"\n    >\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">Submission complete!</div>\n        <button\n          type=\"button\"\n          class=\"btn-close btn-close-white me-2 m-auto\"\n          data-bs-dismiss=\"toast\"\n          aria-label=\"Close\"\n        ></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (red): Error  -->\n  <div\n    class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\"\n  >\n    <div\n      id=\"error-toast\"\n      class=\"toast text-bg-danger align-items-center\"\n      role=\"alert\"\n      aria-live=\"assertive\"\n      aria-atomic=\"true\"\n    >\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">Error completing submission.</div>\n        <button\n          type=\"button\"\n          class=\"btn-close btn-close-white me-2 m-auto\"\n          data-bs-dismiss=\"toast\"\n          aria-label=\"Close\"\n        ></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (red): Invalid data (not used)  -->\n  <div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\n    <div\n      id=\"validation-error-toast\"\n      class=\"toast text-bg-danger align-items-center\"\n      role=\"alert\"\n      aria-live=\"assertive\"\n      aria-atomic=\"true\"\n    >\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">Please complete the missing information.</div>\n        <button\n          type=\"button\"\n          class=\"btn-close btn-close-white me-2 m-auto\"\n          data-bs-dismiss=\"toast\"\n          aria-label=\"Close\"\n        ></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Helper area for storing data sent from the server -->\n  <div class=\"d-none hidden-data\">\n    <input id=\"is-editor\" type=\"checkbox\" value=\"false\" />\n    <input id=\"is-admin\" type=\"checkbox\" value=\"false\" />\n    <input id=\"wed-int-active\" type=\"checkbox\" value=\"true\" />\n  </div>\n\n  \x3C!-- Javacript libraries and files -->\n  <script\n    src=\"https://kit.fontawesome.com/1a74660f3b.js\"\n    crossorigin=\"anonymous\"\n  ><\/script>\n\n  <script\n    src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js\"\n    integrity=\"sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL\"\n    crossorigin=\"anonymous\"\n  ><\/script>\n</div>\n";
 //#endregion
 //#region src/client/admin/admin.html?raw
-var admin_default = " \x3C!-- HTML for the Attendance Page  -->\n<script>\n  if (window.trustedTypes && window.trustedTypes.createPolicy) {\n    window.trustedTypes.createPolicy('default', {\n      createHTML: string => string,\n      createScriptURL: string => string,\n      createScript: string => string,\n    });\n  }\n<\/script>\n\n\x3C!-- CSS files -->\n<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN\" crossorigin=\"anonymous\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n\x3C!-- Main display -->\n<div class=\"body attendance admin\">\n\n  \x3C!-- Header/masthead -->\n  <header >\n    <div class=\"container-fluid\">\n      <div class=\"row pb-2 pt-2 align-items-center\">\n\n        \x3C!-- Logo image -->\n        <div class=\"logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center\">\n          <img id=\"logo-image\" src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\" alt=\"Walpole Public Schools\">\n          <div class=\"ms-3 d-none d-lg-inline\">\n            <span class=\"d-inline d-md-block\">Walpole </span><span class=\"public-schools d-inline d-md-block\">Public Schools</span>\n          </div>\n        </div>\n\n        \x3C!-- Page title  -->\n        <div class=\"col text-center page-title\">\n          <h1>\n            WHS Intervention & Media Center Admin Page\n          </h1>\n        </div>\n\n        \x3C!-- Buttons/links to other pages  -->\n        <div class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center \">\n          <a id=\"attendance-link\" class=\"staff-only btn btn-light\" href=\"#\" target=\"_top\">Signup Form</a>\n        </div>\n      </div>\n    </div>\n  </header>\n\n  \x3C!-- Tab navigation  -->\n  <ul class=\"subheader nav nav-tabs pt-3 \">\n    <li class=\"nav-item\">\n      <a id=\"#student-panel-btn\" class=\"nav-link active\" href=\"#\" data-target=\"student-panel\">Student Audit</a>\n    </li>\n    <li class=\"nav-item\">\n      <a id=\"settings-panel-btn\" class=\"nav-link\" href=\"#\" data-target=\"settings-panel\">App Settings</a>\n    </li>\n  </ul>\n\n  \x3C!-- Main body container  -->\n  <div class=\"container\">\n\n    \x3C!-- Student audit data table  -->\n    <div id=\"student-panel\" class=\"tab-panel mt-3 active\">\n\n      \x3C!-- Table selector -->\n      <div class=\"d-flex flex-row mb-3\">\n        <button id=\"get-audit-btn\" class=\"btn btn-primary me-2\">Get Audit</button>\n        <div id=\"student-input-div\" class=\"flex-grow-1\">\n          <input type=\"text\" class=\"form-control disabled student-autocomplete flex-grow\" id=\"student-name\" placeholder=\"Begin typing a name\"></input>\n        </div>\n      </div>\n\n      \x3C!-- Table header row  -->\n      <div class=\"row header-row mb-2\">\n\n        \x3C!-- Date header  -->\n        <div class=\"col col-12 col-lg-3 d-none d-lg-flex\">\n          <h4 id=\"date-header\" class=\"sortable\">Date \n            <span class=\"sort-icon\">\n              <i class=\"sort-date fa-solid fa-caret-down direction active\"></i>\n            </span>\n          </h4>\n        </div>\n\n        \x3C!-- Period header  -->\n        <div class=\"col col-12 col-lg-2 d-none d-lg-flex\">\n          <h4 id=\"period-header\" class=\"sortable\">Period \n            <span class=\"sort-icon\">\n              <i class=\"sort-period fa-solid\"></i>\n            </span>\n          </h4>\n        </div>\n\n        \x3C!-- Panel header: Attendance  -->\n        <div class=\"col col-12 col-lg-7 attendance-info\">\n          <div class=\"row\">\n            <div class=\"col col-8\">\n              <h4>Attendance  |  <a id=\"details-link\" href=\"#\" >Details</a></h4>\n            </div>\n\n            \x3C!-- Data refresh button -->\n            <div class=\"col col-4 text-end\">\n              <button class=\"btn btn-primary\">Refresh</button>\n            </div>\n          </div>\n        </div>\n\n        \x3C!-- Panel header: Details  -->\n        <div class=\"col col-12 col-lg-7 signup-info d-none\">\n          <div class=\"row\">\n            <div class=\"col col-8\">\n              <h4><a id=\"attendance-link\" href=\"#\">Attendance</a> | Details</h4>\n            </div>\n\n            \x3C!-- Data refresh button -->\n            <div class=\"col col-4 text-end\">\n              <button class=\"btn btn-primary\">Refresh</button>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      \x3C!-- Data not found row  -->\n      <div class=\"row student-row-empty d-none\">\n        <div class=\"col\">No records found</div>\n      </div>\n\n      \n    </div>\n\n    \x3C!-- App settings table  -->\n    <div id=\"settings-panel\" class=\"tab-panel mt-3\">\n      <button class=\"btn btn-success mb-2\">Save</button>\n\n      \x3C!-- Table header row  -->\n      <div class=\"row header-row mb-2\">\n\n        \x3C!-- Description header  -->\n        <div class=\"col col-12 col-lg-2\">\n          <h4>Setting</h4>\n        </div>\n\n        \x3C!-- Value header  -->\n        <div class=\"col col-12 col-lg-3\">\n          <h4>Value</h4>\n        </div>\n\n        <div class=\"col col-12 col-lg-7\">\n          <h4>Details</h4>\n        </div>\n      </div>\n    </div>\n  </div>\n  </div>\n\n  \x3C!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->\n  <section id=\"templates\" style=\"display:none\">\n    \n    \x3C!-- Student row of data  -->\n    <template id=\"student-row-template\" >\n      <div class=\"row data-row student-row mb-2\">\n\n        \x3C!-- Column 1  -->\n        <div class=\"col col-12 col-lg-3 mb-2\">\n          \n          \x3C!-- Edit icons (shown to editors only) -->\n          <div class=\"edit-icons d-none me-1 text-secondary\">\n            <a class=\"edit-link\" href=\"#?page=update\" target=\"_top\"><i class=\"fas fa-edit\"></i></a> \n          </div>\n          \n          \x3C!-- Date  -->\n          <div class=\"d-inline\">\n            <div class=\"signup-date\"></div>\n          </div>\n        </div>\n        \n        \x3C!-- Column 2  -->\n        \x3C!-- Period  -->\n        <div class=\"signup-period col col-12 col-lg-2 mb-2\"></div>\n        \n        \x3C!-- Column 3  -->\n        <div id=\"slider-wrapper\" class=\"col col-12 col-lg-7 mb-2\" data-items=\"2\">\n          <div class=\"slider\">\n            \n            \x3C!-- Panel: Attendance  -->\n            <div class=\"panel attendance-info\">\n              <div class=\"row\">\n                <div data-type=\"study-checkin\" class=\"checkin-box study-checkin col-6 col-xl-3 order-1 text-center\"></div>\n                <div data-type=\"media-checkin\" class=\"checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center\"></div>\n                <div data-type=\"media-checkout\" class=\"checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center\"></div>\n                <div data-type=\"study-return\" class=\"checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center\"></div>\n              </div>\n            </div>\n            \n            \x3C!-- Panel: Details  -->\n            <div class=\"panel details-info\">\n              <div class=\"row\">\n                <div class=\"study-teacher col-12\"></div>\n                <div class=\"type col-12 col-lg-6\"></div>\n                <div class=\"room col-12 col-lg-6\"></div>\n                <div class=\"comments col-12\"></div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </template>\n    \n    <template id=\"checkin-box\">\n      <div>\n\n        <div>\n          <label class=\"checkin-box-label\">Study Return</label>\n        </div>\n\n        \x3C!-- UI elements  -->\n        <button class=\"checkin-btn btn btn-light\" >Return</button>\n        <div class=\"time d-none\">\n          <span class=\"time-value text-success\"></span>\n          <span class=\"time-edit d-none\">\n            <input class=\"text-center\" type=\"time\"></input> \n            <i class=\"save-btn edit fa-solid fa-check text-success\" ></i>\n            <i class=\"cancel-btn edit fa-solid fa-ban text-danger\" ></i>\n            <i class=\"delete-btn cancel fa-solid fa-trash text-danger\"></i>\n          </span>\n          <span class=\"primary-buttons ms-1\">\n            <i class=\"edit-start-btn edit fa-solid fa-edit text-primary\" ></i>\n          </span>\n        </div>\n        <div class=\"spinner d-none\">\n          <div class=\"spinner-border spinner-border-sm text-primary\" role=\"status\">\n          <span class=\"visually-hidden\">Loading...</span>\n        </div>\n      </div>\n    </div>\n    </template>\n\n\n    \x3C!-- Settings template  -->\n    <template id=\"settings-row-template\">\n\n      <div class=\"row data-row settings-row mb-2\">\n        <div class=\"key d-none\"></div>\n        <div class=\"col col-lg-2 description\"></div>\n        <div class=\"col col-lg-3 value\">\n        <input class=\"form-control\"></input>\n      </div>\n      <div class=\"col col-lg-7 comments\">\n      </div>\n      \n    </div>\n  </template>\n  </section>\n\n  \x3C!-- Modal: Loading -->\n  <div class=\"modal fade\" id=\"loading-modal\" tabindex=\"-1\" aria-labelledby=\"loadingModalLabel\" aria-hidden=\"true\">\n    <div class=\"modal-dialog modal-lg\">\n      <div class=\"modal-content\">\n        <div class=\"modal-body\">\n          <div class=\"d-flex\">\n            <div class=\"spinner-border text-primary me-3\" role=\"status\">\n              <span class=\"visually-hidden\">Loading...</span>\n            </div>\n            <div class=\"loading-text\">\n              \n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (green): Success -->\n  <div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\n    <div id=\"success-toast\" class=\"toast text-bg-success align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">\n          Submission complete!\n        </div>\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (red): Error  -->\n  <div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\n    <div id=\"error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">\n          Error completing submission.\n        </div>\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (red): Invalid data (not used)  -->\n  <div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\n    <div id=\"validation-error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">\n          Please complete the missing information.\n        </div>\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n      </div>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Helper area for storing data sent from the server -->\n<div class=\"d-none hidden-data\">\n  <input id=\"is-editor\" type=\"checkbox\" value=\"false\" />\n  <input id=\"wed-int-active\" type=\"checkbox\" value=\"false\" />\n</div>\n\n\x3C!-- Javacript libraries and files -->\n<script src=\"https://kit.fontawesome.com/1a74660f3b.js\" crossorigin=\"anonymous\"><\/script>\n<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL\" crossorigin=\"anonymous\"><\/script>";
+var admin_default = " \x3C!-- HTML for the Attendance Page  -->\n<script>\n  if (window.trustedTypes && window.trustedTypes.createPolicy) {\n    window.trustedTypes.createPolicy('default', {\n      createHTML: string => string,\n      createScriptURL: string => string,\n      createScript: string => string,\n    });\n  }\n<\/script>\n\n\x3C!-- CSS files -->\n<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\" integrity=\"sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN\" crossorigin=\"anonymous\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n\x3C!-- Main display -->\n<div class=\"body attendance admin\">\n\n  \x3C!-- Header/masthead -->\n  <header >\n    <div class=\"container-fluid\">\n      <div class=\"row pb-2 pt-2 align-items-center\">\n\n        \x3C!-- Logo image -->\n        <div class=\"logo col-12 col-sm-2 col-lg-3 d-flex flex-row align-items-center\">\n          <img id=\"logo-image\" src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\" alt=\"Walpole Public Schools\">\n          <div class=\"ms-3 d-none d-lg-inline\">\n            <span class=\"d-inline d-md-block\">Walpole </span><span class=\"public-schools d-inline d-md-block\">Public Schools</span>\n          </div>\n        </div>\n\n        \x3C!-- Page title  -->\n        <div class=\"col text-center page-title\">\n          <h1>\n            WHS Intervention & Media Center Admin Page\n          </h1>\n        </div>\n\n        \x3C!-- Buttons/links to other pages  -->\n        <div class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center \">\n          <a id=\"attendance-link\" class=\"staff-only btn btn-light script-link\" href=\"?page=signup\" target=\"_top\">Signup Form</a>\n        </div>\n      </div>\n    </div>\n  </header>\n\n  \x3C!-- Tab navigation  -->\n  <ul class=\"subheader nav nav-tabs pt-3 \">\n    <li class=\"nav-item\">\n      <a id=\"#student-panel-btn\" class=\"nav-link active script-link\" href=\"\" data-target=\"student-panel\">Student Audit</a>\n    </li>\n    <li class=\"nav-item\">\n      <a id=\"settings-panel-btn\" class=\"nav-link script-link\" href=\"\" data-target=\"settings-panel\">App Settings</a>\n    </li>\n  </ul>\n\n  \x3C!-- Main body container  -->\n  <div class=\"container\">\n\n    \x3C!-- Student audit data table  -->\n    <div id=\"student-panel\" class=\"tab-panel mt-3 active\">\n\n      \x3C!-- Table selector -->\n      <div class=\"d-flex flex-row mb-3\">\n        <button id=\"get-audit-btn\" class=\"btn btn-primary me-2\">Get Audit</button>\n        <div id=\"student-input-div\" class=\"flex-grow-1\">\n          <input type=\"text\" class=\"form-control disabled student-autocomplete flex-grow\" id=\"student-name\" placeholder=\"Begin typing a name\"></input>\n        </div>\n      </div>\n\n      \x3C!-- Table header row  -->\n      <div class=\"row header-row mb-2\">\n\n        \x3C!-- Date header  -->\n        <div class=\"col col-12 col-lg-3 d-none d-lg-flex\">\n          <h4 id=\"date-header\" class=\"sortable\">Date \n            <span class=\"sort-icon\">\n              <i class=\"sort-date fa-solid fa-caret-down direction active\"></i>\n            </span>\n          </h4>\n        </div>\n\n        \x3C!-- Period header  -->\n        <div class=\"col col-12 col-lg-2 d-none d-lg-flex\">\n          <h4 id=\"period-header\" class=\"sortable\">Period \n            <span class=\"sort-icon\">\n              <i class=\"sort-period fa-solid\"></i>\n            </span>\n          </h4>\n        </div>\n\n        \x3C!-- Panel header: Attendance  -->\n        <div class=\"col col-12 col-lg-7 attendance-info\">\n          <div class=\"row\">\n            <div class=\"col col-8\">\n              <h4>Attendance  |  <a id=\"details-link\" class=\"script-link\" href=\"\" >Details</a></h4>\n            </div>\n\n            \x3C!-- Data refresh button -->\n            <div class=\"col col-4 text-end\">\n              <button class=\"btn btn-primary\">Refresh</button>\n            </div>\n          </div>\n        </div>\n\n        \x3C!-- Panel header: Details  -->\n        <div class=\"col col-12 col-lg-7 signup-info d-none\">\n          <div class=\"row\">\n            <div class=\"col col-8\">\n              <h4><a id=\"attendance-link\" class=\"script-link\" href=\"\">Attendance</a> | Details</h4>\n            </div>\n\n            \x3C!-- Data refresh button -->\n            <div class=\"col col-4 text-end\">\n              <button class=\"btn btn-primary\">Refresh</button>\n            </div>\n          </div>\n        </div>\n      </div>\n\n      \x3C!-- Data not found row  -->\n      <div class=\"row student-row-empty d-none\">\n        <div class=\"col\">No records found</div>\n      </div>\n\n      \n    </div>\n\n    \x3C!-- App settings table  -->\n    <div id=\"settings-panel\" class=\"tab-panel mt-3\">\n      <button class=\"btn btn-success mb-2\">Save</button>\n\n      \x3C!-- Table header row  -->\n      <div class=\"row header-row mb-2\">\n\n        \x3C!-- Description header  -->\n        <div class=\"col col-12 col-lg-2\">\n          <h4>Setting</h4>\n        </div>\n\n        \x3C!-- Value header  -->\n        <div class=\"col col-12 col-lg-3\">\n          <h4>Value</h4>\n        </div>\n\n        <div class=\"col col-12 col-lg-7\">\n          <h4>Details</h4>\n        </div>\n      </div>\n    </div>\n  </div>\n  </div>\n\n  \x3C!-- Templates for repeatable sections of the page. Hidden at first, cloned and inserted by javascript when needed -->\n  <section id=\"templates\" style=\"display:none\">\n    \n    \x3C!-- Student row of data  -->\n    <template id=\"student-row-template\" >\n      <div class=\"row data-row student-row mb-2\">\n\n        \x3C!-- Column 1  -->\n        <div class=\"col col-12 col-lg-3 mb-2\">\n          \n          \x3C!-- Edit icons (shown to editors only) -->\n          <div class=\"edit-icons d-none me-1 text-secondary\">\n            <a class=\"edit-link script-link\" href=\"?page=update\" target=\"_top\"><i class=\"fas fa-edit\"></i></a> \n          </div>\n          \n          \x3C!-- Date  -->\n          <div class=\"d-inline\">\n            <div class=\"signup-date\"></div>\n          </div>\n        </div>\n        \n        \x3C!-- Column 2  -->\n        \x3C!-- Period  -->\n        <div class=\"signup-period col col-12 col-lg-2 mb-2\"></div>\n        \n        \x3C!-- Column 3  -->\n        <div id=\"slider-wrapper\" class=\"col col-12 col-lg-7 mb-2\" data-items=\"2\">\n          <div class=\"slider\">\n            \n            \x3C!-- Panel: Attendance  -->\n            <div class=\"panel attendance-info\">\n              <div class=\"row\">\n                <div data-type=\"study-checkin\" class=\"checkin-box study-checkin col-6 col-xl-3 order-1 text-center\"></div>\n                <div data-type=\"media-checkin\" class=\"checkin-box media-checkin col-6 col-xl-3 order-3 order-xl-2 text-center\"></div>\n                <div data-type=\"media-checkout\" class=\"checkin-box media-checkout not-wed-int col-6 col-xl-3 order-4 order-xl-3 text-center\"></div>\n                <div data-type=\"study-return\" class=\"checkin-box study-return not-wed-int col-6 col-xl-3 order-2 order-xl-4 text-center\"></div>\n              </div>\n            </div>\n            \n            \x3C!-- Panel: Details  -->\n            <div class=\"panel details-info\">\n              <div class=\"row\">\n                <div class=\"study-teacher col-12\"></div>\n                <div class=\"type col-12 col-lg-6\"></div>\n                <div class=\"room col-12 col-lg-6\"></div>\n                <div class=\"comments col-12\"></div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </template>\n    \n    <template id=\"checkin-box\">\n      <div>\n\n        <div>\n          <label class=\"checkin-box-label\">Study Return</label>\n        </div>\n\n        \x3C!-- UI elements  -->\n        <button class=\"checkin-btn btn btn-light\" >Return</button>\n        <div class=\"time d-none\">\n          <span class=\"time-value text-success\"></span>\n          <span class=\"time-edit d-none\">\n            <input class=\"text-center\" type=\"time\"></input> \n            <i class=\"save-btn edit fa-solid fa-check text-success\" ></i>\n            <i class=\"cancel-btn edit fa-solid fa-ban text-danger\" ></i>\n            <i class=\"delete-btn cancel fa-solid fa-trash text-danger\"></i>\n          </span>\n          <span class=\"primary-buttons ms-1\">\n            <i class=\"edit-start-btn edit fa-solid fa-edit text-primary\" ></i>\n          </span>\n        </div>\n        <div class=\"spinner d-none\">\n          <div class=\"spinner-border spinner-border-sm text-primary\" role=\"status\">\n          <span class=\"visually-hidden\">Loading...</span>\n        </div>\n      </div>\n    </div>\n    </template>\n\n\n    \x3C!-- Settings template  -->\n    <template id=\"settings-row-template\">\n\n      <div class=\"row data-row settings-row mb-2\">\n        <div class=\"key d-none\"></div>\n        <div class=\"col col-lg-2 description\"></div>\n        <div class=\"col col-lg-3 value\">\n        <input class=\"form-control\"></input>\n      </div>\n      <div class=\"col col-lg-7 comments\">\n      </div>\n      \n    </div>\n  </template>\n  </section>\n\n  \x3C!-- Modal: Loading -->\n  <div class=\"modal fade\" id=\"loading-modal\" tabindex=\"-1\" aria-labelledby=\"loadingModalLabel\" aria-hidden=\"true\">\n    <div class=\"modal-dialog modal-lg\">\n      <div class=\"modal-content\">\n        <div class=\"modal-body\">\n          <div class=\"d-flex\">\n            <div class=\"spinner-border text-primary me-3\" role=\"status\">\n              <span class=\"visually-hidden\">Loading...</span>\n            </div>\n            <div class=\"loading-text\">\n              \n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (green): Success -->\n  <div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\n    <div id=\"success-toast\" class=\"toast text-bg-success align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">\n          Submission complete!\n        </div>\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (red): Error  -->\n  <div class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\">\n    <div id=\"error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">\n          Error completing submission.\n        </div>\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n      </div>\n    </div>\n  </div>\n\n  \x3C!-- Toast (red): Invalid data (not used)  -->\n  <div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\n    <div id=\"validation-error-toast\" class=\"toast text-bg-danger align-items-center\" role=\"alert\" aria-live=\"assertive\" aria-atomic=\"true\">\n      <div class=\"d-flex\">\n        <div class=\"toast-body\">\n          Please complete the missing information.\n        </div>\n        <button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\" aria-label=\"Close\"></button>\n      </div>\n    </div>\n  </div>\n</div>\n\n\x3C!-- Helper area for storing data sent from the server -->\n<div class=\"d-none hidden-data\">\n  <input id=\"is-editor\" type=\"checkbox\" value=\"false\" />\n  <input id=\"wed-int-active\" type=\"checkbox\" value=\"false\" />\n</div>\n\n\x3C!-- Javacript libraries and files -->\n<script src=\"https://kit.fontawesome.com/1a74660f3b.js\" crossorigin=\"anonymous\"><\/script>\n<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js\" integrity=\"sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL\" crossorigin=\"anonymous\"><\/script>";
 //#endregion
 //#region src/client/signup/signup-form.html?raw
-var signup_form_default = "\x3C!-- Main display -->\r\n<div class=\"body signup\">\r\n  \x3C!-- Header/masthead -->\r\n  <header class=\"mb-4\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row pb-2 pt-2 align-items-center\">\r\n        \x3C!-- Logo image -->\r\n        <div\r\n          class=\"logo col-12 col-sm-1 col-lg-1 d-flex flex-row align-items-center\"\r\n        >\r\n          <img\r\n            id=\"logo-image\"\r\n            src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\"\r\n            data-logo-id=\"\"\r\n            alt=\"Walpole Public Schools\"\r\n          />\r\n        </div>\r\n        <div class=\"col text-center page-title\">\r\n          <h1 class=\"text-center text-md-start\">\r\n            Intervention & Media Center\r\n            <span class=\"d-inline d-md-none\"><br /></span>Sign Up\r\n          </h1>\r\n        </div>\r\n\r\n        \x3C!-- Page title  -->\r\n\r\n        \x3C!-- Buttons/links to other pages  -->\r\n        <div\r\n          class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center\"\r\n        >\r\n          <a\r\n            id=\"attendance-link\"\r\n            class=\"staff-only btn btn-light\"\r\n            href=\"#\"\r\n            target=\"_top\"\r\n            >Attendance</a\r\n          >\r\n          <a\r\n            id=\"admin-link\"\r\n            class=\"admin-only btn btn-light ms-1\"\r\n            href=\"#\"\r\n            target=\"_top\"\r\n            >Admin</a\r\n          >\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </header>\r\n\r\n  \x3C!-- Main body container  -->\r\n  <div class=\"container\">\r\n    \x3C!-- Main form  -->\r\n    <div id=\"form\" class=\"\">\r\n      <div class=\"row g-2 mb-4 \">\r\n        \x3C!-- Step 1 -->\r\n        <div class=\"col-12 col-lg-3 \">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-address-card\"></i>\r\n              Your Details\r\n            </h2>\r\n\r\n            \x3C!-- Email address  -->\r\n            <div class=\"mb-4 admin-email-div\">\r\n              <label for=\"email\" class=\"form-label main-label\">\r\n                My email\r\n                <a\r\n                  href=\"#\"\r\n                  class=\"editors-only\"\r\n                  data-bs-toggle=\"tooltip\"\r\n                  data-bs-title=\"Only editors can change the email address\"\r\n                  data-bs-placement=\"right\"\r\n                >\r\n                  <i class=\"info-icon fa-solid fa-circle-info\"></i>\r\n                </a>\r\n              </label>\r\n              <input\r\n                type=\"email\"\r\n                class=\"form-control disabled\"\r\n                id=\"email\"\r\n                value=\"\"\r\n                disabled=\"\"\r\n              />\r\n            </div>\r\n\r\n            \x3C!-- Student name (shown for staff ) -->\r\n            <div class=\"mb-4 staff-only\">\r\n              <div\r\n                class=\"intervention-only assessment-only tutoring-only non-intervention-only alt-setting-only\"\r\n              >\r\n                <label for=\"student\" class=\"form-label main-label\">\r\n                  Student\r\n                </label>\r\n                <input\r\n                  type=\"text\"\r\n                  class=\"form-control disabled student-autocomplete\"\r\n                  id=\"student\"\r\n                />\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Step 2 -->\r\n        <div class=\"col-12 col-lg-3\">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-calendar-days\"></i>\r\n              Date & Time\r\n            </h2>\r\n\r\n            \x3C!-- Date requested  -->\r\n            <div class=\"mb-4\">\r\n              <label for=\"date\" class=\"form-label main-label required\">\r\n                Date Requested\r\n              </label>\r\n              <input\r\n                type=\"date\"\r\n                class=\"form-control date-input required\"\r\n                id=\"date\"\r\n              />\r\n            </div>\r\n\r\n            \x3C!-- Period requested  -->\r\n            <div class=\"mb-4\">\r\n              <label for=\"date\" class=\"form-label main-label required\">\r\n                Period Requested\r\n              </label>\r\n              <select class=\"form-select required\" id=\"period\"></select>\r\n            </div>\r\n\r\n            \x3C!-- Study Hall teacher  -->\r\n            <div\r\n              class=\"intervention-only assessment-only tutoring-only alt-setting-only non-intervention-only\"\r\n            >\r\n              <div id=\"study-div\" class=\"mb-4\">\r\n                <label\r\n                  for=\"study-teacher\"\r\n                  class=\"form-label main-label intervention-only assessment-only tutoring-only non-intervention-only  d-none\"\r\n                >\r\n                  Study hall teacher\r\n                </label>\r\n                <label\r\n                  for=\"study-teacher\"\r\n                  class=\"form-label main-label alt-setting-only d-none\"\r\n                >\r\n                  Reporting from (Study Hall or class)\r\n                </label>\r\n                <select\r\n                  class=\"form-select study-teacher  d-none\"\r\n                  id=\"study-teacher-select\"\r\n                  name=\"study-teacher\"\r\n                ></select>\r\n\r\n                \x3C!-- Fallback input if select box is broken -->\r\n                <input\r\n                  class=\"form-control d-none\"\r\n                  id=\"study-teacher-input\"\r\n                  name=\"study-teacher\"\r\n                />\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Step 3 -->\r\n        <div class=\"col-12 col-lg-3\">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-book-open\"></i>\r\n              Reason\r\n            </h2>\r\n            \x3C!-- Signup type  -->\r\n            <div class=\"mb-4\">\r\n              <div class=\"mb-4 student-types\">\r\n                <label class=\"mb-2 main-label\">Signup Type</label>\r\n                <select class=\"form-select required\" id=\"type-select\">\r\n                  <option value=\"Intervention\">Intervention</option>\r\n                  <option value=\"Assessment\">Assessment make-up</option>\r\n                  <option value=\"Tutoring\">NHS tutoring</option>\r\n                  <option value=\"Non-intervention\">Non-intervention</option>\r\n                  <option value=\"Alt setting\">Alt setting</option>\r\n                  <option value=\"Staff reservation\">Staff reservation</option>\r\n                </select>\r\n              </div>\r\n            </div>\r\n\r\n            \x3C!-- Non-intervention purpose  -->\r\n            <div class=\"mb-4 non-intervention-only d-none\" id=\"purpose\">\r\n              <label class=\"mb-2 main-label\">Purpose</label>\r\n              <select\r\n                class=\"form-select required\"\r\n                name=\"purpose\"\r\n                id=\"purpose-select\"\r\n              >\r\n                <option value=\"Research\">\r\n                  Individual research/use of library resources\r\n                </option>\r\n                <option value=\"Group project\">Group project</option>\r\n                <option value=\"Software\">\r\n                  Software on media center computers\r\n                </option>\r\n                <option value=\"Physical education\">Physical education</option>\r\n                <option value=\"Art\">Art</option>\r\n              </select>\r\n            </div>\r\n\r\n            \x3C!-- Subject for other types  -->\r\n            <div class=\"mb-4 tutoring-only assessment-only alt-setting-only d-none\">\r\n              <label for=\"subject\" class=\"form-label main-label\">\r\n                Subject\r\n              </label>\r\n              <select id=\"subject-non-int\" class=\"form-select\">\r\n                <option value=\"Business\">Business</option>\r\n                <option value=\"English\">English</option>\r\n                <option value=\"Mathematics\">Mathematics</option>\r\n                <option value=\"Physical Education & Health\">\r\n                  Physical Education & Health\r\n                </option>\r\n                <option value=\"Science\">Science</option>\r\n                <option value=\"Social Studies\">Social Studies</option>\r\n                <option value=\"Technology\">Technology</option>\r\n                <option value=\"World Language\">World Language</option>\r\n                <option value=\"Other\">Other</option>\r\n              </select>\r\n            </div>\r\n\r\n            \x3C!-- Academic teacher  -->\r\n            <div\r\n              class=\"mb-4 assessment-only non-intervention-only alt-setting-only d-none\"\r\n            >\r\n              <label for=\"acad-teacher\" class=\"form-label main-label\">\r\n                Teacher you are doing work for\r\n              </label>\r\n              <input type=\"text\" class=\"form-control\" id=\"acad-teacher\" />\r\n            </div>\r\n\r\n            \x3C!-- Teacher & Subject for interventions  -->\r\n            <div class=\"mb-4 intervention-only  d-none\">\r\n              <label for=\"subject\" class=\"form-label main-label\">\r\n                Teacher & Subject\r\n              </label>\r\n              <select\r\n                id=\"subject-int-select\"\r\n                class=\"form-select subject-int\"\r\n                name=\"subject-int\"\r\n              ></select>\r\n\r\n              \x3C!-- Fallback input if select box is broken -->\r\n              <input\r\n                class=\"form-control d-none subject-int\"\r\n                id=\"subject-int-input\"\r\n                name=\"subject-int\"\r\n              />\r\n            </div>\r\n\r\n            \x3C!-- Topic/comments -->\r\n            <div\r\n              class=\"mb-4 intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only d-none\"\r\n            >\r\n              <label\r\n                class=\"main-label intervention-only assessment-only tutoring-only alt-setting-only\"\r\n                for=\"topic-intervention\"\r\n              >\r\n                Topic for help/name of assessment/reason for assistance\r\n              </label>\r\n              <label\r\n                class=\"main-label staff-reservation-only\"\r\n                for=\"topic-intervention\"\r\n              >\r\n                Reason for visit\r\n              </label>\r\n              <label\r\n                class=\"intervention-only assessment-only tutoring-only alt-setting-only\"\r\n                for=\"topic-intervention\"\r\n              >\r\n                Please be as specific as possible.\r\n              </label>\r\n              <textarea\r\n                class=\"form-control intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only\"\r\n                id=\"topic-intervention\"\r\n              ></textarea>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Step 4 -->\r\n        <div class=\"col-12 col-lg-3\">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-person-chalkboard\"></i>\r\n              Glass Rooms\r\n            </h2>\r\n\r\n            <div\r\n              class=\"mb-4 intervention-only assessment-only alt-setting-only tutoring-only d-none\"\r\n            >\r\n              Glass room reservations not available for this signup type\r\n            </div>\r\n\r\n            \x3C!-- Glass room reservation  -->\r\n            <div\r\n              class=\"mb-4 non-intervention-only staff-reservation-only\"\r\n              id=\"glass-room\"\r\n            >\r\n              <label class=\"mb-2 main-label\"\r\n                >Glass Room reservations\r\n                <a\r\n                  href=\"#\"\r\n                  data-bs-toggle=\"tooltip\"\r\n                  data-bs-title=\"Glass Rooms can only be requested by WHS staff members. Students should request assistance from a teacher to request a Glass Room reservation.\"\r\n                  data-bs-placement=\"right\"\r\n                >\r\n                  <i class=\"info-icon fa-solid fa-circle-info\"></i>\r\n                </a>\r\n              </label>\r\n\r\n              \x3C!-- No room  -->\r\n              <div class=\"form-check\">\r\n                <input\r\n                  class=\"form-check-input\"\r\n                  type=\"radio\"\r\n                  name=\"glass-room\"\r\n                  id=\"glass-room-none\"\r\n                  value=\"\"\r\n                  checked\r\n                />\r\n                <label class=\"form-check-label\" for=\"glass-room\"> None </label>\r\n              </div>\r\n\r\n              \x3C!-- Glass Room 1 -->\r\n              <div class=\"form-check staff-only\">\r\n                <input\r\n                  class=\"form-check-input\"\r\n                  type=\"radio\"\r\n                  name=\"glass-room\"\r\n                  id=\"glass-room-1\"\r\n                  value=\"1\"\r\n                />\r\n                <label\r\n                  class=\"form-check-label\"\r\n                  for=\"glass-room\"\r\n                  id=\"glass-room-1-label\"\r\n                >\r\n                  Glass room 1 (<span class=\"availability\">Available</span>)\r\n                </label>\r\n              </div>\r\n\r\n              \x3C!-- Glass Room 2  -->\r\n              <div class=\"form-check staff-only\">\r\n                <input\r\n                  class=\"form-check-input\"\r\n                  type=\"radio\"\r\n                  name=\"glass-room\"\r\n                  id=\"glass-room-2\"\r\n                  value=\"2\"\r\n                />\r\n                <label\r\n                  class=\"form-check-label\"\r\n                  for=\"glass-room\"\r\n                  id=\"glass-room-2-label\"\r\n                >\r\n                  Glass room 2 (<span class=\"availability\">Available</span>)\r\n                </label>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n\r\n      \x3C!-- Full-width column for submit buttons  -->\r\n      <div class=\"col-12\">\r\n        <div class=\"mb-4 text-center text-md-end\">\r\n          \x3C!-- Submit button for new data  -->\r\n          <button class=\"btn btn-orange submit-button mx-auto\" id=\"btn-submit\">\r\n            Submit\r\n          </button>\r\n\r\n          \x3C!-- Update button for changing existing data  -->\r\n          <button\r\n            class=\"btn btn-primary submit-button mx-auto d-none\"\r\n            id=\"btn-update\"\r\n          >\r\n            Update\r\n          </button>\r\n\r\n          \x3C!-- Delete button for removing data  -->\r\n          <button\r\n            class=\"btn btn-danger submit-button mx-auto d-none\"\r\n            id=\"btn-delete\"\r\n            onclick=\"deleteData()\"\r\n          >\r\n            Delete Request\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n\r\n    \x3C!-- Hidden div, for showing \"Successful submission\" when complete -->\r\n    <div\r\n      id=\"success-box\"\r\n      class=\"position-absolute top-50 start-50 translate-middle d-none text-center\"\r\n    >\r\n      <h3>Success!</h3>\r\n      <p>\r\n        Your request has been successfully submitted. Please check your email\r\n        for a confirmation receipt.\r\n      </p>\r\n      <p>\r\n        <i\r\n          >Remember to check in with your study hall teacher before reporting to\r\n          the media center!</i\r\n        >\r\n      </p>\r\n      <button class=\"btn btn-primary staff-only success-box-start-over\">\r\n        Start over\r\n      </button>\r\n    </div>\r\n\r\n    \x3C!-- Hidden div, for showing \"Successful update\" when complete -->\r\n    <div\r\n      id=\"success-update-box\"\r\n      class=\"position-absolute top-50 start-50 translate-middle d-none text-center\"\r\n    >\r\n      <h3>Success!</h3>\r\n      <p>\r\n        Your update has been saved. Click\r\n        <a id=\"attendance-link-updated\" href=\"#\" target=\"_top\">here</a> to\r\n        return to the attendance page.\r\n      </p>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Modal: Loading -->\r\n  <div\r\n    class=\"modal fade\"\r\n    id=\"loading-modal\"\r\n    tabindex=\"-1\"\r\n    aria-labelledby=\"loadingModalLabel\"\r\n    aria-hidden=\"true\"\r\n  >\r\n    <div class=\"modal-dialog modal-lg\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-body\">\r\n          <div class=\"d-flex\">\r\n            <div class=\"spinner-border text-primary me-3\" role=\"status\">\r\n              <span class=\"visually-hidden\">Loading...</span>\r\n            </div>\r\n            <div class=\"loading-text\">Loading rubric data</div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Modal: Date/Period are full (deprecated)  -->\r\n  <div\r\n    class=\"modal fade\"\r\n    id=\"full-modal\"\r\n    tabindex=\"-1\"\r\n    aria-labelledby=\"fullModalLabel\"\r\n    aria-hidden=\"true\"\r\n  >\r\n    <div class=\"modal-dialog modal-lg\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header bg-danger\">\r\n          <div class=\"modal-title text-white\">Period full</div>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          All signups for the media center on\r\n          <span class=\"full-date\"></span> during Period\r\n          <span class=\"full-period\"></span> have been taken. Please select a\r\n          different date or time.\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button\r\n            type=\"button\"\r\n            class=\"btn btn-secondary\"\r\n            data-bs-dismiss=\"modal\"\r\n          >\r\n            Close\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (green): Success -->\r\n  <div\r\n    class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\"\r\n  >\r\n    <div\r\n      id=\"success-toast\"\r\n      class=\"toast text-bg-success align-items-center\"\r\n      role=\"alert\"\r\n      aria-live=\"assertive\"\r\n      aria-atomic=\"true\"\r\n    >\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">Submission complete!</div>\r\n        <button\r\n          type=\"button\"\r\n          class=\"btn-close btn-close-white me-2 m-auto\"\r\n          data-bs-dismiss=\"toast\"\r\n          aria-label=\"Close\"\r\n        ></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (red): Error -->\r\n  <div\r\n    class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\"\r\n  >\r\n    <div\r\n      id=\"error-toast\"\r\n      class=\"toast text-bg-danger align-items-center\"\r\n      role=\"alert\"\r\n      aria-live=\"assertive\"\r\n      aria-atomic=\"true\"\r\n    >\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">Error completing submission.</div>\r\n        <button\r\n          type=\"button\"\r\n          class=\"btn-close btn-close-white me-2 m-auto\"\r\n          data-bs-dismiss=\"toast\"\r\n          aria-label=\"Close\"\r\n        ></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (red): Invalid field data -->\r\n  <div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\r\n    <div\r\n      id=\"validation-error-toast\"\r\n      class=\"toast text-bg-danger align-items-center\"\r\n      role=\"alert\"\r\n      aria-live=\"assertive\"\r\n      aria-atomic=\"true\"\r\n    >\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">Please complete the missing information.</div>\r\n        <button\r\n          type=\"button\"\r\n          class=\"btn-close btn-close-white me-2 m-auto\"\r\n          data-bs-dismiss=\"toast\"\r\n          aria-label=\"Close\"\r\n        ></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
+var signup_form_default = "\x3C!-- Main display -->\r\n<div class=\"body signup\">\r\n  \x3C!-- Header/masthead -->\r\n  <header class=\"mb-4\">\r\n    <div class=\"container-fluid\">\r\n      <div class=\"row pb-2 pt-2 align-items-center\">\r\n        \x3C!-- Logo image -->\r\n        <div\r\n          class=\"logo col-12 col-sm-1 col-lg-1 d-flex flex-row align-items-center\"\r\n        >\r\n          <img\r\n            id=\"logo-image\"\r\n            src=\"https://lh3.googleusercontent.com/d/17G7OFQmeOX8h8CKG9497rA5RNPRNl7uc\"\r\n            data-logo-id=\"\"\r\n            alt=\"Walpole Public Schools\"\r\n          />\r\n        </div>\r\n        <div class=\"col text-center page-title\">\r\n          <h1 class=\"text-center text-md-start\">\r\n            Intervention & Media Center\r\n            <span class=\"d-inline d-md-none\"><br /></span>Sign Up\r\n          </h1>\r\n        </div>\r\n\r\n        \x3C!-- Page title  -->\r\n\r\n        \x3C!-- Buttons/links to other pages  -->\r\n        <div\r\n          class=\"link-icons col-12 col-sm-2 col-lg-3 d-flex align-items-center justify-content-center\"\r\n        >\r\n          <a\r\n            id=\"attendance-link\"\r\n            class=\"staff-only btn btn-light script-link\"\r\n            href=\"?page=attendance\"\r\n            target=\"_top\"\r\n            >Attendance</a\r\n          >\r\n          <a\r\n            id=\"admin-link\"\r\n            class=\"admin-only btn btn-light ms-1 script-link\"\r\n            href=\"?page=admin\"\r\n            target=\"_top\"\r\n            >Admin</a\r\n          >\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </header>\r\n\r\n  \x3C!-- Main body container  -->\r\n  <div class=\"container\">\r\n\r\n    \x3C!-- Main form  -->\r\n    <div id=\"form\" class=\"\">\r\n      <div class=\"row g-2 mb-4 \">\r\n        \r\n        \x3C!-- Step 1 -->\r\n        <div class=\"col-12 col-lg-3 \">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-address-card\"></i>\r\n              Your Details\r\n            </h2>\r\n\r\n            \x3C!-- Email address  -->\r\n            <div class=\"mb-4 admin-email-div\">\r\n              <label for=\"email\" class=\"form-label main-label\">\r\n                My email\r\n                <a\r\n                  href=\"#\"\r\n                  class=\"editors-only\"\r\n                  data-bs-toggle=\"tooltip\"\r\n                  data-bs-title=\"Only editors can change the email address\"\r\n                  data-bs-placement=\"right\"\r\n                >\r\n                  <i class=\"info-icon fa-solid fa-circle-info\"></i>\r\n                </a>\r\n              </label>\r\n              <input\r\n                type=\"email\"\r\n                class=\"form-control disabled\"\r\n                id=\"email\"\r\n                value=\"\"\r\n                disabled=\"\"\r\n              />\r\n            </div>\r\n\r\n            \x3C!-- Student name (shown for staff ) -->\r\n            <div class=\"mb-4 staff-only\">\r\n              <div\r\n                class=\"intervention-only assessment-only tutoring-only non-intervention-only alt-setting-only\"\r\n              >\r\n                <label for=\"student\" class=\"form-label main-label\">\r\n                  Student\r\n                </label>\r\n                <input\r\n                  type=\"text\"\r\n                  class=\"form-control disabled student-autocomplete\"\r\n                  id=\"student\"\r\n                />\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Step 2 -->\r\n        <div class=\"col-12 col-lg-3\">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-calendar-days\"></i>\r\n              Date & Time\r\n            </h2>\r\n\r\n            \x3C!-- Date requested  -->\r\n            <div class=\"mb-4\">\r\n              <label for=\"date\" class=\"form-label main-label required\">\r\n                Date Requested\r\n              </label>\r\n              <input\r\n                type=\"date\"\r\n                class=\"form-control date-input required\"\r\n                id=\"date\"\r\n              />\r\n            </div>\r\n\r\n            \x3C!-- Period requested  -->\r\n            <div class=\"mb-4\">\r\n              <label for=\"date\" class=\"form-label main-label required\">\r\n                Period Requested\r\n              </label>\r\n              <select class=\"form-select required\" id=\"period\"></select>\r\n            </div>\r\n\r\n            \x3C!-- Study Hall teacher  -->\r\n            <div\r\n              class=\"intervention-only assessment-only tutoring-only alt-setting-only non-intervention-only\"\r\n            >\r\n              <div id=\"study-div\" class=\"mb-4\">\r\n                <label\r\n                  for=\"study-teacher\"\r\n                  class=\"form-label main-label intervention-only assessment-only tutoring-only non-intervention-only  d-none\"\r\n                >\r\n                  Study hall teacher\r\n                </label>\r\n                <label\r\n                  for=\"study-teacher\"\r\n                  class=\"form-label main-label alt-setting-only d-none\"\r\n                >\r\n                  Reporting from (Study Hall or class)\r\n                </label>\r\n                <select\r\n                  class=\"form-select study-teacher  d-none\"\r\n                  id=\"study-teacher-select\"\r\n                  name=\"study-teacher\"\r\n                ></select>\r\n\r\n                \x3C!-- Fallback input if select box is broken -->\r\n                <input\r\n                  class=\"form-control d-none\"\r\n                  id=\"study-teacher-input\"\r\n                  name=\"study-teacher\"\r\n                />\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Step 3 -->\r\n        <div class=\"col-12 col-lg-3\">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-book-open\"></i>\r\n              Reason\r\n            </h2>\r\n            \x3C!-- Signup type  -->\r\n            <div class=\"mb-4\">\r\n              <div class=\"mb-4 student-types\">\r\n                <label class=\"mb-2 main-label\">Signup Type</label>\r\n                <select class=\"form-select required\" id=\"type-select\">\r\n                  <option value=\"Intervention\">Intervention</option>\r\n                  <option value=\"Assessment\">Assessment make-up</option>\r\n                  <option value=\"Tutoring\">NHS tutoring</option>\r\n                  <option value=\"Non-intervention\">Non-intervention</option>\r\n                  <option value=\"Alt setting\">Alt setting</option>\r\n                  <option value=\"Staff reservation\">Staff reservation</option>\r\n                </select>\r\n              </div>\r\n            </div>\r\n\r\n            \x3C!-- Non-intervention purpose  -->\r\n            <div class=\"mb-4 non-intervention-only d-none\" id=\"purpose\">\r\n              <label class=\"mb-2 main-label\">Purpose</label>\r\n              <select\r\n                class=\"form-select required\"\r\n                name=\"purpose\"\r\n                id=\"purpose-select\"\r\n              >\r\n                <option value=\"Research\">\r\n                  Individual research/use of library resources\r\n                </option>\r\n                <option value=\"Group project\">Group project</option>\r\n                <option value=\"Software\">\r\n                  Software on media center computers\r\n                </option>\r\n                <option value=\"Physical education\">Physical education</option>\r\n                <option value=\"Art\">Art</option>\r\n              </select>\r\n            </div>\r\n\r\n            \x3C!-- Subject for other types  -->\r\n            <div class=\"mb-4 tutoring-only assessment-only alt-setting-only d-none\">\r\n              <label for=\"subject\" class=\"form-label main-label\">\r\n                Subject\r\n              </label>\r\n              <select id=\"subject-non-int\" class=\"form-select\">\r\n                <option value=\"Business\">Business</option>\r\n                <option value=\"English\">English</option>\r\n                <option value=\"Mathematics\">Mathematics</option>\r\n                <option value=\"Physical Education & Health\">\r\n                  Physical Education & Health\r\n                </option>\r\n                <option value=\"Science\">Science</option>\r\n                <option value=\"Social Studies\">Social Studies</option>\r\n                <option value=\"Technology\">Technology</option>\r\n                <option value=\"World Language\">World Language</option>\r\n                <option value=\"Other\">Other</option>\r\n              </select>\r\n            </div>\r\n\r\n            \x3C!-- Academic teacher  -->\r\n            <div\r\n              class=\"mb-4 assessment-only non-intervention-only alt-setting-only d-none\"\r\n            >\r\n              <label for=\"acad-teacher\" class=\"form-label main-label\">\r\n                Teacher you are doing work for\r\n              </label>\r\n              <input type=\"text\" class=\"form-control\" id=\"acad-teacher\" />\r\n            </div>\r\n\r\n            \x3C!-- Teacher & Subject for interventions  -->\r\n            <div class=\"mb-4 intervention-only  d-none\">\r\n              <label for=\"subject\" class=\"form-label main-label\">\r\n                Teacher & Subject\r\n              </label>\r\n              <select\r\n                id=\"subject-int-select\"\r\n                class=\"form-select subject-int\"\r\n                name=\"subject-int\"\r\n              ></select>\r\n\r\n              \x3C!-- Fallback input if select box is broken -->\r\n              <input\r\n                class=\"form-control d-none subject-int\"\r\n                id=\"subject-int-input\"\r\n                name=\"subject-int\"\r\n              />\r\n            </div>\r\n\r\n            \x3C!-- Topic/comments -->\r\n            <div\r\n              class=\"mb-4 intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only d-none\"\r\n            >\r\n              <label\r\n                class=\"main-label intervention-only assessment-only tutoring-only alt-setting-only\"\r\n                for=\"topic-intervention\"\r\n              >\r\n                Topic for help/name of assessment/reason for assistance\r\n              </label>\r\n              <label\r\n                class=\"main-label staff-reservation-only\"\r\n                for=\"topic-intervention\"\r\n              >\r\n                Reason for visit\r\n              </label>\r\n              <label\r\n                class=\"intervention-only assessment-only tutoring-only alt-setting-only\"\r\n                for=\"topic-intervention\"\r\n              >\r\n                Please be as specific as possible.\r\n              </label>\r\n              <textarea\r\n                class=\"form-control intervention-only assessment-only tutoring-only alt-setting-only staff-reservation-only\"\r\n                id=\"topic-intervention\"\r\n              ></textarea>\r\n            </div>\r\n          </div>\r\n        </div>\r\n\r\n        \x3C!-- Step 4 -->\r\n        <div class=\"col-12 col-lg-3\">\r\n          <div class=\"step-card h-100\">\r\n            <h2 class=\"step-header\">\r\n              <i class=\"fa-solid fa-person-chalkboard\"></i>\r\n              Glass Rooms\r\n            </h2>\r\n\r\n            <div\r\n              class=\"mb-4 intervention-only assessment-only alt-setting-only tutoring-only d-none\"\r\n            >\r\n              Glass room reservations not available for this signup type\r\n            </div>\r\n\r\n            \x3C!-- Glass room reservation  -->\r\n            <div\r\n              class=\"mb-4 non-intervention-only staff-reservation-only\"\r\n              id=\"glass-room\"\r\n            >\r\n              <label class=\"mb-2 main-label\"\r\n                >Glass Room reservations\r\n                <a\r\n                  href=\"#\"\r\n                  data-bs-toggle=\"tooltip\"\r\n                  data-bs-title=\"Glass Rooms can only be requested by WHS staff members. Students should request assistance from a teacher to request a Glass Room reservation.\"\r\n                  data-bs-placement=\"right\"\r\n                >\r\n                  <i class=\"info-icon fa-solid fa-circle-info\"></i>\r\n                </a>\r\n              </label>\r\n\r\n              \x3C!-- No room  -->\r\n              <div class=\"form-check\">\r\n                <input\r\n                  class=\"form-check-input\"\r\n                  type=\"radio\"\r\n                  name=\"glass-room\"\r\n                  id=\"glass-room-none\"\r\n                  value=\"\"\r\n                  checked\r\n                />\r\n                <label class=\"form-check-label\" for=\"glass-room\"> None </label>\r\n              </div>\r\n\r\n              \x3C!-- Glass Room 1 -->\r\n              <div class=\"form-check staff-only\">\r\n                <input\r\n                  class=\"form-check-input\"\r\n                  type=\"radio\"\r\n                  name=\"glass-room\"\r\n                  id=\"glass-room-1\"\r\n                  value=\"1\"\r\n                />\r\n                <label\r\n                  class=\"form-check-label\"\r\n                  for=\"glass-room\"\r\n                  id=\"glass-room-1-label\"\r\n                >\r\n                  Glass room 1 (<span class=\"availability\">Available</span>)\r\n                </label>\r\n              </div>\r\n\r\n              \x3C!-- Glass Room 2  -->\r\n              <div class=\"form-check staff-only\">\r\n                <input\r\n                  class=\"form-check-input\"\r\n                  type=\"radio\"\r\n                  name=\"glass-room\"\r\n                  id=\"glass-room-2\"\r\n                  value=\"2\"\r\n                />\r\n                <label\r\n                  class=\"form-check-label\"\r\n                  for=\"glass-room\"\r\n                  id=\"glass-room-2-label\"\r\n                >\r\n                  Glass room 2 (<span class=\"availability\">Available</span>)\r\n                </label>\r\n              </div>\r\n            </div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n\r\n      \x3C!-- Full-width column for submit buttons  -->\r\n      <div class=\"col-12\">\r\n        <div class=\"mb-4 text-center text-md-end\">\r\n          \x3C!-- Submit button for new data  -->\r\n          <button class=\"btn btn-orange submit-button mx-auto\" id=\"btn-submit\">\r\n            Submit\r\n          </button>\r\n\r\n          \x3C!-- Update button for changing existing data  -->\r\n          <button\r\n            class=\"btn btn-primary submit-button mx-auto d-none\"\r\n            id=\"btn-update\"\r\n          >\r\n            Update\r\n          </button>\r\n\r\n          \x3C!-- Delete button for removing data  -->\r\n          <button\r\n            class=\"btn btn-danger submit-button mx-auto d-none\"\r\n            id=\"btn-delete\"\r\n            onclick=\"deleteData()\"\r\n          >\r\n            Delete Request\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n\r\n    \x3C!-- Hidden div, for showing \"Successful submission\" when complete -->\r\n    <div\r\n      id=\"success-box\"\r\n      class=\"position-absolute top-50 start-50 translate-middle d-none text-center\"\r\n    >\r\n      <h3>Success!</h3>\r\n      <p>\r\n        Your request has been successfully submitted. Please check your email\r\n        for a confirmation receipt.\r\n      </p>\r\n      <p>\r\n        <i\r\n          >Remember to check in with your study hall teacher before reporting to\r\n          the media center!</i\r\n        >\r\n      </p>\r\n      <button class=\"btn btn-primary staff-only success-box-start-over\">\r\n        Start over\r\n      </button>\r\n    </div>\r\n\r\n    \x3C!-- Hidden div, for showing \"Successful update\" when complete -->\r\n    <div\r\n      id=\"success-update-box\"\r\n      class=\"position-absolute top-50 start-50 translate-middle d-none text-center\"\r\n    >\r\n      <h3>Success!</h3>\r\n      <p>\r\n        Your update has been saved. Click\r\n        <a id=\"attendance-link-updated\" class=\"script-link\" href=\"\" target=\"_top\">here</a> to\r\n        return to the attendance page.\r\n      </p>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Modal: Loading -->\r\n  <div\r\n    class=\"modal fade\"\r\n    id=\"loading-modal\"\r\n    tabindex=\"-1\"\r\n    aria-labelledby=\"loadingModalLabel\"\r\n    aria-hidden=\"true\"\r\n  >\r\n    <div class=\"modal-dialog modal-lg\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-body\">\r\n          <div class=\"d-flex\">\r\n            <div class=\"spinner-border text-primary me-3\" role=\"status\">\r\n              <span class=\"visually-hidden\">Loading...</span>\r\n            </div>\r\n            <div class=\"loading-text\">Loading rubric data</div>\r\n          </div>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Modal: Date/Period are full (deprecated)  -->\r\n  <div\r\n    class=\"modal fade\"\r\n    id=\"full-modal\"\r\n    tabindex=\"-1\"\r\n    aria-labelledby=\"fullModalLabel\"\r\n    aria-hidden=\"true\"\r\n  >\r\n    <div class=\"modal-dialog modal-lg\">\r\n      <div class=\"modal-content\">\r\n        <div class=\"modal-header bg-danger\">\r\n          <div class=\"modal-title text-white\">Period full</div>\r\n        </div>\r\n        <div class=\"modal-body\">\r\n          All signups for the media center on\r\n          <span class=\"full-date\"></span> during Period\r\n          <span class=\"full-period\"></span> have been taken. Please select a\r\n          different date or time.\r\n        </div>\r\n        <div class=\"modal-footer\">\r\n          <button\r\n            type=\"button\"\r\n            class=\"btn btn-secondary\"\r\n            data-bs-dismiss=\"modal\"\r\n          >\r\n            Close\r\n          </button>\r\n        </div>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (green): Success -->\r\n  <div\r\n    class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\"\r\n  >\r\n    <div\r\n      id=\"success-toast\"\r\n      class=\"toast text-bg-success align-items-center\"\r\n      role=\"alert\"\r\n      aria-live=\"assertive\"\r\n      aria-atomic=\"true\"\r\n    >\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">Submission complete!</div>\r\n        <button\r\n          type=\"button\"\r\n          class=\"btn-close btn-close-white me-2 m-auto\"\r\n          data-bs-dismiss=\"toast\"\r\n          aria-label=\"Close\"\r\n        ></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (red): Error -->\r\n  <div\r\n    class=\"toast-container position-fixed p-5 top-0 start-50 translate-middle-x\"\r\n  >\r\n    <div\r\n      id=\"error-toast\"\r\n      class=\"toast text-bg-danger align-items-center\"\r\n      role=\"alert\"\r\n      aria-live=\"assertive\"\r\n      aria-atomic=\"true\"\r\n    >\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">Error completing submission.</div>\r\n        <button\r\n          type=\"button\"\r\n          class=\"btn-close btn-close-white me-2 m-auto\"\r\n          data-bs-dismiss=\"toast\"\r\n          aria-label=\"Close\"\r\n        ></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n\r\n  \x3C!-- Toast (red): Invalid field data -->\r\n  <div class=\"toast-container position-fixed bottom-0 end-0 p-3\">\r\n    <div\r\n      id=\"validation-error-toast\"\r\n      class=\"toast text-bg-danger align-items-center\"\r\n      role=\"alert\"\r\n      aria-live=\"assertive\"\r\n      aria-atomic=\"true\"\r\n    >\r\n      <div class=\"d-flex\">\r\n        <div class=\"toast-body\">Please complete the missing information.</div>\r\n        <button\r\n          type=\"button\"\r\n          class=\"btn-close btn-close-white me-2 m-auto\"\r\n          data-bs-dismiss=\"toast\"\r\n          aria-label=\"Close\"\r\n        ></button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
 //#endregion
 //#region src/client/common/dom.ts
 var qs = (selector) => document.querySelector(selector);
@@ -476,7 +477,7 @@ function isDeepEqual(obj1, obj2) {
 /**
 *  Updates the Glass Room labels if the rooms are already reserved or not 
 * */
-var updateGlassRooms = (currentScheduleBlock, signups = []) => {
+var updateGlassRooms$1 = (currentScheduleBlock, signups = []) => {
 	setVisible("#glass-room-1", true);
 	setVisible("#glass-room-2", true);
 	setDisabled("#glass-room-1", false);
@@ -500,9 +501,9 @@ var directSet = (room) => {
 /**
 * Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
 */
-var setupGlassRoomsObserver = () => {
+var setupGlassRoomsObserver$1 = () => {
 	store$2.subscribe((state) => {
-		updateGlassRooms(state.currentScheduleBlock, state.signups);
+		updateGlassRooms$1(state.currentScheduleBlock, state.signups);
 	}, ["currentScheduleBlock", "signups"]);
 };
 var store$2 = new Store({
@@ -736,8 +737,17 @@ function _asyncToGenerator(n) {
 //#endregion
 //#region src/client/common/app-config.ts
 function getAppConfig() {
+	console.log("window.APP_CONFIG", window.APP_CONFIG);
 	return window.APP_CONFIG;
 }
+var updateScriptLinks = () => {
+	const scriptUrl = getAppConfig().scriptUrl;
+	if (!scriptUrl) return;
+	qsa(".script-link").forEach((link) => {
+		const href = link.getAttribute("href");
+		link.setAttribute("href", `${scriptUrl}${href}`);
+	});
+};
 //#endregion
 //#region src/client/common/period-select.ts
 /**
@@ -758,7 +768,10 @@ var updatePeriodOptions = (currentDate, dailySchedules) => {
 	const oldPeriodVal = store$2.getState().currentPeriod;
 	clearOptions("#period");
 	dailySchedules.forEach((schedule) => {
-		if (isSameDate(schedule.date, currentDate)) appendOption("#period", schedule.period, schedule.period);
+		if (isSameDate(schedule.date, currentDate)) {
+			const periodName = schedule.period.length === 1 ? `Period ${schedule.period}` : schedule.period;
+			appendOption("#period", schedule.period, periodName);
+		}
 	});
 	if (wednesdayInterventions(currentDate)) appendOption("#period", "Wed. PM", "Wed. PM");
 	const selectElem = qs("#period");
@@ -854,7 +867,7 @@ var setupInterventionTeacherObserver = () => {
 /**
 * Publisher: Responds to user changes in the study teacher select element.
 */
-var studyTeacherChangeHandler = (event) => {
+var studyTeacherChangeHandler$1 = (event) => {
 	var _inputElement$value;
 	const inputElement = event.target;
 	if (!inputElement) return "";
@@ -864,7 +877,7 @@ var studyTeacherChangeHandler = (event) => {
 /**
 * Pure UI View: Calculates options from state and renders select dropdown/input elements.
 */
-var updateStudyOptions = (currentScheduleBlock, currentType, currentStudyTeacher) => {
+var updateStudyOptions$1 = (currentScheduleBlock, currentType, currentStudyTeacher) => {
 	clearOptions("#study-teacher-select");
 	if (!currentScheduleBlock) return;
 	toggleStudyInputVisibility(false);
@@ -889,9 +902,9 @@ var toggleStudyInputVisibility = (hasOptions) => {
 /**
 * Subscriber: Re-calculates and re-populates options when key state items change.
 */
-var setupStudyObservers = () => {
+var setupStudyObservers$1 = () => {
 	store$2.subscribe((state) => {
-		updateStudyOptions(state.currentScheduleBlock, state.currentType, state.currentStudyTeacher);
+		updateStudyOptions$1(state.currentScheduleBlock, state.currentType, state.currentStudyTeacher);
 	}, [
 		"currentScheduleBlock",
 		"currentPeriod",
@@ -974,7 +987,7 @@ function submitNewFormData(_x) {
 function _submitNewFormData() {
 	_submitNewFormData = _asyncToGenerator(function* (formData) {
 		return new Promise((resolve, reject) => {
-			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(formData);
+			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(JSON.stringify(formData));
 		});
 	});
 	return _submitNewFormData.apply(this, arguments);
@@ -985,7 +998,7 @@ function submitUpdatedFormData(_x2) {
 function _submitUpdatedFormData() {
 	_submitUpdatedFormData = _asyncToGenerator(function* (formData) {
 		return new Promise((resolve, reject) => {
-			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(formData);
+			google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).submitForm(JSON.stringify(formData));
 		});
 	});
 	return _submitUpdatedFormData.apply(this, arguments);
@@ -1130,9 +1143,9 @@ var initObservers$4 = () => {
 	setupTypeInputObserver();
 	setupPanelsObserver();
 	setupInterventionTeacherObserver();
-	setupStudyObservers();
+	setupStudyObservers$1();
 	setupSubjectObservers();
-	setupGlassRoomsObserver();
+	setupGlassRoomsObserver$1();
 	setupCapacityValidationObserver();
 };
 var getServerData$2 = function() {
@@ -1192,6 +1205,7 @@ var initializeUi$1 = function() {
 		setValue("#email", currentEmail);
 		toggleInterventionsLink();
 		toggleTutoringLink();
+		updateScriptLinks();
 		yield setUpdateStatus();
 	});
 	return function initializeUi() {
@@ -1202,7 +1216,7 @@ function bindEvents$2() {
 	addEventListener("#date", "change", (e) => dateChangeHandler$1(e));
 	addEventListener("#period", "change", (e) => periodChangeHandler$1(e));
 	addEventListener("#type-select, .purpose", "change", (e) => typeChangeHandler(e));
-	addEventListener("#study-teacher-select", "change", (e) => studyTeacherChangeHandler(e));
+	addEventListener("#study-teacher-select", "change", (e) => studyTeacherChangeHandler$1(e));
 	addEventListener("#subject-int-select", "change", (e) => subjectChangeHandler(e));
 	addEventListener(".student-autocomplete", "input", (e) => studentInputChangeHandler$1(e));
 	addEventListener("#btn-submit, #btn-update", "click", () => submitForm());
@@ -1613,7 +1627,7 @@ function getSignupTypeLabel$1(signup) {
 	}
 }
 //#endregion
-//#region src/client/admin/data-table.ts
+//#region src/client/admin/admin-data-table.ts
 var initObservers$3 = () => {
 	store$1.subscribe((state) => {
 		const { signups, currentSortField, currentSortOrder, requestedStudentEmail } = state;
@@ -1896,6 +1910,7 @@ var initializeUi = function() {
 	var _ref3 = _asyncToGenerator(function* () {
 		toggleEditorOnlyViews(store$1.getState().isEditor);
 		initializeTabs();
+		updateScriptLinks();
 	});
 	return function initializeUi() {
 		return _ref3.apply(this, arguments);
@@ -1936,11 +1951,54 @@ var store = new Store({
 	currentEmail: "",
 	currentSortField: "student",
 	currentSortOrder: "asc",
+	currentStudy: "All studies",
 	dataRows: []
 });
 var checkinStore = {
 	getSignups: () => store.getState().signups,
 	setSignups: (signups) => store.setState({ signups })
+};
+//#endregion
+//#region src/client/attendance/glass-rooms-status.ts
+/**
+*  Updates the Glass Room labels if the rooms are already reserved or not 
+* */
+var updateGlassRooms = (currentDate, currentPeriod, signups = []) => {
+	var _dom$qs, _dom$qs2;
+	setText("#glass-rooms-status .status", " ");
+	(_dom$qs = qs("#glass-rooms-status room")) === null || _dom$qs === void 0 || _dom$qs.classList.add("available");
+	(_dom$qs2 = qs("#glass-rooms-status room")) === null || _dom$qs2 === void 0 || _dom$qs2.classList.remove("booked");
+	if (!currentDate || !currentPeriod) return;
+	const matchingSignups = signups.filter((su) => isSameDate(su.date, currentDate) && su.period === currentPeriod);
+	if (matchingSignups.length === 0) return;
+	setText("#glass-rooms-status .status", "Available");
+	matchingSignups.forEach((signup) => {
+		const room = signup.room;
+		if (room) {
+			var _dom$qs3;
+			const name = `${signup.lastname}, ${signup.firstname}`;
+			setText(`#glass-rooms-status .room-${room} .status`, name);
+			(_dom$qs3 = qs(`#glass-rooms-status .room-${room}`)) === null || _dom$qs3 === void 0 || _dom$qs3.classList.add("booked");
+		}
+	});
+};
+var getRoomBadge = (room) => {
+	const roomNum = String(room);
+	if (roomNum === "1") return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
+	if (roomNum === "2") return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
+	return "";
+};
+/**
+* Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
+*/
+var setupGlassRoomsObserver = () => {
+	store.subscribe((state) => {
+		updateGlassRooms(state.currentDate, state.currentPeriod, state.signups);
+	}, [
+		"currentDate",
+		"currentPeriod",
+		"signups"
+	]);
 };
 //#endregion
 //#region src/client/attendance/attendance-data-row.ts
@@ -1950,8 +2008,8 @@ var AttendanceDataRow = class {
 		_defineProperty(this, "signup", void 0);
 		_defineProperty(this, "rowId", "");
 		_defineProperty(this, "state", "attendance");
-		_defineProperty(this, "attendancePanel", void 0);
-		_defineProperty(this, "detailsPanel", void 0);
+		_defineProperty(this, "attendancePanel", null);
+		_defineProperty(this, "detailsPanel", null);
 		this.rowId = rowId;
 		this.signup = signup;
 		const templateSelector = signup.type === "Staff reservation" ? "#staff-row-template" : "#student-row-template";
@@ -1962,12 +2020,13 @@ var AttendanceDataRow = class {
 		this.element = firstChild;
 		this.element.removeAttribute("id");
 		this.element.classList.add("data-row");
-		setAttribute(this.element, "dataset.signupId", this.rowId);
+		this.element.setAttribute("row-id", rowId);
 		const attendancePanel = this.element.querySelector(".attendance-info");
 		const detailsPanel = this.element.querySelector(".details-info");
-		if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
-		this.attendancePanel = attendancePanel;
-		this.detailsPanel = detailsPanel;
+		if (signup.type != "Staff reservation") {
+			this.attendancePanel = attendancePanel;
+			this.detailsPanel = detailsPanel;
+		}
 	}
 	render() {
 		switch (this.state) {
@@ -2019,12 +2078,14 @@ var AttendanceDataRow = class {
 		this.mountCheckinBoxes();
 	}
 	mountCheckinBoxes() {
-		if (!this.attendancePanel) return;
+		const attendancePanel = this.attendancePanel;
+		if (!attendancePanel) return;
 		Object.keys(CHECKIN_CONFIG).forEach((type) => {
-			const panel = this.attendancePanel.querySelector(`div[data-type="${type}"]`);
+			const propName = CHECKIN_CONFIG[type].propName;
+			const panel = attendancePanel.querySelector(`div[data-type="${type}"]`);
 			if (panel) {
 				panel.innerHTML = "";
-				const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
+				const checkinBox = new CheckinBox(type, this.signup.rowId, this.signup[propName], checkinStore);
 				panel.append(checkinBox.element);
 				checkinBox.render();
 			}
@@ -2035,12 +2096,6 @@ var AttendanceDataRow = class {
 	handleCancelClick() {}
 	handleDeleteClick() {}
 };
-function getRoomBadge(room) {
-	const roomNum = String(room);
-	if (roomNum === "1") return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
-	if (roomNum === "2") return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
-	return "";
-}
 function getSignupTypeLabel(signup) {
 	switch (signup.type) {
 		case "Intervention": return `Intervention: ${signup.subject}`;
@@ -2055,7 +2110,7 @@ function getSignupTypeLabel(signup) {
 	}
 }
 //#endregion
-//#region src/client/attendance/data-table.ts
+//#region src/client/attendance/attendance-data-table.ts
 var initObservers = () => {
 	store.subscribe((state) => {
 		updatePeriodOptions(state.currentDate, state.dailySchedules);
@@ -2064,42 +2119,25 @@ var initObservers = () => {
 		const { currentDate, currentPeriod, signups, currentSortField, currentSortOrder } = state;
 		if (!currentDate) return;
 		const targetDate = currentDate;
-		const currentSignups = sortSignups(signups, currentSortField, currentSortOrder).filter((su) => isSameDate(new Date(su.date), targetDate));
+		const sortedSignups = sortSignups(signups.filter((su) => isSameDate(new Date(su.date), targetDate) && su.period === currentPeriod && (state.currentStudy === su.teacherStudy || state.currentStudy === "All studies" || su.type === "Staff reservation")), currentSortField, currentSortOrder);
 		qsa("#student-table .student-row, #staff-table .staff-row").forEach((row) => row.remove());
 		const studentTable = qs("#student-table");
 		const staffTable = qs("#staff-table");
 		const newRows = [];
-		currentSignups.forEach((signup) => {
+		sortedSignups.forEach((signup) => {
 			const dataRow = new AttendanceDataRow(signup.rowId, signup);
 			(signup.type === "Staff reservation" ? staffTable : studentTable).append(dataRow.element);
 			dataRow.populate(currentDate, currentPeriod);
 			newRows.push(dataRow);
+			console.log(signup);
 		});
 		store.setState({ dataRows: newRows });
 	}, [
 		"currentDate",
 		"currentPeriod",
 		"currentSortField",
-		"currentSortOrder"
-	]);
-	store.subscribe((state) => {
-		const { currentDate, currentPeriod, dataRows } = state;
-		if (!currentDate || !currentPeriod) return;
-		const isWednesdayPM = currentPeriod === "Wed. PM";
-		setVisible(".wed-int", isWednesdayPM);
-		setVisible(".not-wed-int", !isWednesdayPM);
-		setText(".study-checkin button", isWednesdayPM ? "Done" : "Check in");
-		updateRowVisibility(dataRows, currentDate, currentPeriod);
-		const activeStudentRows = qsa(".student-row.current-period.current-date");
-		const activeStaffRows = qsa(".staff-row.current-period.current-date");
-		const hasStudentRows = Array.isArray(activeStudentRows) && activeStudentRows.length > 0;
-		const hasStaffRows = Array.isArray(activeStaffRows) && activeStaffRows.length > 0;
-		setVisible(".student-row-empty", !hasStudentRows);
-		setVisible("#staff-table", hasStaffRows);
-	}, [
-		"currentDate",
-		"currentPeriod",
-		"dataRows"
+		"currentSortOrder",
+		"currentStudy"
 	]);
 	store.subscribe((state) => {
 		var _dom$qs, _dom$qs2;
@@ -2123,19 +2161,6 @@ var periodChangeHandler = () => {
 	if (!newPeriod) return;
 	store.setState({ currentPeriod: newPeriod });
 };
-var updateRowVisibility = (dataRows, selectedDate, period) => {
-	dataRows.forEach((row) => {
-		const signup = row.signup;
-		const suDate = typeof signup.date === "string" ? new Date(signup.date) : signup.date;
-		const suPeriod = String(signup.period);
-		const isMatchDate = isSameDate(selectedDate, suDate);
-		const isMatchPeriod = period === suPeriod;
-		const isMatch = isMatchDate && isMatchPeriod;
-		row.element.classList.toggle("current-date", isMatchDate);
-		row.element.classList.toggle("current-period", isMatchPeriod);
-		setVisible(row.element, isMatch);
-	});
-};
 var sortSignups = (signups, field, order) => {
 	const modifier = order === "asc" ? 1 : -1;
 	const targetField = field === "student" ? "lastname" : "teacherStudy";
@@ -2149,18 +2174,68 @@ var sortSignups = (signups, field, order) => {
 * Shows the attendance panel 
 * */
 var showAttendance = () => {
-	qsa(".panel").forEach((panel) => panel.style.transform = "translate(0, 0)");
-	setVisible(".header-row .signup-info", false);
-	setVisible(".header-row .attendance-info", true);
+	var _dom$qs3;
+	setVisible(".slider-wrapper", true);
+	setVisible(".panel", false);
+	setVisible(".attendance-info", true);
+	qsa(".panel-link").forEach((panel) => panel.classList.remove("active"));
+	(_dom$qs3 = qs(".attendance-panel-link")) === null || _dom$qs3 === void 0 || _dom$qs3.classList.add("active");
 };
 /**
 *  Shows the signup info panel
 * */
 var showSignupInfo = () => {
-	const width = qs(".header-row .attendance-info").getBoundingClientRect().width - 24;
-	qsa(".panel").forEach((panel) => panel.style.transform = `translate(-${width}px, 0)`);
-	setVisible(".header-row .signup-info", true);
-	setVisible(".header-row .attendance-info", false);
+	var _dom$qs4;
+	setVisible(".slider-wrapper", true);
+	setVisible(".panel", false);
+	setVisible(".details-info", true);
+	qsa(".panel-link").forEach((panel) => panel.classList.remove("active"));
+	(_dom$qs4 = qs(".details-panel-link")) === null || _dom$qs4 === void 0 || _dom$qs4.classList.add("active");
+};
+/**
+*  Hides both attendance and details panels
+* */
+var showListView = () => {
+	var _dom$qs5;
+	setVisible(".slider-wrapper", false);
+	qsa(".panel-link").forEach((panel) => panel.classList.remove("active"));
+	(_dom$qs5 = qs(".list-panel-link")) === null || _dom$qs5 === void 0 || _dom$qs5.classList.add("active");
+};
+//#endregion
+//#region src/client/attendance/study-select.ts
+/**
+* Publisher: Responds to user changes in the study teacher select element.
+*/
+var studyTeacherChangeHandler = (event) => {
+	var _inputElement$value;
+	console.log("Change!");
+	const inputElement = event.target;
+	if (!inputElement) return "";
+	const selectedTeacher = (_inputElement$value = inputElement.value) !== null && _inputElement$value !== void 0 ? _inputElement$value : "";
+	store.setState({ currentStudy: selectedTeacher });
+};
+/**
+* Pure UI View: Calculates options from state and renders select dropdown/input elements.
+*/
+var updateStudyOptions = (currentDate, currentPeriod, signups) => {
+	clearOptions("#study-select");
+	if (!currentDate || !currentPeriod) return;
+	const studiesAvailable = /* @__PURE__ */ new Set();
+	studiesAvailable.add("All studies");
+	signups.forEach((su) => {
+		if (isSameDate(su.date, currentDate) && su.period === currentPeriod && su.teacherStudy !== "") studiesAvailable.add(su.teacherStudy);
+	});
+	studiesAvailable.forEach((study) => {
+		appendOption("#study-select", study, study, false);
+	});
+};
+/**
+* Subscriber: Re-calculates and re-populates options when key state items change.
+*/
+var setupStudyObservers = () => {
+	store.subscribe((state) => {
+		updateStudyOptions(state.currentDate, state.currentPeriod, state.signups);
+	}, ["currentDate", "currentPeriod"]);
 };
 //#endregion
 //#region src/client/attendance/init.ts
@@ -2168,6 +2243,8 @@ var initializeApp = function() {
 	var _ref = _asyncToGenerator(function* () {
 		try {
 			initObservers();
+			setupGlassRoomsObserver();
+			setupStudyObservers();
 			bindEvents();
 			yield refreshData();
 		} catch (error) {
@@ -2221,8 +2298,10 @@ function initDateInput() {
 function bindEvents() {
 	addEventListener("#date", "change", (e) => dateChangeHandler());
 	addEventListener("#period", "change", (e) => periodChangeHandler());
-	addEventListener("#attendance-link", "click", (e) => showAttendance());
-	addEventListener("#details-link", "click", (e) => showSignupInfo());
+	addEventListener("#study-select", "change", (e) => studyTeacherChangeHandler(e));
+	addEventListener(".attendance-panel-link", "click", (e) => showAttendance());
+	addEventListener(".details-panel-link", "click", (e) => showSignupInfo());
+	addEventListener(".list-panel-link", "click", (e) => showListView());
 	addEventListener("#refresh-data-btn", "click", () => refreshData());
 }
 var refreshData = function() {
@@ -2232,14 +2311,13 @@ var refreshData = function() {
 		const parsedData = parseServerData(yield getServerData());
 		console.log("Parsed data:", parsedData);
 		initDateInput();
-		store.setState(_objectSpread2(_objectSpread2({}, parsedData), {}, {
-			currentDate: parseDateInput(valueOf("#date")),
-			currentPeriod: null
-		}));
+		store.setState(_objectSpread2(_objectSpread2({}, parsedData), {}, { currentDate: parseDateInput(valueOf("#date")) }));
+		periodChangeHandler();
 		const isEditor = (_parsedData$isEditor = parsedData.isEditor) !== null && _parsedData$isEditor !== void 0 ? _parsedData$isEditor : false;
 		const isAdmin = (_parsedData$isAdmin = parsedData.isAdmin) !== null && _parsedData$isAdmin !== void 0 ? _parsedData$isAdmin : false;
 		toggleEditorOnlyViews(isEditor);
 		toggleAdminOnlyViews(isAdmin);
+		updateScriptLinks();
 		hideLoadingModal();
 	});
 	return function refreshData() {
@@ -2294,7 +2372,10 @@ function renderAdmin(appDiv) {
 	initializeApp$1();
 }
 //#endregion</script>
-  <style rel="stylesheet" crossorigin>/*
+  <style rel="stylesheet" crossorigin>/* ==========================================================================
+   Variables & Theme Reference
+   ========================================================================== */
+/*
 font-family: 'Open Sans', sans-serif;
 font-family: 'Roboto Slab', serif;
 
@@ -2306,6 +2387,9 @@ font-family: 'Roboto Slab', serif;
 #8AAEE3; gray-blue
 */
 
+/* ==========================================================================
+   Base Styles & Typography
+   ========================================================================== */
 html {
   height: 100%;
   font-size: 0.9rem;
@@ -2315,13 +2399,6 @@ body {
   font-family: 'Open Sans', sans-serif;
   background: #EBF3FF;
   min-height: 100vh;
-  
-}
-
-.signup {
-  background: #EBF3FF; /*pale blue background*/
-  min-height: 100vh;
-  width: 100%;
 }
 
 #app {
@@ -2342,29 +2419,27 @@ header h1 {
 
 h4 {
   margin-bottom: 0;
+  font-size: 1.2rem;
 }
 
-span.twitter-typeahead {
-  display: block !important;
+h4.sortable {
+  cursor: pointer;
 }
 
-.tt-menu {
-  width: 422px;
-    margin-top: 12px;
-    padding: 8px 8px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    box-shadow: 0 5px 10px rgba(0,0,0,.2);
-    max-height: 300px;
-    overflow-y: auto;
+h1, header h1 {
+  padding-top: 20px;
+  color: #F65C02; /* WPS Orange */
 }
 
-.edit-only {
-  display: none !important;
+h2.step-header {
+  font-size: 1.3rem;
+  padding-bottom: 8px;
+  color: #01256F; /* WPS Text Blue */
 }
 
+/* ==========================================================================
+   Layout & Global Components
+   ========================================================================== */
 header {
   background: #042350; /* WPS Blue */
 }
@@ -2377,16 +2452,6 @@ header .logo img {
 
 .subheader {
   background: #4984D1;
-}
-
-.subheader .form-control,
-.subheader .form-select {
-  width: auto;
-}
-
-h1, header h1 {
-  padding-top: 20px;
-  color: #F65C02; /* WPS Orange */
 }
 
 #tools {
@@ -2402,8 +2467,22 @@ h1, header h1 {
   color: #01256F; /* WPS Text Blue */
 }
 
-.loading .spinner-border {
-  margin: 0 auto;
+.step-card {
+  background: #fff;
+  border: 1px #aaa solid;
+  box-sizing: border-box;
+  border-radius: 8px;
+  padding: 20px;
+  -webkit-box-shadow: -1px 1px 4px 0px rgba(128,128,128,0.5); 
+  box-shadow: -1px 1px 4px 0px rgba(128,128,128,0.5);
+}
+
+/* ==========================================================================
+   Forms & Buttons
+   ========================================================================== */
+.subheader .form-control,
+.subheader .form-select {
+  width: auto;
 }
 
 .form-control.invalid,
@@ -2415,67 +2494,43 @@ h1, header h1 {
   background-color: #EBF3FF;
 }
 
-.hint,.signup #purpose .hint {
+.btn-orange {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #F65C02;
+  --bs-btn-border-color: #F65C02;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #f77226;
+  --bs-btn-hover-border-color: #f0691b;
+  --bs-btn-focus-shadow-rgb: 60, 153, 110;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #f0691b;
+  --bs-btn-active-border-color: #f5630f;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: #F65C02;
+  --bs-btn-disabled-border-color: #F65C02;
+}
+
+.checkin-btn.btn{
+  --bs-btn-bg: #4984D1;
+  --bs-btn-color: #fff;
+  --bs-btn-hover-bg: #1b63c2;
+   --bs-btn-hover-color: #fff;
+}
+
+/* ==========================================================================
+   Utilities & Helpers
+   ========================================================================== */
+.edit-only {
+  display: none !important;
+}
+
+.loading .spinner-border {
+  margin: 0 auto;
+}
+
+.hint, .signup #purpose .hint {
   font-size: 75%;
-}
-
-
-.attendance .data-row,
-.attendance .data-row.student-row-empty {
-  border: 1px solid #888;
-  border-radius: 20px;
-  padding: 12px;
-  min-height: 90px;
-  background-color: #FFF;
-  overflow: hidden;
-}
-
-.attendance:not(.admin) .data-row:not(.current-period.current-date),
-.attendance:not(.admin) .data-row.student-row-empty {
-  display: none;
-  background: #FFFFDD;
-}
-
-.attendance .data-row button {
-  font-size: 60%;
-}
-
-.attendance .data-row .attendance-info label {
-  font-size: 75%;
-}
-
-.attendance .data-row .attendance-info .time-value {
-  color: green;
-  font-weight: bold;
-}
-
-.attendance .room-badge {
-  font-size: 50%;
-  margin-left: 10px;
-  display: inline-block;
-}
-
-.attendance .panel-link {
-  color: blue;
-  text-decoration: underline;
-}
-
-.attendance #slider-wrapper {
-  overflow: hidden;
-}
-
-.attendance .slider {
-  position: relative;
-  display: flex;
-  overflow: hidden;
-
-}
-
-.attendance .panel {
-  flex: 1 0 100%;
-  position: relative;
-  transition: transform 0.5s ease;
-  margin: 0 15px;
 }
 
 .hide-left {
@@ -2484,10 +2539,6 @@ h1, header h1 {
 
 .hide-right {
   left: 100%;
-}
-
-.panel.attendance-info .cancel {
-  cursor: pointer;
 }
 
 .sort-icon i {
@@ -2505,44 +2556,36 @@ h1, header h1 {
 
 .type-warning {
   font-size: 75%;
-  text-decoration: italic;
+  text-decoration: italic; /* Note: This was left strictly as written, but 'text-decoration: italic' is invalid CSS; it should likely be 'font-style: italic' if you ever intend to fix it. */
 }
 
-h4.sortable {
-  cursor: pointer;
+/* ==========================================================================
+   Feature: Typeahead
+   ========================================================================== */
+span.twitter-typeahead {
+  display: block !important;
 }
 
-.admin .tab-panel {
-  display: none;
-
-  &.active {
-    display: block;
-  }
+.tt-menu {
+  width: 422px;
+  margin-top: 12px;
+  padding: 8px 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  max-height: 300px;
+  overflow-y: auto;
 }
 
-.admin .nav-link {
-  color: white;
-
-  &.active {
-    color: black;
-  }
-}
-
-.submit-button.btn-orange {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #F65C02;
-  --bs-btn-border-color: #F65C02;
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #f77226;
-  --bs-btn-hover-border-color: #f0691b;
-  --bs-btn-focus-shadow-rgb: 60, 153, 110;
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #f0691b;
-  --bs-btn-active-border-color: #f5630f;
-  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  --bs-btn-disabled-color: #fff;
-  --bs-btn-disabled-bg: #F65C02;
-  --bs-btn-disabled-border-color: #F65C02;
+/* ==========================================================================
+   Feature: Signup
+   ========================================================================== */
+.signup {
+  background: #EBF3FF; /*pale blue background*/
+  min-height: 100vh;
+  width: 100%;
 }
 
 .signup {
@@ -2570,42 +2613,153 @@ h4.sortable {
   .editor-only {
     display: none;
   }
-
-  h2.step-header {
-    font-size: 1.3rem;
-    padding-bottom: 8px;
-    color: #01256F; /* WPS Text Blue */
-  }
-
-  .step-card {
-    background: #fff;
-    border: 1px #aaa solid;
-    box-sizing: border-box;
-    border-radius: 8px;
-    padding: 20px;
-
-    -webkit-box-shadow: -1px 1px 4px 0px rgba(128,128,128,0.5); 
-    box-shadow: -1px 1px 4px 0px rgba(128,128,128,0.5);
-  }
-
 }
-/*$vite$:1*/</style>
+
+/* ==========================================================================
+   Feature: Attendance
+   ========================================================================== */
+.attendance .data-row,
+.attendance .data-row.student-row-empty {
+  padding: 5px 0px;
+ /* margin: 10 0px; /* Note: '10' is missing a unit (like px), preserved here exactly as written to ensure no visual changes. */
+  /* min-height: 90px; */
+  background-color: #FFF;
+  overflow: hidden;
+}
+
+.attendance {
+  .data-row {
+    .student-name {
+      font-weight: bold;
+    }
+    
+    .study-teacher {
+      font-size: 80%;
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    .type {
+      font-style: italic;
+    }
+    
+    button {
+      font-size: 60%;
+    }
+    
+    .attendance-info {
+      label {
+       font-size: 75%;
+      }
+     .time-value {
+        color: green;
+        font-weight: bold;
+      }
+    }
+  }
+    
+  .room-badge {
+    position: relative;
+    font-size: 60%;
+    margin-left: 10px;
+    display: inline-block;
+    top: -2px;
+    /* margin-bottom: 8px; */
+  }
+
+  .room {
+    min-height: 2.0rem;
+
+    .status {
+      margin-left: 5px;
+    }
+
+    &.available .status {
+      color: #4984D1;
+    }
+  }
+  
+  
+  .panel-link {
+
+    cursor: pointer;
+
+    &:not(.active) {
+      color: blue;
+      text-decoration: underline;
+    }
+    
+    &.active {
+      font-weight: bold;
+    }
+  }
+  
+  .slider-wrapper {
+    overflow: hidden;
+    padding-bottom: 12px;
+  }
+  
+  .slider {
+    position: relative;
+    display: flex;
+    overflow: hidden;
+  }
+  
+  .panel {
+    flex: 1 0 100%;
+    position: relative;
+    transition: transform 0.5s ease;
+    background: #EBF3FF;
+    padding: 5px;
+    border-radius: 8px;
+    border: 1px solid #EBF3FF;
+    -webkit-box-shadow: 1px 1px 1px 0px rgba(128,128,128,0.3) inset; 
+     box-shadow: 1px 1px 1px 0px rgba(128,128,128,0.5) inset;
+  }
+
+
+
+  .staff-row .comments {
+    font-size: 80%;
+  }
+}
+
+.panel.attendance-info .cancel {
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Feature: Admin
+   ========================================================================== */
+.admin .tab-panel {
+  display: none;
+
+  &.active {
+    display: block;
+  }
+}
+
+.admin .nav-link {
+  color: white;
+
+  &.active {
+    color: black;
+  }
+}/*$vite$:1*/</style>
 </head>
 <body>
-
-<!-- CSS files -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<div id="app"></div>
-
-
-
-<!-- Javascript libraries and files -->
-<script src="https://kit.fontawesome.com/1a74660f3b.js" crossorigin="anonymous"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
- 
+  
+  <!-- CSS files -->
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <div id="app"></div>
+  
+  
+  
+  <!-- Javascript libraries and files -->
+  <script src="https://kit.fontawesome.com/1a74660f3b.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
 </body>
 </html>

@@ -21,6 +21,8 @@ let email;
 function doGet(event) {
     const template = createIndexTemplate();
     const page = getUrlParameter(event, "page");
+    const settings = getAppSettings();
+    const wedInt = settings.find(setting => setting.key === "Wed_Int_Active")?.value === 'On';
     const appConfig = {
         view: page ? page : "signup",
         isEditor: mayEdit(),
@@ -28,6 +30,8 @@ function doGet(event) {
         isStaff: isStaff(),
         email: getEmail(),
         updateId: getPageId(event),
+        wedInt: wedInt,
+        scriptUrl: getScriptUrl(),
     };
     // adds meta data so tha page reformats nicely on mobile devices
     template.addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -70,6 +74,33 @@ function getInitialSignupData() {
         students: students,
         dailySchedules: dailySchedules,
         signups: signups,
+        appSettings: appSettings,
+    };
+    return JSON.stringify(initialData);
+}
+function getInitialAttendanceData() {
+    const appSettings = getAppSettings();
+    const dailySchedules = buildFlatScheduleData(appSettings);
+    const signups = getSignups();
+    if (!dailySchedules || !appSettings)
+        throw new Error("Error retreiving server data");
+    console.log(appSettings);
+    const initialData = {
+        dailySchedules: dailySchedules,
+        signups: signups,
+        appSettings: appSettings,
+    };
+    return JSON.stringify(initialData);
+}
+function getInitialAdminData() {
+    const appSettings = getAppSettings();
+    const students = getStudents();
+    const dailySchedules = buildFlatScheduleData(appSettings);
+    if (!students || !dailySchedules || !appSettings)
+        throw new Error("Error retreiving server data");
+    const initialData = {
+        students: students,
+        dailySchedules: dailySchedules,
         appSettings: appSettings,
     };
     return JSON.stringify(initialData);

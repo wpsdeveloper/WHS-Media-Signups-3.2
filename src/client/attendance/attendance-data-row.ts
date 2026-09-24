@@ -124,10 +124,11 @@ export class AttendanceDataRow {
     const checkinType = Object.keys(CHECKIN_CONFIG);
     checkinType
     .forEach((type) => {
+      const propName = CHECKIN_CONFIG[type].propName;
       const panel = attendancePanel.querySelector(`div[data-type="${type}"]`);
       if (panel) {
         panel.innerHTML = ''; // Ensure container is clean before appending
-        const checkinBox = new CheckinBox(type, this.signup.rowId, "", checkinStore);
+        const checkinBox = new CheckinBox(type, this.signup.rowId, this.signup[propName], checkinStore);
         panel.append(checkinBox.element as HTMLElement);
         checkinBox.render();
       }

@@ -6,7 +6,7 @@ import * as settingsTable from "./settings-table";
 import * as data from './data';
 import * as studentInput from './student-input';
 import { AdminState, store } from './admin-store';
-import { getAppConfig } from '../common/app-config';
+import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { IS_DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
@@ -78,6 +78,8 @@ export const initializeUi = async () => {
   const state = store.getState();
   dom.toggleEditorOnlyViews(state.isEditor);
   initializeTabs();
+  updateScriptLinks();
+  
 }
 
 function bindEvents() {
