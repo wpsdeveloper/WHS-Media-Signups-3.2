@@ -23,5 +23,5 @@ export const toggleIntTeacherAltInput = (
 export const setupInterventionTeacherObserver = () => {
   store.subscribe((state: SignupState) => {
     if (state.ui_currentScheduleBlock) toggleIntTeacherAltInput(state.ui_currentScheduleBlock);
-  }, ['currentPeriod']);
+  }, ['ui_currentPeriod']);
 };

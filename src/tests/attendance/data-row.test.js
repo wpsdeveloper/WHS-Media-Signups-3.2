@@ -132,13 +132,13 @@ describe('DataRow', () => {
 
     it('adds current-period class if periods match', () => {
       row.populate({ period: '3' });
-      expect(mockElement.classList.add).toHaveBeenCalledWith('current-period');
+      expect(mockElement.classList.add).toHaveBeenCalledWith('ui_current-period');
     });
 
     it('adds current-date class if dates match', () => {
       dates.isSameDate.mockReturnValue(true);
       row.populate({ date: '2023-10-01' });
-      expect(mockElement.classList.add).toHaveBeenCalledWith('current-date');
+      expect(mockElement.classList.add).toHaveBeenCalledWith('ui_current-date');
     });
 
     it('populates editor links if user is an editor', () => {

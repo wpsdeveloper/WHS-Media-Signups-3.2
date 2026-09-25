@@ -115,7 +115,7 @@ export const setupTypeInputObserver = () => {
         dom.setValue('#type-select', state.ui_currentType);
       }
     },
-    ['currentType'],
+    ['ui_currentType'],
   );
 
   // toggles available type choices based on special rules
@@ -137,5 +137,5 @@ export const setupTypeInputObserver = () => {
         toggleAltSetting(currentScheduleBlock.allowAltSetting);
         toggleTutoring(currentScheduleBlock.allowTutoring && !periodIsWedInt);
         toggleNonInterventions(currentScheduleBlock.allowNonInterventions || periodIsWedInt);
-    },['currentType']);
+    },['ui_currentType']);
 };

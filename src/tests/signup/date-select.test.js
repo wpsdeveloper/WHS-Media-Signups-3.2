@@ -67,7 +67,7 @@ describe('Date Select Module', () => {
   describe('setupDateSelectObserver', () => {
     it('should subscribe to the store looking for currentDate changes', () => {
       setupDateSelectObserver('#date-picker');
-      expect(store.subscribe).toHaveBeenCalledWith(expect.any(Function), ['currentDate']);
+      expect(store.subscribe).toHaveBeenCalledWith(expect.any(Function), ['ui_currentDate']);
     });
 
     it('should update the DOM input value when store state changes', () => {

@@ -66,12 +66,12 @@ export class AttendanceDataRow {
 
     // assigns current-date or current-period tags if appropriate
     if (currentPeriod && currentPeriod === signup.period) {
-      element.classList.add('current-period');
+      element.classList.add('ui_current-period');
     }
 
     const signupDate = new Date(signup.date);
     if (currentDate && dates.isSameDate(signupDate, currentDate)) {
-      element.classList.add('current-date');
+      element.classList.add('ui_current-date');
     }
 
     // render student names and room badges

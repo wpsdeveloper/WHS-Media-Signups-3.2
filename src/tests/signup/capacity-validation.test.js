@@ -78,7 +78,7 @@ describe('Capacity Validation Module', () => {
       setupCapacityValidationObserver();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentDate', 'currentPeriod', 'signups', 'currentMax', 'noFlyList', 'currentEmail']
+        ['ui_currentDate', 'ui_currentPeriod', 'signups', 'ui_currentMax', 'noFlyList', 'ui_currentEmail']
       );
     });
   });

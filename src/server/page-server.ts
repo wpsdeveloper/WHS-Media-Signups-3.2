@@ -73,7 +73,7 @@ function createIndexTemplate() {
 function getInitialSignupData(): string {
   const appSettings = getAppSettings();
   const students = getStudents();
-  const dailySchedules = buildFlatScheduleData(appSettings);
+  const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   const signups = getSignups();
   
   if (!students || !dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
@@ -90,7 +90,7 @@ function getInitialSignupData(): string {
 
 function getInitialAttendanceData(): string {
   const appSettings = getAppSettings();
-  const dailySchedules = buildFlatScheduleData(appSettings);
+  const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   const signups = getSignups();
   
   if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
@@ -108,7 +108,7 @@ function getInitialAttendanceData(): string {
 function getInitialAdminData(): string {
   const appSettings = getAppSettings();
   const students = getStudents();
-  const dailySchedules = buildFlatScheduleData(appSettings);
+  const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   
   if (!students || !dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
   

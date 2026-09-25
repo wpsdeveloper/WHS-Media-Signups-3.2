@@ -120,7 +120,7 @@ describe('Subject Select Module', () => {
       setupSubjectOptionsObserver();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentDate', 'currentPeriod', 'interventionTeachers', 'dailySchedules']
+        ['ui_currentDate', 'ui_currentPeriod', 'interventionTeachers', 'dailySchedules']
       );
 
       const subscriberCallback = store.subscribe.mock.calls[0][0];

@@ -2,6 +2,7 @@
 function parseStudyGrid(appSettings) {
     const terms = { 'Duties S1': 's1', 'Duties S2': 's2' };
     const records = [];
+    const recordMap = new Map();
     const spreadsheetId = getStudySpreadsheetId(appSettings);
     const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
     if (!spreadsheet)
@@ -42,25 +43,24 @@ function parseStudyGrid(appSettings) {
                 const teacherName = cell.toString().trim();
                 if (teacherName.length === 0)
                     continue;
+                const mapKey = `${currentTerm}_${currentDay}_${currentPeriod}`;
                 // add teacher to existing record or create new record
-                const match = records.filter(r => r.day == currentDay
-                    && r.period == currentPeriod
-                    && r.term == currentTerm);
-                if (Array.isArray(match) && match.length > 0) {
-                    match[0].teachers.push(teacherName);
+                if (recordMap.has(mapKey)) {
+                    recordMap.get(mapKey).teachers.push(teacherName);
                 }
                 else {
-                    records.push({
+                    const newEntry = {
                         term: currentTerm,
                         day: currentDay,
                         period: currentPeriod,
                         teachers: [teacherName]
-                    });
+                    };
+                    recordMap.set(mapKey, newEntry);
                 }
             }
         }
     });
-    return records;
+    return [...recordMap.values()];
 }
 function findLastStudyRow(data) {
     const block = data.map(r => String(r[1]));

@@ -99,7 +99,7 @@ describe('Period Select Module', () => {
       setupPeriodOptionsObserver();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentDate', 'dailySchedules']
+        ['ui_currentDate', 'dailySchedules']
       );
     });
   });

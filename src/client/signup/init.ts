@@ -74,7 +74,7 @@ function parseServerData(data: string): SignupState {
   const defaultMaxSetting = settings.find(s => s.key === "Max_Signups_Default");
   const defaultMax = defaultMaxSetting?.value as number ?? 10;
   const appConfig = getAppConfig()
-
+  console.log(parsedData);
   return {
     students, studentNames, dailySchedules, signups, settings,
     defaultMax: defaultMax,
@@ -137,6 +137,7 @@ export const refreshData = async () => {
 
   try {
     const serverData = await fetchServerData();
+    console.log(serverData);
     store.setState({ ...serverData });
   } catch (error) {
     messaging.processError(error as Error, 'Failed to initialize app:');
@@ -187,7 +188,7 @@ const setupDailyScheduleBlocksObserver = () => {
     ) ?? null;
     store.setState({ui_currentScheduleBlock: newCurrentBlock });
 
-  }, ['currentPeriod', 'currentDate']);
+  }, ['ui_currentPeriod', 'ui_currentDate']);
 }
 
 

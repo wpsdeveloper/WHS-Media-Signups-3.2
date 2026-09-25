@@ -60,7 +60,7 @@ describe('Panels Module', () => {
       
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentType']
+        ['ui_currentType']
       );
     });
 

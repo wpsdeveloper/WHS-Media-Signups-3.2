@@ -86,7 +86,7 @@ describe('Student Input Module', () => {
       
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['studentNames', 'currentStudentName']
+        ['studentNames', 'ui_currentStudentName']
       );
     });
 

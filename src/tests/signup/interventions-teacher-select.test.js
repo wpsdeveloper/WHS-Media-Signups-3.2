@@ -53,7 +53,7 @@ describe('Interventions Teacher Select Module', () => {
       
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['interventionTeachers', 'currentPeriod']
+        ['interventionTeachers', 'ui_currentPeriod']
       );
     });
 

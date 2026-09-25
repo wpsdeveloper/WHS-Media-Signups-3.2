@@ -41,5 +41,5 @@ export const updateDetailsPanel = (currentType: SignupType | null) => {
 export const setupPanelsObserver = () => {
   store.subscribe((state: SignupState) => {
     updateDetailsPanel(state.ui_currentType);
-  }, ['currentType']);
+  }, ['ui_currentType']);
 };

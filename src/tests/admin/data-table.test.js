@@ -60,13 +60,13 @@ describe('data-table', () => {
       expect(store.subscribe).toHaveBeenCalledTimes(2);
       expect(store.subscribe).toHaveBeenCalledWith(expect.any(Function), [
         'signups',
-        'currentSortField',
-        'currentSortOrder',
+        'ui_currentSortField',
+        'ui_currentSortOrder',
         'requestedStudentEmail',
       ]);
       expect(store.subscribe).toHaveBeenCalledWith(expect.any(Function), [
-        'currentSortField',
-        'currentSortOrder',
+        'ui_currentSortField',
+        'ui_currentSortOrder',
       ]);
     });
 

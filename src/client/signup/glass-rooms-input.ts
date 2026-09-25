@@ -53,5 +53,5 @@ export const directSet = (room: string | null) => {
 export const setupGlassRoomsObserver = () => {
   store.subscribe((state: SignupState) => {
     updateGlassRooms(state.ui_currentScheduleBlock, state.signups);
-  }, ['currentScheduleBlock', 'signups']);
+  }, ['ui_currentScheduleBlock', 'signups']);
 };

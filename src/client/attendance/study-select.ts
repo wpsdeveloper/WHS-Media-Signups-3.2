@@ -52,5 +52,5 @@ export const setupStudyObservers = () => {
       state.ui_currentPeriod,
       state.signups,   
     );
-    }, ['currentDate', 'currentPeriod']);
+    }, ['ui_currentDate', 'ui_currentPeriod']);
 };

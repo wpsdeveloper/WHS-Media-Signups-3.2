@@ -56,7 +56,7 @@ export const setupPeriodObservers = () => {
   // updates the period selectbox options when date or schedule changes
   store.subscribe((state: SignupState) => {
     updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
-  }, ['currentDate', 'dailySchedules']);
+  }, ['ui_currentDate', 'dailySchedules']);
 
   // updates the selected period ui id data is changed externally
   store.subscribe((state: SignupState) => {
@@ -64,7 +64,7 @@ export const setupPeriodObservers = () => {
     if (periodSelect && state.ui_currentPeriod && periodSelect.value !== state.ui_currentPeriod) {
       dom.setValue("#period", state.ui_currentPeriod);
     }
-  }, ['currentPeriod']);
+  }, ['ui_currentPeriod']);
 };
 
 /**

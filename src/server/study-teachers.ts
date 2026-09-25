@@ -8,6 +8,7 @@ interface StudyEntry {
 function parseStudyGrid(appSettings: Setting[]): InterventionsEntry[] {
   const terms: Record<string, Term> = {'Duties S1': 's1', 'Duties S2': 's2'};
   const records: InterventionsEntry[] = [] ;
+  const recordMap = new Map();
 
   const spreadsheetId = getStudySpreadsheetId(appSettings);
   const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
@@ -17,16 +18,16 @@ function parseStudyGrid(appSettings: Setting[]): InterventionsEntry[] {
   sheetsToParse.forEach(sheetName => {
     const sheet = spreadsheet.getSheetByName(sheetName);
     if (!sheet) return;
-
+    
     const currentTerm: Term = terms[sheetName] as Term;
-
+    
     const data = sheet.getDataRange().getValues();
     if (data.length < 2) return;
-
+    
     
     // Header row 2 contains Days "Day 1", "Day 2", ...
     const headerRow = data[1] as Day[];
-
+    
     // get the last row, before any lunch duty nonsense in the chart
     let lastStudyRow = findLastStudyRow(data);
     
@@ -38,7 +39,7 @@ function parseStudyGrid(appSettings: Setting[]): InterventionsEntry[] {
         currentDay = headerRow[col].toString().trim() as Day;
       }
       if(!currentDay) continue;
-    
+      
       let currentPeriod: Period | null = null;
       // Loop through rows from row index 2 looking for period or teacher
       for (let row = 2; row <= lastStudyRow; row++) {
@@ -49,34 +50,34 @@ function parseStudyGrid(appSettings: Setting[]): InterventionsEntry[] {
           currentPeriod = cell.toString().trim() as Period;
           continue;
         } 
-
+        
         // if we reached a string without a period, there's an issue.
         if (!currentPeriod) throw new Error('Error parsing study schedule');
-
+        
         const teacherName = cell.toString().trim();
         if (teacherName.length === 0) continue;
         
+        const mapKey = `${currentTerm}_${currentDay}_${currentPeriod}`;
+
         // add teacher to existing record or create new record
-        const match = records.filter(r => 
-          r.day == currentDay 
-          && r.period == currentPeriod
-          && r.term == currentTerm
-        );
-        if (Array.isArray(match) && match.length > 0) {
-          match[0].teachers.push(teacherName);
+        if (recordMap.has(mapKey)) {
+          recordMap.get(mapKey).teachers.push(teacherName);
         } else {
-          records.push({
+          const newEntry = {
             term: currentTerm,
             day: currentDay, 
             period: currentPeriod, 
             teachers: [teacherName]
-          });
+          };
+          recordMap.set(mapKey, newEntry);
         }
+
+        
       }
     }
   });
 
-  return records;
+  return [...recordMap.values()];
 }
 
 function findLastStudyRow(data: SSRow[]) {

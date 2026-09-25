@@ -44,9 +44,9 @@ export const setupStudentInputObserver = () => {
     if (!state) return;
     
     // Type narrowing depending on how your state is structured
-    if ('studentNames' in state && 'currentStudentName' in state) {
+    if ('studentNames' in state && 'ui_currentStudentName' in state) {
       renderStudentDatalist(state.studentNames, state.ui_currentStudentName);
     }
-  }, ['studentNames', 'currentStudentName']);
+  }, ['studentNames', 'ui_currentStudentName']);
 };
 

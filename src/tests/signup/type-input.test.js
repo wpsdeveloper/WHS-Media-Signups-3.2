@@ -109,7 +109,7 @@ describe('Type Input Module', () => {
       setupTypeInputObserver();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentType']
+        ['ui_currentType']
       );
 
       const subscriberCallback = store.subscribe.mock.calls[0][0];

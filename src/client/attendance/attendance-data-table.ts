@@ -81,7 +81,7 @@ export const initObservers = () => {
 
   //   dom.setVisible(".student-row-empty", !hasStudentRows);
   //   dom.setVisible("#staff-table", hasStaffRows);
-  // }, ["ui_currentDate", "ui_currentPeriod", "dataRows", 'currentStudy']);
+  // }, ["ui_currentDate", "ui_currentPeriod", "dataRows", 'ui_currentStudy']);
 
 
   // updates the sort header ui

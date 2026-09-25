@@ -99,7 +99,7 @@ describe('Store Module', () => {
 
     it('should notify subscribers only when specified dependencies change', () => {
       const mockCallback = vi.fn();
-      store.subscribe(mockCallback, ['currentDate', 'currentPeriod']);
+      store.subscribe(mockCallback, ['ui_currentDate', 'ui_currentPeriod']);
 
       // Should NOT trigger callback (untracked dependency)
       store.setState({ currentType: 'Tutoring' });
@@ -115,7 +115,7 @@ describe('Store Module', () => {
       const callbackPeriod = vi.fn();
       
       store.subscribe(callbackAll);
-      store.subscribe(callbackPeriod, ['currentPeriod']);
+      store.subscribe(callbackPeriod, ['ui_currentPeriod']);
 
       store.setState({ currentType: 'Intervention' });
       

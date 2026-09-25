@@ -73,7 +73,7 @@ export const setupStudyObservers = () => {
       state.ui_currentType,
       state.ui_currentStudyTeacher ,   
     );
-    }, ['currentScheduleBlock', 'currentPeriod', 'currentType']);
+    }, ['ui_currentScheduleBlock', 'ui_currentPeriod', 'ui_currentType']);
     
     
   // updates selectbox choice is data is changed externally
@@ -82,5 +82,5 @@ export const setupStudyObservers = () => {
     if (selectElem && state.ui_currentStudyTeacher && selectElem.value !== state.ui_currentStudyTeacher) {
       dom.setValue("#study-teacher-select", state.ui_currentStudyTeacher);
     }
-  }, ['currentStudyTeacher']);
+  }, ['ui_currentStudyTeacher']);
 };

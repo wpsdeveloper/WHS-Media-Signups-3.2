@@ -503,8 +503,8 @@ var directSet = (room) => {
 */
 var setupGlassRoomsObserver$1 = () => {
 	store$2.subscribe((state) => {
-		updateGlassRooms$1(state.currentScheduleBlock, state.signups);
-	}, ["currentScheduleBlock", "signups"]);
+		updateGlassRooms$1(state.ui_currentScheduleBlock, state.signups);
+	}, ["ui_currentScheduleBlock", "signups"]);
 };
 var store$2 = new Store({
 	settings: [],
@@ -518,16 +518,16 @@ var store$2 = new Store({
 	updateRowId: null,
 	updateData: null,
 	defaultMax: 15,
-	currentDate: null,
-	currentPeriod: null,
-	currentType: null,
-	currentStudyTeacher: null,
-	currentInterventionTeacher: null,
-	currentSubject: "",
-	currentStudentName: "",
-	currentMax: 10,
-	currentEmail: "",
-	currentScheduleBlock: null
+	ui_currentDate: null,
+	ui_currentPeriod: null,
+	ui_currentType: null,
+	ui_currentStudyTeacher: null,
+	ui_currentInterventionTeacher: null,
+	ui_currentSubject: "",
+	ui_currentStudentName: "",
+	ui_currentMax: 10,
+	ui_currentEmail: "",
+	ui_currentScheduleBlock: null
 });
 var registerUpdateData = (updateData) => {
 	if (!updateData) return;
@@ -541,14 +541,14 @@ var registerUpdateData = (updateData) => {
 	setValue("#acad-teacher", updateData.teacherAcad || "");
 	directSet(updateData.room);
 	store$2.setState({
-		currentDate: new Date(updateData.date),
-		currentPeriod: updateData.period,
-		currentType: updateData.type,
-		currentStudyTeacher: updateData.teacherStudy,
-		currentInterventionTeacher: updateData.teacherAcad,
-		currentSubject: updateData.subject,
-		currentStudentName: updateData.emailStudent,
-		currentScheduleBlock: null
+		ui_currentDate: new Date(updateData.date),
+		ui_currentPeriod: updateData.period,
+		ui_currentType: updateData.type,
+		ui_currentStudyTeacher: updateData.teacherStudy,
+		ui_currentInterventionTeacher: updateData.teacherAcad,
+		ui_currentSubject: updateData.subject,
+		ui_currentStudentName: updateData.emailStudent,
+		ui_currentScheduleBlock: null
 	});
 };
 //#endregion
@@ -581,8 +581,8 @@ var updateDetailsPanel = (currentType) => {
 */
 var setupPanelsObserver = () => {
 	store$2.subscribe((state) => {
-		updateDetailsPanel(state.currentType);
-	}, ["currentType"]);
+		updateDetailsPanel(state.ui_currentType);
+	}, ["ui_currentType"]);
 };
 //#endregion
 //#region src/client/signup/type-select.ts
@@ -592,7 +592,7 @@ var setupPanelsObserver = () => {
 var typeChangeHandler = (event) => {
 	if (!event) return;
 	const selectedType = event.target.value;
-	store$2.setState({ currentType: selectedType });
+	store$2.setState({ ui_currentType: selectedType });
 };
 /**
 * Helper Utilities: DOM UI resets and state indicators
@@ -630,11 +630,11 @@ var toggleTutoringLink = () => {
 */
 var setupTypeInputObserver = () => {
 	store$2.subscribe((state) => {
-		if (state.currentType) setValue("#type-select", state.currentType);
-	}, ["currentType"]);
+		if (state.ui_currentType) setValue("#type-select", state.ui_currentType);
+	}, ["ui_currentType"]);
 	store$2.subscribe((state) => {
 		resetAllTypes();
-		const currentScheduleBlock = state.currentScheduleBlock;
+		const currentScheduleBlock = state.ui_currentScheduleBlock;
 		if (!currentScheduleBlock) return;
 		const periodIsWedInt = currentScheduleBlock.period === "Wed. PM";
 		if (periodIsWedInt) toggleWednesdayInterventions(periodIsWedInt);
@@ -643,7 +643,7 @@ var setupTypeInputObserver = () => {
 		toggleAltSetting(currentScheduleBlock.allowAltSetting);
 		toggleTutoring(currentScheduleBlock.allowTutoring && !periodIsWedInt);
 		toggleNonInterventions(currentScheduleBlock.allowNonInterventions || periodIsWedInt);
-	}, ["currentType"]);
+	}, ["ui_currentType"]);
 };
 //#endregion
 //#region src/client/signup/capacity-validation.ts
@@ -661,13 +661,13 @@ var checkFull = (currentScheduleBlock, signups = [], currentMax = 10) => {
 */
 var setupCapacityValidationObserver = () => {
 	store$2.subscribe((state) => {
-		checkFull(state.currentScheduleBlock, state.signups, state.currentMax);
+		checkFull(state.ui_currentScheduleBlock, state.signups, state.ui_currentMax);
 	}, [
-		"currentDate",
-		"currentPeriod",
+		"ui_currentDate",
+		"ui_currentPeriod",
 		"signups",
-		"currentMax",
-		"currentEmail"
+		"ui_currentMax",
+		"ui_currentEmail"
 	]);
 };
 //#endregion
@@ -678,7 +678,7 @@ var setupCapacityValidationObserver = () => {
 var dateChangeHandler$1 = (event) => {
 	const target = event.target;
 	const selectedDate = target.value !== "" ? parseDateInput(target.value) : null;
-	store$2.setState({ currentDate: selectedDate });
+	store$2.setState({ ui_currentDate: selectedDate });
 };
 var configureDateSelect = (selector, minDate, maxDate, initialDate) => {
 	const dateInput = qs(selector);
@@ -694,11 +694,11 @@ var configureDateSelect = (selector, minDate, maxDate, initialDate) => {
 */
 var setupDateObserver = () => {
 	store$2.subscribe((state) => {
-		const { currentDate } = state;
+		const { ui_currentDate: currentDate } = state;
 		if (!currentDate) return;
 		if (!qs("#date")) return;
 		setValue("#date", toDateInputValue(currentDate));
-	}, ["currentDate"]);
+	}, ["ui_currentDate"]);
 };
 //#endregion
 //#region \0@oxc-project+runtime@0.127.0/helpers/asyncToGenerator.js
@@ -757,7 +757,7 @@ var periodChangeHandler$1 = (event) => {
 	const target = event.target;
 	if (!target) return;
 	const selectedPeriod = target.value;
-	store$2.setState({ currentPeriod: selectedPeriod });
+	store$2.setState({ ui_currentPeriod: selectedPeriod });
 };
 /**
 * Updates the Periods select box based on the date 
@@ -765,7 +765,7 @@ var periodChangeHandler$1 = (event) => {
 var updatePeriodOptions = (currentDate, dailySchedules) => {
 	var _selectElem$options$, _selectElem$options$2;
 	if (!currentDate || !dailySchedules) return;
-	const oldPeriodVal = store$2.getState().currentPeriod;
+	const oldPeriodVal = store$2.getState().ui_currentPeriod;
 	clearOptions("#period");
 	dailySchedules.forEach((schedule) => {
 		if (isSameDate(schedule.date, currentDate)) {
@@ -779,7 +779,7 @@ var updatePeriodOptions = (currentDate, dailySchedules) => {
 	if (oldPeriodVal && [...(selectElem === null || selectElem === void 0 ? void 0 : selectElem.options) || []].some((opt) => opt.value === oldPeriodVal)) setValue("#period", oldPeriodVal);
 	else {
 		setValue("#period", firstAvailableValue);
-		store$2.setState({ currentPeriod: firstAvailableValue });
+		store$2.setState({ ui_currentPeriod: firstAvailableValue });
 	}
 };
 /**
@@ -787,12 +787,12 @@ var updatePeriodOptions = (currentDate, dailySchedules) => {
 */
 var setupPeriodObservers = () => {
 	store$2.subscribe((state) => {
-		updatePeriodOptions(state.currentDate, state.dailySchedules);
-	}, ["currentDate", "dailySchedules"]);
+		updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
+	}, ["ui_currentDate", "dailySchedules"]);
 	store$2.subscribe((state) => {
 		const periodSelect = qs("#period");
-		if (periodSelect && state.currentPeriod && periodSelect.value !== state.currentPeriod) setValue("#period", state.currentPeriod);
-	}, ["currentPeriod"]);
+		if (periodSelect && state.ui_currentPeriod && periodSelect.value !== state.ui_currentPeriod) setValue("#period", state.ui_currentPeriod);
+	}, ["ui_currentPeriod"]);
 };
 /**
 * Helper: Determines if Wednesday Interventions should be shown.
@@ -810,7 +810,7 @@ function wednesdayInterventions(date) {
 var studentInputChangeHandler$1 = (event) => {
 	const target = event.target;
 	const query = valueOf(target);
-	store$2.setState({ currentStudentName: query });
+	store$2.setState({ ui_currentStudentName: query });
 };
 var renderStudentDatalist$1 = (studentNames = [], currentQuery = "") => {
 	const input = qs(".student-autocomplete");
@@ -838,8 +838,8 @@ var renderStudentDatalist$1 = (studentNames = [], currentQuery = "") => {
 var setupStudentInputObserver$1 = () => {
 	store$2.subscribe((state) => {
 		if (!state) return;
-		if ("studentNames" in state && "currentStudentName" in state) renderStudentDatalist$1(state.studentNames, state.currentStudentName);
-	}, ["studentNames", "currentStudentName"]);
+		if ("studentNames" in state && "ui_currentStudentName" in state) renderStudentDatalist$1(state.studentNames, state.ui_currentStudentName);
+	}, ["studentNames", "ui_currentStudentName"]);
 };
 //#endregion
 //#region src/client/signup/interventions-teacher-select.ts
@@ -859,8 +859,8 @@ var toggleIntTeacherAltInput = (currentScheduleBlock) => {
 */
 var setupInterventionTeacherObserver = () => {
 	store$2.subscribe((state) => {
-		if (state.currentScheduleBlock) toggleIntTeacherAltInput(state.currentScheduleBlock);
-	}, ["currentPeriod"]);
+		if (state.ui_currentScheduleBlock) toggleIntTeacherAltInput(state.ui_currentScheduleBlock);
+	}, ["ui_currentPeriod"]);
 };
 //#endregion
 //#region src/client/signup/study-select.ts
@@ -872,7 +872,7 @@ var studyTeacherChangeHandler$1 = (event) => {
 	const inputElement = event.target;
 	if (!inputElement) return "";
 	const selectedTeacher = (_inputElement$value = inputElement.value) !== null && _inputElement$value !== void 0 ? _inputElement$value : "";
-	store$2.setState({ currentStudyTeacher: selectedTeacher });
+	store$2.setState({ ui_currentStudyTeacher: selectedTeacher });
 };
 /**
 * Pure UI View: Calculates options from state and renders select dropdown/input elements.
@@ -904,16 +904,16 @@ var toggleStudyInputVisibility = (hasOptions) => {
 */
 var setupStudyObservers$1 = () => {
 	store$2.subscribe((state) => {
-		updateStudyOptions$1(state.currentScheduleBlock, state.currentType, state.currentStudyTeacher);
+		updateStudyOptions$1(state.ui_currentScheduleBlock, state.ui_currentType, state.ui_currentStudyTeacher);
 	}, [
-		"currentScheduleBlock",
-		"currentPeriod",
-		"currentType"
+		"ui_currentScheduleBlock",
+		"ui_currentPeriod",
+		"ui_currentType"
 	]);
 	store$2.subscribe((state) => {
 		const selectElem = qs("#study-teacher-select");
-		if (selectElem && state.currentStudyTeacher && selectElem.value !== state.currentStudyTeacher) setValue("#study-teacher-select", state.currentStudyTeacher);
-	}, ["currentStudyTeacher"]);
+		if (selectElem && state.ui_currentStudyTeacher && selectElem.value !== state.ui_currentStudyTeacher) setValue("#study-teacher-select", state.ui_currentStudyTeacher);
+	}, ["ui_currentStudyTeacher"]);
 };
 //#endregion
 //#region src/client/signup/subject-select.ts
@@ -924,7 +924,7 @@ var setupStudyObservers$1 = () => {
 var subjectChangeHandler = (event) => {
 	if (!event) return;
 	const selectedSubject = event.target.value;
-	store$2.setState({ currentSubject: selectedSubject });
+	store$2.setState({ ui_currentSubject: selectedSubject });
 };
 /**
 *  Updates the Subject select box based on the date and period selected 
@@ -943,12 +943,12 @@ var updateSubjectOptions = (currentScheduleBlock, currentSubject) => {
 */
 var setupSubjectObservers = () => {
 	store$2.subscribe((state) => {
-		updateSubjectOptions(state.currentScheduleBlock, state.currentSubject);
-	}, ["currentScheduleBlock"]);
+		updateSubjectOptions(state.ui_currentScheduleBlock, state.ui_currentSubject);
+	}, ["ui_currentScheduleBlock"]);
 	store$2.subscribe((state) => {
 		const selectElem = qs("#subject-int-select");
-		if (selectElem && state.currentSubject && selectElem.value !== state.currentSubject) setValue("#subject-int-select", state.currentSubject);
-	}, ["currentSubject"]);
+		if (selectElem && state.ui_currentSubject && selectElem.value !== state.ui_currentSubject) setValue("#subject-int-select", state.ui_currentSubject);
+	}, ["ui_currentSubject"]);
 };
 //#endregion
 //#region src/client/signup/form-data.ts
@@ -1020,9 +1020,9 @@ function collectData() {
 		data.lastname = names.length > 0 ? names[0] : "";
 		data.emailStudent = brackets.length == 2 ? brackets[1].trim().substring(0, brackets[1].length - 1) : "";
 	} else data.emailStudent = data.email;
-	if (state.currentDate) data.date = state.currentDate;
-	data.period = state.currentPeriod || valueOf("#period");
-	if (state.currentType) data.type = state.currentType;
+	if (state.ui_currentDate) data.date = state.ui_currentDate;
+	data.period = state.ui_currentPeriod || valueOf("#period");
+	if (state.ui_currentType) data.type = state.ui_currentType;
 	if (isVisible(".subject-int")) data.subject = valueOf(".subject-int");
 	else if (isVisible("#subject-non-int")) data.subject = valueOf("#subject-non-int");
 	data.purpose = isVisible("#purpose") ? valueOf("#purpose select") : "";
@@ -1094,10 +1094,10 @@ function updateComplete() {
 * */
 var startOver = () => {
 	store$2.setState({
-		currentType: null,
-		currentStudyTeacher: null,
-		currentSubject: "",
-		currentStudentName: ""
+		ui_currentType: null,
+		ui_currentStudyTeacher: null,
+		ui_currentSubject: "",
+		ui_currentStudentName: ""
 	});
 	setValue("#student", "");
 	setValue("#study-teacher-input", "");
@@ -1119,23 +1119,16 @@ function _mockSubmit() {
 //#region src/client/signup/init.ts
 var initializeApp$2 = function() {
 	var _ref = _asyncToGenerator(function* () {
-		showLoadingModal("Retrieving data");
-		initObservers$4();
-		try {
-			const parsedData = parseServerData$2(yield getServerData$2());
-			store$2.setState(parsedData);
-			yield initializeUi$1();
-			bindEvents$2();
-		} catch (error) {
-			processError(error, "Failed to initialize app:");
-		}
-		hideLoadingModal();
+		initObservers$5();
+		yield refreshData$2();
+		bindEvents$2();
+		initializeUi$2();
 	});
 	return function initializeApp() {
 		return _ref.apply(this, arguments);
 	};
 }();
-var initObservers$4 = () => {
+var initObservers$5 = () => {
 	setupStudentInputObserver$1();
 	setupDailyScheduleBlocksObserver();
 	setupDateObserver();
@@ -1148,6 +1141,15 @@ var initObservers$4 = () => {
 	setupGlassRoomsObserver$1();
 	setupCapacityValidationObserver();
 };
+function fetchServerData$2() {
+	return _fetchServerData$2.apply(this, arguments);
+}
+function _fetchServerData$2() {
+	_fetchServerData$2 = _asyncToGenerator(function* () {
+		return parseServerData$2(yield getServerData$2());
+	});
+	return _fetchServerData$2.apply(this, arguments);
+}
 var getServerData$2 = function() {
 	var _ref2 = _asyncToGenerator(function* () {
 		return new Promise((resolve, reject) => {
@@ -1170,6 +1172,7 @@ function parseServerData$2(data) {
 	const defaultMaxSetting = settings.find((s) => s.key === "Max_Signups_Default");
 	const defaultMax = (_defaultMaxSetting$va = defaultMaxSetting === null || defaultMaxSetting === void 0 ? void 0 : defaultMaxSetting.value) !== null && _defaultMaxSetting$va !== void 0 ? _defaultMaxSetting$va : 10;
 	const appConfig = getAppConfig();
+	console.log(parsedData);
 	return {
 		students,
 		studentNames,
@@ -1177,16 +1180,16 @@ function parseServerData$2(data) {
 		signups,
 		settings,
 		defaultMax,
-		currentMax: defaultMax,
-		currentDate: /* @__PURE__ */ new Date(),
-		currentPeriod: null,
-		currentType: "Non-intervention",
-		currentStudyTeacher: null,
-		currentInterventionTeacher: null,
-		currentScheduleBlock: null,
-		currentSubject: "",
-		currentStudentName: "",
-		currentEmail: appConfig.email,
+		ui_currentMax: defaultMax,
+		ui_currentDate: /* @__PURE__ */ new Date(),
+		ui_currentPeriod: null,
+		ui_currentType: "Non-intervention",
+		ui_currentStudyTeacher: null,
+		ui_currentInterventionTeacher: null,
+		ui_currentScheduleBlock: null,
+		ui_currentSubject: "",
+		ui_currentStudentName: "",
+		ui_currentEmail: appConfig.email,
 		isStaff: appConfig.isStaff,
 		isAdmin: appConfig.isAdmin,
 		isEditor: appConfig.isEditor,
@@ -1194,24 +1197,19 @@ function parseServerData$2(data) {
 		updateRowId: null
 	};
 }
-var initializeUi$1 = function() {
-	var _ref3 = _asyncToGenerator(function* () {
-		const { isStaff, isAdmin, currentDate, currentEmail } = store$2.getState();
-		setTooltips("[data-bs-toggle=\"tooltip\"]");
-		toggleStaffOnlyViews(isStaff);
-		toggleAdminOnlyViews(isAdmin);
-		const today = /* @__PURE__ */ new Date();
-		configureDateSelect("#date", toDateInputValue(/* @__PURE__ */ new Date(today.getTime() - 14 * 864e5)), toDateInputValue(new Date(today.getTime() + 14 * 864e5)), toDateInputValue(today));
-		setValue("#email", currentEmail);
-		toggleInterventionsLink();
-		toggleTutoringLink();
-		updateScriptLinks();
-		yield setUpdateStatus();
-	});
-	return function initializeUi() {
-		return _ref3.apply(this, arguments);
-	};
-}();
+var initializeUi$2 = () => {
+	const { isStaff, isAdmin, ui_currentDate: currentDate, ui_currentEmail: currentEmail } = store$2.getState();
+	setTooltips("[data-bs-toggle=\"tooltip\"]");
+	toggleStaffOnlyViews(isStaff);
+	toggleAdminOnlyViews(isAdmin);
+	const today = /* @__PURE__ */ new Date();
+	configureDateSelect("#date", toDateInputValue(/* @__PURE__ */ new Date(today.getTime() - 14 * 864e5)), toDateInputValue(new Date(today.getTime() + 14 * 864e5)), toDateInputValue(today));
+	setValue("#email", currentEmail);
+	toggleInterventionsLink();
+	toggleTutoringLink();
+	updateScriptLinks();
+	setUpdateStatus();
+};
 function bindEvents$2() {
 	addEventListener("#date", "change", (e) => dateChangeHandler$1(e));
 	addEventListener("#period", "change", (e) => periodChangeHandler$1(e));
@@ -1222,38 +1220,49 @@ function bindEvents$2() {
 	addEventListener("#btn-submit, #btn-update", "click", () => submitForm());
 	addEventListener(".success-box-start-over", "click", () => startOver());
 }
+var refreshData$2 = function() {
+	var _ref3 = _asyncToGenerator(function* () {
+		showLoadingModal("Retrieving data");
+		try {
+			const serverData = yield fetchServerData$2();
+			console.log(serverData);
+			store$2.setState(_objectSpread2({}, serverData));
+		} catch (error) {
+			processError(error, "Failed to initialize app:");
+		}
+		hideLoadingModal();
+	});
+	return function refreshData() {
+		return _ref3.apply(this, arguments);
+	};
+}();
 /**
 * Checks to see if the URL sent a row id. If so, this form is to update existing data
 * rather than submit new data
 * */
-var setUpdateStatus = function() {
-	var _ref4 = _asyncToGenerator(function* () {
-		const state = store$2.getState();
-		const isEditor = state.isEditor;
-		const updateData = state.updateData;
-		if (!isEditor || !updateData) return;
-		setDisabled("#email", !isEditor);
-		toggleEditorOnlyViews(isEditor);
-		setVisible("#btn-submit", false);
-		setVisible("#btn-update", true);
-		registerUpdateData(updateData);
-	});
-	return function setUpdateStatus() {
-		return _ref4.apply(this, arguments);
-	};
-}();
+var setUpdateStatus = () => {
+	const state = store$2.getState();
+	const isEditor = state.isEditor;
+	const updateData = state.updateData;
+	if (!isEditor || !updateData) return;
+	setDisabled("#email", !isEditor);
+	toggleEditorOnlyViews(isEditor);
+	setVisible("#btn-submit", false);
+	setVisible("#btn-update", true);
+	registerUpdateData(updateData);
+};
 var setTooltips = (selector) => {
 	[...qsa(selector)].map((tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl));
 };
 var setupDailyScheduleBlocksObserver = () => {
 	store$2.subscribe((state) => {
 		var _dailyScheduleBlocks$;
-		const currentPeriod = state.currentPeriod;
-		const currentDate = state.currentDate;
+		const currentPeriod = state.ui_currentPeriod;
+		const currentDate = state.ui_currentDate;
 		if (!currentPeriod || !currentDate) return;
 		const newCurrentBlock = (_dailyScheduleBlocks$ = state.dailySchedules.find((block) => block.period === currentPeriod && isSameDate(block.date, currentDate))) !== null && _dailyScheduleBlocks$ !== void 0 ? _dailyScheduleBlocks$ : null;
-		store$2.setState({ currentScheduleBlock: newCurrentBlock });
-	}, ["currentPeriod", "currentDate"]);
+		store$2.setState({ ui_currentScheduleBlock: newCurrentBlock });
+	}, ["ui_currentPeriod", "ui_currentDate"]);
 };
 var store$1 = new Store({
 	students: [],
@@ -1263,11 +1272,11 @@ var store$1 = new Store({
 	settings: [],
 	isEditor: false,
 	currentEmail: "",
-	currentSortField: "date",
-	currentSortOrder: "desc",
-	currentStudentName: "",
-	requestedStudentEmail: "",
-	dataRows: []
+	ui_currentSortField: "date",
+	ui_currentSortOrder: "desc",
+	ui_currentStudentName: "",
+	ui_requestedStudentEmail: "",
+	ui_dataRows: []
 });
 var checkinStore$1 = {
 	getSignups: () => store$1.getState().signups,
@@ -1628,9 +1637,9 @@ function getSignupTypeLabel$1(signup) {
 }
 //#endregion
 //#region src/client/admin/admin-data-table.ts
-var initObservers$3 = () => {
+var initObservers$4 = () => {
 	store$1.subscribe((state) => {
-		const { signups, currentSortField, currentSortOrder, requestedStudentEmail } = state;
+		const { signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder, ui_requestedStudentEmail: requestedStudentEmail } = state;
 		if (!requestedStudentEmail) return;
 		const currentSignups = sortSignups$1(signups, currentSortField, currentSortOrder).filter((su) => su.emailStudent === requestedStudentEmail);
 		qsa("#student-panel .student-row").forEach((row) => row.remove());
@@ -1642,28 +1651,28 @@ var initObservers$3 = () => {
 			dataRow.populate();
 			newRows.push(dataRow);
 		});
-		store$1.setState({ dataRows: newRows });
+		store$1.setState({ ui_dataRows: newRows });
 	}, [
 		"signups",
-		"currentSortField",
-		"currentSortOrder",
+		"ui_currentSortField",
+		"ui_currentSortOrder",
 		"requestedStudentEmail"
 	]);
 	store$1.subscribe((state) => {
-		const { currentSortField, currentSortOrder } = state;
+		const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
 		qsa(".sort-icon i").forEach((icon) => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 		const sortIcon = qs(`.sort-${currentSortField}`);
 		sortIcon.classList.add("active");
 		const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
 		sortIcon.classList.add(directionIcon);
-	}, ["currentSortField", "currentSortOrder"]);
+	}, ["ui_currentSortField", "ui_currentSortOrder"]);
 };
 var resort = (field) => {
-	const { currentSortField, currentSortOrder } = store$1.getState();
+	const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = store$1.getState();
 	const newOrder = currentSortField === field && currentSortOrder === "asc" ? "desc" : "asc";
 	store$1.setState({
-		currentSortField: field,
-		currentSortOrder: newOrder
+		ui_currentSortField: field,
+		ui_currentSortOrder: newOrder
 	});
 };
 var sortSignups$1 = (signups, field, order) => {
@@ -1736,7 +1745,7 @@ var SettingsRow = class {
 };
 //#endregion
 //#region src/client/admin/settings-table.ts
-var initObservers$2 = () => {
+var initObservers$3 = () => {
 	store$1.subscribe((state) => {
 		const { settings } = state;
 		if (!settings) return;
@@ -1760,7 +1769,7 @@ var getAuditHandler = function() {
 			if (student.length < 3) return;
 			const brackets = student.indexOf(" <") > 0 ? student.split(" <") : [];
 			const emailStudent = brackets.length == 2 ? brackets[1].trim().substring(0, brackets[1].length - 1) : "";
-			if (emailStudent) store$1.setState({ requestedStudentEmail: emailStudent });
+			if (emailStudent) store$1.setState({ ui_requestedStudentEmail: emailStudent });
 		} catch (error) {
 			processError(error, "Error parsing student name:");
 		}
@@ -1795,7 +1804,7 @@ var getStudentAudit = function() {
 var setupAuditObserver = () => {
 	store$1.subscribe(function() {
 		var _ref3 = _asyncToGenerator(function* (state) {
-			const signups = parseSignups(safeJsonParse(yield getStudentAudit(state.currentStudentName)).signups);
+			const signups = parseSignups(safeJsonParse(yield getStudentAudit(state.ui_currentStudentName)).signups);
 			store$1.setState({ signups });
 			hideLoadingModal();
 		});
@@ -1812,7 +1821,7 @@ var setupAuditObserver = () => {
 var studentInputChangeHandler = (event) => {
 	const target = event.target;
 	const query = valueOf(target);
-	store$1.setState({ currentStudentName: query });
+	store$1.setState({ ui_currentStudentName: query });
 };
 var renderStudentDatalist = (studentNames = [], currentQuery = "") => {
 	const input = qs(".student-autocomplete");
@@ -1840,25 +1849,17 @@ var renderStudentDatalist = (studentNames = [], currentQuery = "") => {
 var setupStudentInputObserver = () => {
 	store$1.subscribe((state) => {
 		if (!state) return;
-		if ("studentNames" in state && "currentStudentName" in state) renderStudentDatalist(state.studentNames, state.currentStudentName);
-	}, ["studentNames", "currentStudentName"]);
+		if ("studentNames" in state && "ui_currentStudentName" in state) renderStudentDatalist(state.studentNames, state.ui_currentStudentName);
+	}, ["studentNames", "ui_currentStudentName"]);
 };
 //#endregion
 //#region src/client/admin/init.ts
 var initializeApp$1 = function() {
 	var _ref = _asyncToGenerator(function* () {
-		showLoadingModal("Retrieving data");
-		try {
-			initObservers$1();
-			const parsedData = parseServerData$1(yield getServerData$1());
-			console.log("Parsed data:", parsedData);
-			store$1.setState(parsedData);
-			yield initializeUi();
-			bindEvents$1();
-		} catch (error) {
-			processError(error, "Failed to initialize app:");
-		}
-		hideLoadingModal();
+		initObservers$2();
+		yield refreshData$1();
+		initializeUi$1();
+		bindEvents$1();
 	});
 	return function initializeApp() {
 		return _ref.apply(this, arguments);
@@ -1867,12 +1868,21 @@ var initializeApp$1 = function() {
 /**
 * Registers all UI observers/subscribers to listen to store updates.
 */
-var initObservers$1 = () => {
+var initObservers$2 = () => {
 	setupStudentInputObserver();
 	setupAuditObserver();
+	initObservers$4();
 	initObservers$3();
-	initObservers$2();
 };
+function fetchServerData$1() {
+	return _fetchServerData$1.apply(this, arguments);
+}
+function _fetchServerData$1() {
+	_fetchServerData$1 = _asyncToGenerator(function* () {
+		return parseServerData$1(yield getServerData$1());
+	});
+	return _fetchServerData$1.apply(this, arguments);
+}
 var getServerData$1 = function() {
 	var _ref2 = _asyncToGenerator(function* () {
 		return new Promise((resolve, reject) => {
@@ -1897,25 +1907,20 @@ function parseServerData$1(data) {
 		dailySchedules,
 		signups,
 		settings,
-		currentStudentName: "",
-		currentSortField: "date",
-		currentSortOrder: "desc",
-		dataRows: [],
-		requestedStudentEmail: "",
+		ui_currentStudentName: "",
+		ui_currentSortField: "date",
+		ui_currentSortOrder: "desc",
+		ui_dataRows: [],
+		ui_requestedStudentEmail: "",
 		currentEmail: appConfig.email,
 		isEditor: appConfig.isEditor
 	};
 }
-var initializeUi = function() {
-	var _ref3 = _asyncToGenerator(function* () {
-		toggleEditorOnlyViews(store$1.getState().isEditor);
-		initializeTabs();
-		updateScriptLinks();
-	});
-	return function initializeUi() {
-		return _ref3.apply(this, arguments);
-	};
-}();
+var initializeUi$1 = () => {
+	toggleEditorOnlyViews(store$1.getState().isEditor);
+	initializeTabs();
+	updateScriptLinks();
+};
 function bindEvents$1() {
 	addEventListener(".student-autocomplete", "input", (e) => studentInputChangeHandler(e));
 	addEventListener("#get-audit-btn", "click", () => getAuditHandler());
@@ -1924,6 +1929,21 @@ function bindEvents$1() {
 	addEventListener("#date-header", "click", () => resort("date"));
 	addEventListener("#period-header", "click", () => resort("period"));
 }
+var refreshData$1 = function() {
+	var _ref3 = _asyncToGenerator(function* () {
+		showLoadingModal("Retrieving data");
+		try {
+			const serverData = yield fetchServerData$1();
+			store$1.setState(_objectSpread2({}, serverData));
+		} catch (error) {
+			processError(error, "Failed to initialize app:");
+		}
+		hideLoadingModal();
+	});
+	return function refreshData() {
+		return _ref3.apply(this, arguments);
+	};
+}();
 /**
 * Sets up the tabs and panels display
 */
@@ -1946,13 +1966,13 @@ var store = new Store({
 	isStaff: false,
 	isEditor: false,
 	isAdmin: false,
-	currentDate: null,
-	currentPeriod: null,
+	ui_currentDate: null,
+	ui_currentPeriod: null,
 	currentEmail: "",
-	currentSortField: "student",
-	currentSortOrder: "asc",
-	currentStudy: "All studies",
-	dataRows: []
+	ui_currentSortField: "student",
+	ui_currentSortOrder: "asc",
+	ui_currentStudy: "All studies",
+	ui_dataRows: []
 });
 var checkinStore = {
 	getSignups: () => store.getState().signups,
@@ -1993,10 +2013,10 @@ var getRoomBadge = (room) => {
 */
 var setupGlassRoomsObserver = () => {
 	store.subscribe((state) => {
-		updateGlassRooms(state.currentDate, state.currentPeriod, state.signups);
+		updateGlassRooms(state.ui_currentDate, state.ui_currentPeriod, state.signups);
 	}, [
-		"currentDate",
-		"currentPeriod",
+		"ui_currentDate",
+		"ui_currentPeriod",
 		"signups"
 	]);
 };
@@ -2050,9 +2070,9 @@ var AttendanceDataRow = class {
 	populate(currentDate, currentPeriod) {
 		var _store$getState;
 		const { element, signup } = this;
-		if (currentPeriod && currentPeriod === signup.period) element.classList.add("current-period");
+		if (currentPeriod && currentPeriod === signup.period) element.classList.add("ui_current-period");
 		const signupDate = new Date(signup.date);
-		if (currentDate && isSameDate(signupDate, currentDate)) element.classList.add("current-date");
+		if (currentDate && isSameDate(signupDate, currentDate)) element.classList.add("ui_current-date");
 		const studentNameDiv = element.querySelector(".student-name");
 		if (studentNameDiv) {
 			const roomBadge = getRoomBadge(signup.room);
@@ -2111,15 +2131,15 @@ function getSignupTypeLabel(signup) {
 }
 //#endregion
 //#region src/client/attendance/attendance-data-table.ts
-var initObservers = () => {
+var initObservers$1 = () => {
 	store.subscribe((state) => {
-		updatePeriodOptions(state.currentDate, state.dailySchedules);
-	}, ["currentDate", "dailySchedules"]);
+		updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
+	}, ["ui_currentDate", "dailySchedules"]);
 	store.subscribe((state) => {
-		const { currentDate, currentPeriod, signups, currentSortField, currentSortOrder } = state;
+		const { ui_currentDate: currentDate, ui_currentPeriod: currentPeriod, signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
 		if (!currentDate) return;
 		const targetDate = currentDate;
-		const sortedSignups = sortSignups(signups.filter((su) => isSameDate(new Date(su.date), targetDate) && su.period === currentPeriod && (state.currentStudy === su.teacherStudy || state.currentStudy === "All studies" || su.type === "Staff reservation")), currentSortField, currentSortOrder);
+		const sortedSignups = sortSignups(signups.filter((su) => isSameDate(new Date(su.date), targetDate) && su.period === currentPeriod && (state.ui_currentStudy === su.teacherStudy || state.ui_currentStudy === "All studies" || su.type === "Staff reservation")), currentSortField, currentSortOrder);
 		qsa("#student-table .student-row, #staff-table .staff-row").forEach((row) => row.remove());
 		const studentTable = qs("#student-table");
 		const staffTable = qs("#staff-table");
@@ -2131,22 +2151,22 @@ var initObservers = () => {
 			newRows.push(dataRow);
 			console.log(signup);
 		});
-		store.setState({ dataRows: newRows });
+		store.setState({ ui_dataRows: newRows });
 	}, [
-		"currentDate",
-		"currentPeriod",
-		"currentSortField",
-		"currentSortOrder",
-		"currentStudy"
+		"ui_currentDate",
+		"ui_currentPeriod",
+		"ui_currentSortField",
+		"ui_currentSortOrder",
+		"ui_currentStudy"
 	]);
 	store.subscribe((state) => {
 		var _dom$qs, _dom$qs2;
-		const { currentSortField, currentSortOrder } = state;
+		const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
 		qsa(".sort-icon i").forEach((icon) => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 		(_dom$qs = qs(currentSortField === "student" ? ".sort-student" : ".sort-study")) === null || _dom$qs === void 0 || _dom$qs.classList.add("active");
 		const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
 		(_dom$qs2 = qs(".sort-icon i.active")) === null || _dom$qs2 === void 0 || _dom$qs2.classList.add(directionIcon);
-	}, ["currentSortField", "currentSortOrder"]);
+	}, ["ui_currentSortField", "ui_currentSortOrder"]);
 };
 /**
 *  Responds to a change of the Date field 
@@ -2154,12 +2174,12 @@ var initObservers = () => {
 var dateChangeHandler = () => {
 	const newDate = valueOf("#date");
 	if (!newDate) return;
-	store.setState({ currentDate: parseDateInput(newDate) });
+	store.setState({ ui_currentDate: parseDateInput(newDate) });
 };
 var periodChangeHandler = () => {
 	const newPeriod = valueOf("#period");
 	if (!newPeriod) return;
-	store.setState({ currentPeriod: newPeriod });
+	store.setState({ ui_currentPeriod: newPeriod });
 };
 var sortSignups = (signups, field, order) => {
 	const modifier = order === "asc" ? 1 : -1;
@@ -2212,7 +2232,7 @@ var studyTeacherChangeHandler = (event) => {
 	const inputElement = event.target;
 	if (!inputElement) return "";
 	const selectedTeacher = (_inputElement$value = inputElement.value) !== null && _inputElement$value !== void 0 ? _inputElement$value : "";
-	store.setState({ currentStudy: selectedTeacher });
+	store.setState({ ui_currentStudy: selectedTeacher });
 };
 /**
 * Pure UI View: Calculates options from state and renders select dropdown/input elements.
@@ -2234,28 +2254,36 @@ var updateStudyOptions = (currentDate, currentPeriod, signups) => {
 */
 var setupStudyObservers = () => {
 	store.subscribe((state) => {
-		updateStudyOptions(state.currentDate, state.currentPeriod, state.signups);
-	}, ["currentDate", "currentPeriod"]);
+		updateStudyOptions(state.ui_currentDate, state.ui_currentPeriod, state.signups);
+	}, ["ui_currentDate", "ui_currentPeriod"]);
 };
 //#endregion
 //#region src/client/attendance/init.ts
 var initializeApp = function() {
 	var _ref = _asyncToGenerator(function* () {
-		try {
-			initObservers();
-			setupGlassRoomsObserver();
-			setupStudyObservers();
-			bindEvents();
-			yield refreshData();
-		} catch (error) {
-			processError(error, "Failed to initialize app:");
-			hideLoadingModal();
-		}
+		initObservers();
+		yield refreshData();
+		bindEvents();
+		initializeUi();
 	});
 	return function initializeApp() {
 		return _ref.apply(this, arguments);
 	};
 }();
+function initObservers() {
+	initObservers$1();
+	setupGlassRoomsObserver();
+	setupStudyObservers();
+}
+function fetchServerData() {
+	return _fetchServerData.apply(this, arguments);
+}
+function _fetchServerData() {
+	_fetchServerData = _asyncToGenerator(function* () {
+		return parseServerData(yield getServerData());
+	});
+	return _fetchServerData.apply(this, arguments);
+}
 var getServerData = function() {
 	var _ref2 = _asyncToGenerator(function* () {
 		return new Promise((resolve, reject) => {
@@ -2279,6 +2307,13 @@ function parseServerData(data) {
 		isAdmin: appConfig.isAdmin,
 		isEditor: appConfig.isEditor
 	};
+}
+function initializeUi() {
+	initDateInput();
+	periodChangeHandler();
+	toggleEditorOnlyViews(store.getState().isEditor);
+	toggleAdminOnlyViews(store.getState().isAdmin);
+	updateScriptLinks();
 }
 function initDateInput() {
 	const dateInput = qs(".date-input");
@@ -2306,18 +2341,10 @@ function bindEvents() {
 }
 var refreshData = function() {
 	var _ref3 = _asyncToGenerator(function* () {
-		var _parsedData$isEditor, _parsedData$isAdmin;
 		showLoadingModal("Retrieving data");
-		const parsedData = parseServerData(yield getServerData());
-		console.log("Parsed data:", parsedData);
+		const serverData = yield fetchServerData();
 		initDateInput();
-		store.setState(_objectSpread2(_objectSpread2({}, parsedData), {}, { currentDate: parseDateInput(valueOf("#date")) }));
-		periodChangeHandler();
-		const isEditor = (_parsedData$isEditor = parsedData.isEditor) !== null && _parsedData$isEditor !== void 0 ? _parsedData$isEditor : false;
-		const isAdmin = (_parsedData$isAdmin = parsedData.isAdmin) !== null && _parsedData$isAdmin !== void 0 ? _parsedData$isAdmin : false;
-		toggleEditorOnlyViews(isEditor);
-		toggleAdminOnlyViews(isAdmin);
-		updateScriptLinks();
+		store.setState(_objectSpread2(_objectSpread2({}, serverData), {}, { ui_currentDate: parseDateInput(valueOf("#date")) }));
 		hideLoadingModal();
 	});
 	return function refreshData() {

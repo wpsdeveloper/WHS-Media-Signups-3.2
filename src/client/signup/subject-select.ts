@@ -46,7 +46,7 @@ export const setupSubjectObservers = () => {
       state.ui_currentScheduleBlock,
       state.ui_currentSubject,
     );
-  }, ['currentScheduleBlock']);
+  }, ['ui_currentScheduleBlock']);
   
   // updates study teacher if the data is changed externally
   store.subscribe((state: SignupState) => {
@@ -54,5 +54,5 @@ export const setupSubjectObservers = () => {
     if (selectElem && state.ui_currentSubject && selectElem.value !== state.ui_currentSubject) {
       dom.setValue("#subject-int-select", state.ui_currentSubject);
     }
-  }, ['currentSubject']);
+  }, ['ui_currentSubject']);
 };

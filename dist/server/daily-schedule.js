@@ -1,4 +1,27 @@
 "use strict";
+function getCachedOrParsedCalendarBlocks(appSettings) {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get("calendar_blocks_v1");
+    if (cached) {
+        try {
+            console.log("Returning cached calendar data");
+            return JSON.parse(cached);
+        }
+        catch (e) {
+            console.warn("Cache parse failed, refetching schedule blocks", e);
+        }
+    }
+    const calendarBlocks = buildFlatScheduleData(appSettings);
+    // Cache for 6 hours (21600 seconds = max allowed in GAS CacheService)
+    try {
+        console.log("Caching calendar data");
+        cache.put("calendar_blocks_v1", JSON.stringify(calendarBlocks), 21600);
+    }
+    catch (e) {
+        console.warn("Cache storage failed", e);
+    }
+    return calendarBlocks;
+}
 function buildFlatScheduleData(appSettings) {
     const rotationGrid = MASTER_ROTATION_GRID;
     const interventionTeachers = parseInterventionsGrid(appSettings);
@@ -52,13 +75,19 @@ function parseRotation(rotationGrid, interventionTeachers, studyTeachers) {
 }
 function parseCalendarRows(rows) {
     const calendar = [];
+    const { start, end } = getActiveDateWindow(2, 2);
     rows.forEach(row => {
         if ((row[0] === "") || (row[1] === ""))
             return;
-        calendar.push({
-            date: row[0],
-            day: row[1]
-        });
+        const rowDate = new Date(row[0]);
+        if (isNaN(rowDate.getTime()))
+            return;
+        if (rowDate.getTime() >= start.getTime() && rowDate.getTime() <= end.getTime()) {
+            calendar.push({
+                date: row[0],
+                day: row[1]
+            });
+        }
     });
     return calendar;
 }
@@ -81,7 +110,22 @@ function parseSpecialRows(rows) {
     return specials;
 }
 function buildCalendarBlocks(calendarDays, scheduleBlocks, specialRows) {
-    const dailyBlocks = [];
+    const schedMap = new Map();
+    scheduleBlocks.forEach(b => schedMap.set(`${b.term}_${b.day}_${b.period}`, b));
+    const specialsMap = new Map();
+    specialRows.forEach(row => {
+        if (!row.date)
+            return;
+        const dateStr = new Date(row.date).toISOString().slice(0, 10);
+        specialsMap.set(`${dateStr}_${row.period}`, {
+            allowInterventions: row.allowInterventions === "true",
+            allowAssessmentMakeups: row.allowAssessmentMakeups === "true",
+            allowAltSetting: row.allowAltSetting === "true",
+            allowTutoring: row.allowTutoring === "true",
+            allowNonInterventions: row.allowNonInterventions === "true",
+            max: parseInt(row.max) || DEFAULT_MAX_SIGNUPS,
+        });
+    });
     // gets the date when Semester 2 begins
     let s2DateTime = new Date("2100-01-01").getTime();
     const s2DateRange = SPREADSHEET.getRangeByName(S2_RANGE_NAME);
@@ -91,47 +135,25 @@ function buildCalendarBlocks(calendarDays, scheduleBlocks, specialRows) {
             s2DateTime = new Date(s2DateSetting).getTime();
         }
     }
+    const dailyBlocks = [];
     calendarDays.forEach(calDay => {
         const date = new Date(calDay.date);
-        const day = calDay.day;
+        const dateStr = date.toISOString().slice(0, 10);
         const term = (date.getTime() < s2DateTime) ? 's1' : 's2';
-        const masterGridSchedule = MASTER_ROTATION_GRID.find(item => item.day === day);
-        if (!masterGridSchedule)
+        const masterGrid = MASTER_ROTATION_GRID.find(item => item.day === calDay.day);
+        if (!masterGrid)
             return;
-        const periods = masterGridSchedule.periods;
-        periods.forEach(period => {
-            const schedBlock = scheduleBlocks.find(item => item.term === term
-                && item.day === day
-                && item.period === period);
+        masterGrid.periods.forEach(period => {
+            const schedBlock = schedMap.get(`${term}_${calDay.day}_${period}`);
             if (!schedBlock)
                 return;
-            let newBlock = {
+            const special = specialsMap.get(`${dateStr}_${period}`) || EMPTY_SPECIAL;
+            dailyBlocks.push({
                 ...schedBlock,
                 date: date,
-                ...EMPTY_SPECIAL
-            };
-            const special = findSpecial(specialRows, date, period);
-            if (special) {
-                newBlock = { ...newBlock, ...special };
-            }
-            dailyBlocks.push(newBlock);
+                ...special,
+            });
         });
     });
     return dailyBlocks;
-}
-function findSpecial(specialRows, date, period) {
-    const special = specialRows.find(item => isSameDate(new Date(item.date), date)
-        && item.period === period);
-    if (!special) {
-        return null;
-    }
-    const thisSpecial = {
-        allowInterventions: special.allowInterventions == "true",
-        allowAssessmentMakeups: special.allowAssessmentMakeups == "true",
-        allowAltSetting: special.allowAltSetting == "true",
-        allowTutoring: special.allowTutoring == "true",
-        allowNonInterventions: special.allowNonInterventions == "true",
-        max: parseInt(special.max),
-    };
-    return thisSpecial;
 }

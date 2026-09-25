@@ -10,6 +10,15 @@ const isSameDate = (date1: Date, date2: Date) => {
   return monthMatch && yearMatch && dateMatch;
 }
 
+function getActiveDateWindow(weeksPast: number = 2, weeksFuture: number = 2): { start: Date; end: Date } {
+  const now = new Date();
+  
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (weeksPast * 7), 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (weeksFuture * 7), 23, 59, 59, 999);
+  
+  return { start, end };
+}
+
 
 /**
  * Formats a Date into MM/DD/YYYY

@@ -69,7 +69,7 @@ describe('Glass Rooms Input Module', () => {
       setupGlassRoomsObserver();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentDate', 'currentPeriod', 'signups']
+        ['ui_currentDate', 'ui_currentPeriod', 'signups']
       );
     });
   });

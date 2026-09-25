@@ -106,7 +106,7 @@ describe('Schedule Rules Module', () => {
       setupScheduleRulesObserver();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['currentDate', 'currentPeriod', 'dailySchedules']
+        ['ui_currentDate', 'ui_currentPeriod', 'dailySchedules']
       );
     });
 

@@ -40,7 +40,7 @@ export const setupDateObserver = () => {
     const dateInput = dom.qs('#date') as HTMLInputElement;
     if (!dateInput) return;
     dom.setValue('#date', toDateInputValue(currentDate));
-  }, ['currentDate']);
+  }, ['ui_currentDate']);
 };
 
  
