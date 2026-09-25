@@ -9,7 +9,7 @@ export const studyTeacherChangeHandler = (event: MouseEvent) => {
   const inputElement = event.target as HTMLSelectElement;
   if (!inputElement) return "";
   const selectedTeacher = inputElement.value ?? "";
-  store.setState({ currentStudyTeacher: selectedTeacher });
+  store.setState({ ui_currentStudyTeacher: selectedTeacher });
 };
 
 /**
@@ -69,9 +69,9 @@ export const setupStudyObservers = () => {
   // sets study teacher options based on date/period selection
   store.subscribe((state: SignupState) => {
     updateStudyOptions(
-      state.currentScheduleBlock,
-      state.currentType,
-      state.currentStudyTeacher ,   
+      state.ui_currentScheduleBlock,
+      state.ui_currentType,
+      state.ui_currentStudyTeacher ,   
     );
     }, ['currentScheduleBlock', 'currentPeriod', 'currentType']);
     
@@ -79,8 +79,8 @@ export const setupStudyObservers = () => {
   // updates selectbox choice is data is changed externally
   store.subscribe((state: SignupState) => {
     const selectElem = dom.qs("#study-teacher-select") as HTMLSelectElement;
-    if (selectElem && state.currentStudyTeacher && selectElem.value !== state.currentStudyTeacher) {
-      dom.setValue("#study-teacher-select", state.currentStudyTeacher);
+    if (selectElem && state.ui_currentStudyTeacher && selectElem.value !== state.ui_currentStudyTeacher) {
+      dom.setValue("#study-teacher-select", state.ui_currentStudyTeacher);
     }
   }, ['currentStudyTeacher']);
 };

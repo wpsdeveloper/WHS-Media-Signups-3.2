@@ -8,7 +8,7 @@ export const typeChangeHandler = (event: MouseEvent) => {
   if (!event) return;
   const target = event.target as HTMLSelectElement;
   const selectedType = target.value as SignupType;
-  store.setState({ currentType: selectedType });
+  store.setState({ ui_currentType: selectedType });
 };
 
 /**
@@ -111,8 +111,8 @@ export const setupTypeInputObserver = () => {
   // sets ui to already existing data
   store.subscribe(
     (state: SignupState) => {
-      if (state.currentType) {
-        dom.setValue('#type-select', state.currentType);
+      if (state.ui_currentType) {
+        dom.setValue('#type-select', state.ui_currentType);
       }
     },
     ['currentType'],
@@ -122,7 +122,7 @@ export const setupTypeInputObserver = () => {
   store.subscribe(
     (state: SignupState) => {
       resetAllTypes();  
-      const currentScheduleBlock = state.currentScheduleBlock;
+      const currentScheduleBlock = state.ui_currentScheduleBlock;
         if (!currentScheduleBlock ) return;
       
         // enables Wed PN Int is the period was set to it already. 

@@ -19,21 +19,10 @@ import { IS_DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  messaging.showLoadingModal('Retrieving data');
   initObservers();
-  
-  try {
-    const rawData = await getServerData();
-    const parsedData = parseServerData(rawData);
-    store.setState(parsedData);
-
-    await initializeUi();
-    bindEvents();
-  } catch (error) {
-    messaging.processError((error as Error), 'Failed to initialize app:');
-  }
-
-  messaging.hideLoadingModal();
+  await refreshData();
+  bindEvents();
+  initializeUi();
 }
 
 // Registers all UI observers/subscribers to listen to store updates.
@@ -54,6 +43,11 @@ export const initObservers = () => {
   
   capacity.setupCapacityValidationObserver();
 };
+
+async function fetchServerData(): Promise<SignupState> {
+  const rawServerData = await getServerData();
+  return parseServerData(rawServerData);
+}
 
 const getServerData = async (): Promise<string> => {
   if (IS_DEBUG) {
@@ -84,16 +78,16 @@ function parseServerData(data: string): SignupState {
   return {
     students, studentNames, dailySchedules, signups, settings,
     defaultMax: defaultMax,
-    currentMax: defaultMax,
-    currentDate: new Date(),
-    currentPeriod: null,
-    currentType: 'Non-intervention',
-    currentStudyTeacher: null,
-    currentInterventionTeacher: null,
-    currentScheduleBlock: null,
-    currentSubject: '',
-    currentStudentName: '',
-    currentEmail: appConfig.email,
+    ui_currentMax: defaultMax,
+    ui_currentDate: new Date(),
+    ui_currentPeriod: null,
+    ui_currentType: 'Non-intervention',
+    ui_currentStudyTeacher: null,
+    ui_currentInterventionTeacher: null,
+    ui_currentScheduleBlock: null,
+    ui_currentSubject: '',
+    ui_currentStudentName: '',
+    ui_currentEmail: appConfig.email,
     isStaff: appConfig.isStaff,
     isAdmin: appConfig.isAdmin,
     isEditor: appConfig.isEditor, 
@@ -102,8 +96,8 @@ function parseServerData(data: string): SignupState {
   };
 }
 
-export const initializeUi = async () => {
-  const { isStaff, isAdmin, currentDate, currentEmail } = store.getState();
+export const initializeUi = () => {
+  const { isStaff, isAdmin, ui_currentDate: currentDate, ui_currentEmail: currentEmail } = store.getState();
   
   setTooltips('[data-bs-toggle="tooltip"]');
   dom.toggleStaffOnlyViews(isStaff);
@@ -124,7 +118,7 @@ export const initializeUi = async () => {
   typeInput.toggleInterventionsLink();
   typeInput.toggleTutoringLink();
   updateScriptLinks();
-  await setUpdateStatus();
+  setUpdateStatus();
 };
 
 function bindEvents() {
@@ -138,11 +132,24 @@ function bindEvents() {
   dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
 }
 
+export const refreshData = async () => {
+  messaging.showLoadingModal('Retrieving data');
+
+  try {
+    const serverData = await fetchServerData();
+    store.setState({ ...serverData });
+  } catch (error) {
+    messaging.processError(error as Error, 'Failed to initialize app:');
+  }
+
+  messaging.hideLoadingModal();
+}
+
 /**
  * Checks to see if the URL sent a row id. If so, this form is to update existing data
  * rather than submit new data
  * */
-export const setUpdateStatus = async () => {
+export const setUpdateStatus = () => {
   // requires that user is an editor and that and update row was provided
   const state = store.getState();
   const isEditor = state.isEditor;
@@ -169,8 +176,8 @@ export const setTooltips = (selector: string) => {
 
 const setupDailyScheduleBlocksObserver = () => {
   store.subscribe((state: SignupState) => {
-    const currentPeriod = state.currentPeriod;
-    const currentDate = state.currentDate;
+    const currentPeriod = state.ui_currentPeriod;
+    const currentDate = state.ui_currentDate;
     if (!currentPeriod || !currentDate) return;
 
     const dailyScheduleBlocks = state.dailySchedules;
@@ -178,7 +185,7 @@ const setupDailyScheduleBlocksObserver = () => {
     const newCurrentBlock = dailyScheduleBlocks.find(
       (block: any) => block.period === currentPeriod && dates.isSameDate(block.date, currentDate)
     ) ?? null;
-    store.setState({currentScheduleBlock: newCurrentBlock });
+    store.setState({ui_currentScheduleBlock: newCurrentBlock });
 
   }, ['currentPeriod', 'currentDate']);
 }

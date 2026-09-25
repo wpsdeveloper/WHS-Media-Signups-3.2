@@ -11,7 +11,7 @@ import { AdminDataRow as DataRow } from "./admin-data-row";
 export const initObservers = () => {
   // Rebuild the data table with date, signups or sort changes
   store.subscribe((state) => {
-    const { signups, currentSortField, currentSortOrder, requestedStudentEmail } = state;
+    const { signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder, ui_requestedStudentEmail: requestedStudentEmail } = state;
     if (!requestedStudentEmail) return;
     
     const sortedSignups = sortSignups(signups, currentSortField, currentSortOrder);
@@ -32,12 +32,12 @@ export const initObservers = () => {
     });
 
     // Update state with new rows
-    store.setState({ dataRows: newRows });
-  }, ["signups", "currentSortField", "currentSortOrder", "requestedStudentEmail"]);
+    store.setState({ ui_dataRows: newRows });
+  }, ["signups", "ui_currentSortField", "ui_currentSortOrder", "requestedStudentEmail"]);
 
   // updates the sort header ui
   store.subscribe((state) => {
-    const { currentSortField, currentSortOrder } = state;
+    const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
     dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 
     const sortIcon = dom.qs(`.sort-${currentSortField}`) as HTMLElement;
@@ -45,7 +45,7 @@ export const initObservers = () => {
 
     const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
     sortIcon.classList.add(directionIcon);
-  }, ["currentSortField" , "currentSortOrder"]);
+  }, ["ui_currentSortField" , "ui_currentSortOrder"]);
 };
 
 // =====================================================================
@@ -54,12 +54,12 @@ export const initObservers = () => {
 // Notice how they ONLY write to the store, and touch NO DOM elements.
 // =====================================================================
 
-export const resort = (field: AdminState['currentSortField']) => {
-  const { currentSortField, currentSortOrder } = store.getState();
+export const resort = (field: AdminState['ui_currentSortField']) => {
+  const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = store.getState();
   
   const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
   
-  store.setState({ currentSortField: field, currentSortOrder: newOrder });
+  store.setState({ ui_currentSortField: field, ui_currentSortOrder: newOrder });
 };
 
 // =====================================================================
@@ -69,7 +69,7 @@ export const resort = (field: AdminState['currentSortField']) => {
 
 export const sortSignups = (
   signups: Signup[], 
-  field: AdminState['currentSortField'], 
+  field: AdminState['ui_currentSortField'], 
   order: 'asc' | 'desc'
   ) => {
   const modifier = (order === "asc" ? 1 : -1);

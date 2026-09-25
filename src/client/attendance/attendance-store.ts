@@ -10,15 +10,15 @@ const initialState: AttendanceState = {
   isEditor: false,
   isAdmin: false,
   
-  currentDate: null, 
-  currentPeriod: null,
+  ui_currentDate: null, 
+  ui_currentPeriod: null,
   currentEmail: "", 
   
-  currentSortField: 'student', 
-  currentSortOrder: 'asc', 
-  currentStudy: 'All studies',
+  ui_currentSortField: 'student', 
+  ui_currentSortOrder: 'asc', 
+  ui_currentStudy: 'All studies',
   
-  dataRows: [],
+  ui_dataRows: [],
 };
 
 export const store = new Store<AttendanceState>(initialState);
@@ -42,12 +42,12 @@ export interface AttendanceState {
   isAdmin: boolean,
   currentEmail: string,
   
-  currentSortField: 'study' | 'student',
-  currentSortOrder: 'asc' | 'desc', 
+  ui_currentSortField: 'study' | 'student',
+  ui_currentSortOrder: 'asc' | 'desc', 
+  ui_currentDate: Date | null,
+  ui_currentPeriod: Period | null,
+  ui_currentStudy: string,
   
-  dataRows: AttendanceDataRow[],
+  ui_dataRows: AttendanceDataRow[],
 
-  currentDate: Date | null,
-  currentPeriod: Period | null,
-  currentStudy: string,
 };

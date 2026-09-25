@@ -8,7 +8,7 @@ import { SignupState, store } from './signup-store';
  export const dateChangeHandler = (event: MouseEvent) => {
   const target = event.target as HTMLInputElement;
   const selectedDate = target.value !== "" ? parseDateInput(target.value) : null;
-  store.setState({ currentDate: selectedDate });
+  store.setState({ ui_currentDate: selectedDate });
  }
 
  export const configureDateSelect = (
@@ -34,7 +34,7 @@ import { SignupState, store } from './signup-store';
 export const setupDateObserver = () => {
   // updates date field if data is changed externally
   store.subscribe((state: SignupState) => {
-    const { currentDate } = state;
+    const { ui_currentDate: currentDate } = state;
     if (!currentDate) return;
 
     const dateInput = dom.qs('#date') as HTMLInputElement;

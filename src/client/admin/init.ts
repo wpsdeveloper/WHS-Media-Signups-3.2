@@ -8,26 +8,14 @@ import * as studentInput from './student-input';
 import { AdminState, store } from './admin-store';
 import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { IS_DEBUG, getMockData } from "../common/debug";
+import { AttendanceState } from '../attendance/attendance-store';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  messaging.showLoadingModal('Retrieving data');
-  try {
     initObservers();
-    
-    const rawData = await getServerData();
-    const parsedData = parseServerData(rawData);
-    console.log('Parsed data:', parsedData);
-
-    store.setState(parsedData);
-    
-    await initializeUi();
+    await refreshData();
+    initializeUi();
     bindEvents();
-  } catch (error) {
-    messaging.processError((error as Error), 'Failed to initialize app:');
-  }
-  
-  messaging.hideLoadingModal();
 }
 
 /**
@@ -39,6 +27,11 @@ export const initObservers = () => {
   dataTable.initObservers();
   settingsTable.initObservers();
 };
+
+async function fetchServerData(): Promise<AdminState> {
+  const rawServerData = await getServerData();
+  return parseServerData(rawServerData);
+}
 
 const getServerData = async (): Promise<string> => {
   if (IS_DEBUG) {
@@ -64,17 +57,17 @@ function parseServerData(data: string): AdminState {
   
   return {
     students, studentNames, dailySchedules, signups, settings,
-    currentStudentName: '',
-    currentSortField: 'date', 
-    currentSortOrder: 'desc', 
-    dataRows: [], 
-    requestedStudentEmail: '',
+    ui_currentStudentName: '',
+    ui_currentSortField: 'date', 
+    ui_currentSortOrder: 'desc', 
+    ui_dataRows: [], 
+    ui_requestedStudentEmail: '',
     currentEmail: appConfig.email,
     isEditor: appConfig.isEditor, 
   };
 }
 
-export const initializeUi = async () => {
+export const initializeUi = () => {
   const state = store.getState();
   dom.toggleEditorOnlyViews(state.isEditor);
   initializeTabs();
@@ -89,6 +82,19 @@ function bindEvents() {
   dom.addEventListener("#details-link", "click", (e) => dataTable.showSignupInfo());
   dom.addEventListener('#date-header', 'click', () => dataTable.resort("date"));
   dom.addEventListener('#period-header', 'click', () => dataTable.resort("period"));
+}
+
+export const refreshData = async () => {
+  messaging.showLoadingModal('Retrieving data');
+
+  try {
+    const serverData = await fetchServerData();
+    store.setState({ ...serverData });
+  } catch (error) {
+    messaging.processError(error as Error, 'Failed to initialize app:');
+  }
+
+  messaging.hideLoadingModal();
 }
 
 /**

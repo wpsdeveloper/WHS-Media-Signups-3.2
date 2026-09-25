@@ -12,13 +12,12 @@ const initialState: AdminState = {
   isEditor: false,
   currentEmail: "",
   
-  currentSortField: "date",
-  currentSortOrder: "desc",
+  ui_currentSortField: "date",
+  ui_currentSortOrder: "desc",
+  ui_currentStudentName: "",
+  ui_requestedStudentEmail: "",
 
-  currentStudentName: "",
-  requestedStudentEmail: "",
-
-  dataRows: [],
+  ui_dataRows: [],
 };
 
 export const store = new Store<AdminState>(initialState);
@@ -37,13 +36,13 @@ export interface AdminState {
 
   isEditor: boolean,
   
-  currentSortField: "date" | "period",
-  currentSortOrder: "asc" | "desc",
+  ui_currentSortField: "date" | "period",
+  ui_currentSortOrder: "asc" | "desc",
 
-  dataRows: AdminDataRow[],
+  ui_dataRows: AdminDataRow[],
   currentEmail: string,
-  currentStudentName: string,
-  requestedStudentEmail: string,
+  ui_currentStudentName: string,
+  ui_requestedStudentEmail: string,
 };
 
 export type AdminStateRaw = Omit<AdminState, 'signups' | 'dailySchedules'> & {

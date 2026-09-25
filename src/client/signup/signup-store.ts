@@ -17,16 +17,16 @@ const initialState: SignupState = {
   updateData: null,
   defaultMax: 15,
 
-  currentDate: null,
-  currentPeriod: null,
-  currentType: null,
-  currentStudyTeacher: null,
-  currentInterventionTeacher: null,
-  currentSubject: "",
-  currentStudentName: "",
-  currentMax: 10,
-  currentEmail: "",
-  currentScheduleBlock: null,
+  ui_currentDate: null,
+  ui_currentPeriod: null,
+  ui_currentType: null,
+  ui_currentStudyTeacher: null,
+  ui_currentInterventionTeacher: null,
+  ui_currentSubject: "",
+  ui_currentStudentName: "",
+  ui_currentMax: 10,
+  ui_currentEmail: "",
+  ui_currentScheduleBlock: null,
 };
 
 export const store = new Store<SignupState>(initialState);
@@ -46,20 +46,21 @@ export interface SignupState {
   isStaff: boolean,
   isEditor: boolean,
   isAdmin: boolean,
+  defaultMax: number,
+  
   updateRowId: string | null,
   updateData: Signup | null,
-  defaultMax: number,
 
-  currentDate: Date | null,
-  currentPeriod: Period | null,
-  currentType: SignupType | null,
-  currentStudyTeacher: string | null
-  currentInterventionTeacher: string | null
-  currentSubject: string,
-  currentStudentName: string,
-  currentMax: number,
-  currentEmail: string,
-  currentScheduleBlock: DailyBlock | null;
+  ui_currentDate: Date | null,
+  ui_currentPeriod: Period | null,
+  ui_currentType: SignupType | null,
+  ui_currentStudyTeacher: string | null
+  ui_currentInterventionTeacher: string | null
+  ui_currentSubject: string,
+  ui_currentStudentName: string,
+  ui_currentMax: number,
+  ui_currentEmail: string,
+  ui_currentScheduleBlock: DailyBlock | null;
 
 };
 
@@ -89,13 +90,13 @@ export const registerUpdateData = (updateData: Signup) => {
   glassRoom.directSet(updateData.room);
   
   store.setState({
-    currentDate: new Date(updateData.date),
-    currentPeriod: updateData.period as Period,
-    currentType: updateData.type,
-    currentStudyTeacher: updateData.teacherStudy,
-    currentInterventionTeacher: updateData.teacherAcad,
-    currentSubject: updateData.subject,
-    currentStudentName: updateData.emailStudent,
-    currentScheduleBlock: null,
+    ui_currentDate: new Date(updateData.date),
+    ui_currentPeriod: updateData.period as Period,
+    ui_currentType: updateData.type,
+    ui_currentStudyTeacher: updateData.teacherStudy,
+    ui_currentInterventionTeacher: updateData.teacherAcad,
+    ui_currentSubject: updateData.subject,
+    ui_currentStudentName: updateData.emailStudent,
+    ui_currentScheduleBlock: null,
   });
 }

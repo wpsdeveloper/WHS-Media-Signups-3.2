@@ -47,9 +47,9 @@ export const preventSignupForNoFly = (userEmail: string = "") => {
 export const setupCapacityValidationObserver = () => {
   store.subscribe((state: SignupState) => {
     checkFull(
-      state.currentScheduleBlock,
+      state.ui_currentScheduleBlock,
       state.signups,
-      state.currentMax
+      state.ui_currentMax
     );
     // preventSignupForNoFly(
     //   state.currentEmail

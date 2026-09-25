@@ -61,7 +61,7 @@ export class AttendanceDataRow {
     if (this.detailsPanel) dom.setVisible(this.detailsPanel, true);
   }
 
-  populate(currentDate: AttendanceState['currentDate'], currentPeriod: AttendanceState['currentPeriod']) {
+  populate(currentDate: AttendanceState['ui_currentDate'], currentPeriod: AttendanceState['ui_currentPeriod']) {
     const { element, signup } = this;
 
     // assigns current-date or current-period tags if appropriate

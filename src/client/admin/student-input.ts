@@ -7,7 +7,7 @@ import { store } from './admin-store';
 export const studentInputChangeHandler = (event: InputEvent) => {
   const target = event.target as HTMLInputElement;
   const query = dom.valueOf(target);
-  store.setState({ currentStudentName: query });
+  store.setState({ ui_currentStudentName: query });
 };
 
 export const renderStudentDatalist = (studentNames: string[] = [], currentQuery:string = '') => {
@@ -45,7 +45,7 @@ export const setupStudentInputObserver = () => {
     
     // Type narrowing depending on how your state is structured
     if ('studentNames' in state && 'currentStudentName' in state) {
-      renderStudentDatalist(state.studentNames, state.currentStudentName);
+      renderStudentDatalist(state.studentNames, state.ui_currentStudentName);
     }
   }, ['studentNames', 'currentStudentName']);
 };

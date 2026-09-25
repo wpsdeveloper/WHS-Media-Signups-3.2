@@ -12,17 +12,21 @@ import { IS_DEBUG, getMockData } from '../common/debug';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  try {
-    dataTable.initObservers();
-    glassRooms.setupGlassRoomsObserver();
-    studySelect.setupStudyObservers();
-    bindEvents();
-    
-    await refreshData();
-  } catch (error) {
-    messaging.processError(error as Error, 'Failed to initialize app:');
-    messaging.hideLoadingModal();
-  }
+  initObservers();
+  await refreshData();
+  bindEvents();
+  initializeUi();
+}
+
+function initObservers() {
+  dataTable.initObservers();
+  glassRooms.setupGlassRoomsObserver();
+  studySelect.setupStudyObservers();
+}
+
+async function fetchServerData(): Promise<Partial<AttendanceState>> {
+  const rawServerData = await getServerData();
+  return parseServerData(rawServerData);
 }
 
 const getServerData = async (): Promise<string> => {
@@ -51,6 +55,16 @@ function parseServerData(data: string): Partial<AttendanceState> {
     isAdmin: appConfig.isAdmin,
     isEditor: appConfig.isEditor, 
   };
+}
+
+function initializeUi() {
+  initDateInput();
+
+  dataTable.periodChangeHandler();
+  dom.toggleEditorOnlyViews(store.getState().isEditor);
+  dom.toggleAdminOnlyViews(store.getState().isAdmin);
+  
+  updateScriptLinks();
 }
 
 function initDateInput() {
@@ -83,24 +97,14 @@ function bindEvents() {
 export const refreshData = async () => {
   messaging.showLoadingModal('Retrieving data');
 
-  const rawData = await getServerData();
-  const parsedData = parseServerData(rawData);
-  console.log('Parsed data:', parsedData);
-
+  const serverData = await fetchServerData();
+  
   initDateInput();
   
   store.setState({
-    ...parsedData,
-    currentDate: dates.parseDateInput(dom.valueOf("#date"))
+    ...serverData,
+    ui_currentDate: dates.parseDateInput(dom.valueOf("#date"))
   });
-  dataTable.periodChangeHandler();
-
-  const isEditor = parsedData.isEditor ?? false;
-  const isAdmin = parsedData.isAdmin ?? false;
-
-  dom.toggleEditorOnlyViews(isEditor);
-  dom.toggleAdminOnlyViews(isAdmin);
-  updateScriptLinks();
   
   messaging.hideLoadingModal();
 };

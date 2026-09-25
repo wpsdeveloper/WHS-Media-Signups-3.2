@@ -62,6 +62,6 @@ export const getRoomBadge = (room: Signup['room']) => {
  */
 export const setupGlassRoomsObserver = () => {
   store.subscribe((state: AttendanceState) => {
-    updateGlassRooms(state.currentDate, state.currentPeriod, state.signups);
+    updateGlassRooms(state.ui_currentDate, state.ui_currentPeriod, state.signups);
   }, ['currentDate', 'currentPeriod' , 'signups']);
 };

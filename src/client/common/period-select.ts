@@ -10,7 +10,7 @@ export const periodChangeHandler = (event: MouseEvent) => {
   const target = event.target as HTMLSelectElement;
   if (!target) return;
   const selectedPeriod = target.value as Period;
-  store.setState({ currentPeriod: selectedPeriod });
+  store.setState({ ui_currentPeriod: selectedPeriod });
 }
 
  /**
@@ -22,7 +22,7 @@ export const updatePeriodOptions = (
 ) => {
   if (!currentDate || !dailySchedules) return;
   // remembers current selection. If this period is available in the new list,
-  const oldPeriodVal = store.getState().currentPeriod;
+  const oldPeriodVal = store.getState().ui_currentPeriod;
 
   dom.clearOptions("#period");
 
@@ -45,7 +45,7 @@ export const updatePeriodOptions = (
     dom.setValue("#period", oldPeriodVal);
   } else {
     dom.setValue("#period", firstAvailableValue);
-    store.setState({currentPeriod: firstAvailableValue});
+    store.setState({ui_currentPeriod: firstAvailableValue});
   }
  }
 
@@ -55,14 +55,14 @@ export const updatePeriodOptions = (
 export const setupPeriodObservers = () => {
   // updates the period selectbox options when date or schedule changes
   store.subscribe((state: SignupState) => {
-    updatePeriodOptions(state.currentDate, state.dailySchedules);
+    updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
   }, ['currentDate', 'dailySchedules']);
 
   // updates the selected period ui id data is changed externally
   store.subscribe((state: SignupState) => {
     const periodSelect = dom.qs("#period") as HTMLSelectElement;
-    if (periodSelect && state.currentPeriod && periodSelect.value !== state.currentPeriod) {
-      dom.setValue("#period", state.currentPeriod);
+    if (periodSelect && state.ui_currentPeriod && periodSelect.value !== state.ui_currentPeriod) {
+      dom.setValue("#period", state.ui_currentPeriod);
     }
   }, ['currentPeriod']);
 };

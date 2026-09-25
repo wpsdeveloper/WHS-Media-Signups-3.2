@@ -79,9 +79,9 @@ function collectData() {
   } else {
     data.emailStudent = data.email;
   }
-  if (state.currentDate) data.date = state.currentDate;
-  data.period = state.currentPeriod || dom.valueOf("#period");
-  if (state.currentType) data.type = state.currentType;
+  if (state.ui_currentDate) data.date = state.ui_currentDate;
+  data.period = state.ui_currentPeriod || dom.valueOf("#period");
+  if (state.ui_currentType) data.type = state.ui_currentType;
   
   // gets subject from whichever is visible
   if (dom.isVisible(".subject-int")) {
@@ -185,10 +185,10 @@ function updateComplete() {
  * */
  export const startOver = () => {
   store.setState({
-    currentType: null,
-    currentStudyTeacher: null,
-    currentSubject: "",
-    currentStudentName: '',
+    ui_currentType: null,
+    ui_currentStudyTeacher: null,
+    ui_currentSubject: "",
+    ui_currentStudentName: '',
   });
   
   dom.setValue("#student", "");

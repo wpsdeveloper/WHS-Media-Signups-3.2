@@ -10,7 +10,7 @@ export const studyTeacherChangeHandler = (event: MouseEvent) => {
   const inputElement = event.target as HTMLSelectElement;
   if (!inputElement) return "";
   const selectedTeacher = inputElement.value ?? "";
-  store.setState({ currentStudy: selectedTeacher });
+  store.setState({ ui_currentStudy: selectedTeacher });
 };
 
 /**
@@ -48,8 +48,8 @@ export const setupStudyObservers = () => {
   // sets study teacher options based on date/period selection
   store.subscribe((state: AttendanceState) => {
     updateStudyOptions(
-      state.currentDate,
-      state.currentPeriod,
+      state.ui_currentDate,
+      state.ui_currentPeriod,
       state.signups,   
     );
     }, ['currentDate', 'currentPeriod']);

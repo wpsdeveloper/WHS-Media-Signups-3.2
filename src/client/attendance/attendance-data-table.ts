@@ -15,12 +15,12 @@ import { getAppConfig } from "../common/app-config";
 export const initObservers = () => {
   // Updates the period dropdown when the date changes
   store.subscribe((state: AttendanceState) => {
-    updatePeriodOptions(state.currentDate, state.dailySchedules);
-  }, ["currentDate", "dailySchedules"]);
+    updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
+  }, ["ui_currentDate", "dailySchedules"]);
 
   // Rebuild the data table with date, signups or sort changes
   store.subscribe((state: AttendanceState) => {
-    const { currentDate, currentPeriod, signups, currentSortField, currentSortOrder } = state;
+    const { ui_currentDate: currentDate, ui_currentPeriod: currentPeriod, signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
     if (!currentDate) return;
     
     const targetDate = currentDate;
@@ -28,8 +28,8 @@ export const initObservers = () => {
     const currentSignups = signups.filter(su => 
       (isSameDate(new Date(su.date), targetDate))
       && su.period === currentPeriod
-      && ((state.currentStudy === su.teacherStudy) 
-      || state.currentStudy === 'All studies'
+      && ((state.ui_currentStudy === su.teacherStudy) 
+      || state.ui_currentStudy === 'All studies'
       || su.type === 'Staff reservation')
     );
   
@@ -54,8 +54,8 @@ export const initObservers = () => {
     });
 
     // Update state with new rows
-    store.setState({ dataRows: newRows } as Partial<AttendanceState>);
-  }, ["currentDate", "currentPeriod", "currentSortField", "currentSortOrder", "currentStudy"]);
+    store.setState({ ui_dataRows: newRows } as Partial<AttendanceState>);
+  }, ["ui_currentDate", "ui_currentPeriod", "ui_currentSortField", "ui_currentSortOrder", "ui_currentStudy"]);
 
 
   // // toggle row visibility and wed UI when period changes
@@ -81,12 +81,12 @@ export const initObservers = () => {
 
   //   dom.setVisible(".student-row-empty", !hasStudentRows);
   //   dom.setVisible("#staff-table", hasStaffRows);
-  // }, ["currentDate", "currentPeriod", "dataRows", 'currentStudy']);
+  // }, ["ui_currentDate", "ui_currentPeriod", "dataRows", 'currentStudy']);
 
 
   // updates the sort header ui
   store.subscribe((state: AttendanceState) => {
-    const { currentSortField, currentSortOrder } = state;
+    const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
     dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
 
     const activeHeader = currentSortField === "student" ? ".sort-student" : ".sort-study";
@@ -94,7 +94,7 @@ export const initObservers = () => {
 
     const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
     dom.qs(".sort-icon i.active")?.classList.add(directionIcon);
-  }, ["currentSortField", "currentSortOrder"]);
+  }, ["ui_currentSortField", "ui_currentSortOrder"]);
 };
 
 // =====================================================================
@@ -111,7 +111,7 @@ export const dateChangeHandler = () => {
   if (!newDate) return;
 
   store.setState({ 
-    currentDate: parseDateInput(newDate) 
+    ui_currentDate: parseDateInput(newDate) 
   });
 };
 
@@ -119,7 +119,7 @@ export const periodChangeHandler = () => {
   const newPeriod = dom.valueOf("#period");
   if (!newPeriod) return;
   store.setState({ 
-    currentPeriod: newPeriod 
+    ui_currentPeriod: newPeriod 
   } as Partial<AttendanceState>);
 };
 
@@ -127,18 +127,18 @@ export const studyChangeHandler = () => {
   const newStudy = dom.valueOf("#study-select");
   if (!newStudy) return;
   store.setState({ 
-    currentStudy: newStudy 
+    ui_currentStudy: newStudy 
   } as Partial<AttendanceState>);
 };
 
-export const resort = (field: (AttendanceState['currentSortField'])) => {
-  const { currentSortField, currentSortOrder } = store.getState();
+export const resort = (field: (AttendanceState['ui_currentSortField'])) => {
+  const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = store.getState();
   
   const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
   
   store.setState({ 
-    currentSortField: field, 
-    currentSortOrder: newOrder 
+    ui_currentSortField: field, 
+    ui_currentSortOrder: newOrder 
   } as Partial<AttendanceState>);
 };
 
@@ -168,8 +168,8 @@ const updateRowVisibility = (
       || suType === 'Staff reservation';
     const isMatch = isMatchDate && isMatchPeriod && isMatchStudy;
 
-    // element.classList.toggle("current-date", isMatchDate);
-    // element.classList.toggle("current-period", isMatchPeriod);
+    // element.classList.toggle("ui_current-date", isMatchDate);
+    // element.classList.toggle("ui_current-period", isMatchPeriod);
     
     // THIS IS SET TO FALSE FOR DEBUGGING, BUT DOES NOT WORK
     dom.setVisible(element, isMatch);
@@ -188,8 +188,8 @@ function wednesdayInterventions(date: Date) {
 
 export const sortSignups = (
   signups: Signup[], 
-  field: AttendanceState['currentSortField'], 
-  order: AttendanceState['currentSortOrder']
+  field: AttendanceState['ui_currentSortField'], 
+  order: AttendanceState['ui_currentSortOrder']
 ) => {
   const modifier = (order === "asc" ? 1 : -1);
   const targetField = field === "student" ? "lastname" : "teacherStudy";

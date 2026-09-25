@@ -12,7 +12,7 @@ export const subjectChangeHandler = (event: MouseEvent) => {
   if (!event) return;
   const target = event.target as HTMLInputElement;
   const selectedSubject = target.value;
-  store.setState({ currentSubject: selectedSubject });
+  store.setState({ ui_currentSubject: selectedSubject });
 };
 
 /**
@@ -43,16 +43,16 @@ export const setupSubjectObservers = () => {
   // updates subject selectbox options based on date/period selection
   store.subscribe((state: SignupState) => {
     updateSubjectOptions(
-      state.currentScheduleBlock,
-      state.currentSubject,
+      state.ui_currentScheduleBlock,
+      state.ui_currentSubject,
     );
   }, ['currentScheduleBlock']);
   
   // updates study teacher if the data is changed externally
   store.subscribe((state: SignupState) => {
     const selectElem = dom.qs("#subject-int-select") as HTMLInputElement;
-    if (selectElem && state.currentSubject && selectElem.value !== state.currentSubject) {
-      dom.setValue("#subject-int-select", state.currentSubject);
+    if (selectElem && state.ui_currentSubject && selectElem.value !== state.ui_currentSubject) {
+      dom.setValue("#subject-int-select", state.ui_currentSubject);
     }
   }, ['currentSubject']);
 };

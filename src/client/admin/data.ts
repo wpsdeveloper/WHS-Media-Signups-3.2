@@ -18,7 +18,7 @@ export const getAuditHandler = async () => {
     const emailStudent = (brackets.length == 2) ? brackets[1].trim().substring(0, brackets[1].length-1) : "";
   
     if (emailStudent) {
-      store.setState({ requestedStudentEmail: emailStudent });
+      store.setState({ ui_requestedStudentEmail: emailStudent });
     }
   } catch (error) {
     messaging.processError((error as Error), "Error parsing student name:");
@@ -54,7 +54,7 @@ export const getStudentAudit = async (emailStudent: string): Promise<string> => 
 */
 export const setupAuditObserver = () => {
   store.subscribe(async (state) => {
-    const auditData = await getStudentAudit(state.currentStudentName);
+    const auditData = await getStudentAudit(state.ui_currentStudentName);
     const parsedData = parser.safeJsonParse(auditData);
     const signups = parser.parseSignups(parsedData.signups);
     store.setState({signups: signups});
