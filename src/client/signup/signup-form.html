@@ -49,13 +49,11 @@
 
   <!-- Main body container  -->
   <div class="container">
-
     <!-- Main form  -->
     <div id="form" class="">
-      <div class="row g-2 mb-4 ">
-        
+      <div class="row g-2 mb-4">
         <!-- Step 1 -->
-        <div class="col-12 col-lg-3 ">
+        <div class="col-12 col-lg-3">
           <div class="step-card h-100">
             <h2 class="step-header">
               <i class="fa-solid fa-address-card"></i>
@@ -86,18 +84,43 @@
             </div>
 
             <!-- Student name (shown for staff ) -->
-            <div class="mb-4 staff-only">
+            <div class="mb-4 staff-only d-none">
               <div
                 class="intervention-only assessment-only tutoring-only non-intervention-only alt-setting-only"
               >
                 <label for="student" class="form-label main-label">
                   Student
                 </label>
-                <input
-                  type="text"
-                  class="form-control disabled student-autocomplete"
-                  id="student"
-                />
+                <!-- Relative container for input + spinner -->
+                <div class="position-relative">
+                  <input
+                    type="text"
+                    class="form-control student-autocomplete pe-5"
+                    id="student"
+                    placeholder="Type at least 2 letters..."
+                    autocomplete="off"
+                  />
+
+                  <!-- Spinner positioned inside right edge of input -->
+                  <div
+                    id="student-search-spinner"
+                    class="student-search-spinner position-absolute top-50 end-0 translate-middle-y me-3 d-none"
+                    style="pointer-events: none"
+                  >
+                    <div
+                      class="spinner-border spinner-border-sm text-secondary"
+                      role="status"
+                    >
+                      <span class="visually-hidden">Searching...</span>
+                    </div>
+                    <small id="student-search-hint" class="form-text text-muted d-none">
+                      No matching students found
+                    </small>
+                    <!-- Or if you prefer FontAwesome: 
+                    <i class="fa-solid fa-circle-notch fa-spin text-secondary"></i> 
+                    -->
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -138,7 +161,7 @@
               <div id="study-div" class="mb-4">
                 <label
                   for="study-teacher"
-                  class="form-label main-label intervention-only assessment-only tutoring-only non-intervention-only  d-none"
+                  class="form-label main-label intervention-only assessment-only tutoring-only non-intervention-only d-none"
                 >
                   Study hall teacher
                 </label>
@@ -149,7 +172,7 @@
                   Reporting from (Study Hall or class)
                 </label>
                 <select
-                  class="form-select study-teacher  d-none"
+                  class="form-select study-teacher d-none"
                   id="study-teacher-select"
                   name="study-teacher"
                 ></select>
@@ -208,7 +231,9 @@
             </div>
 
             <!-- Subject for other types  -->
-            <div class="mb-4 tutoring-only assessment-only alt-setting-only d-none">
+            <div
+              class="mb-4 tutoring-only assessment-only alt-setting-only d-none"
+            >
               <label for="subject" class="form-label main-label">
                 Subject
               </label>
@@ -238,7 +263,7 @@
             </div>
 
             <!-- Teacher & Subject for interventions  -->
-            <div class="mb-4 intervention-only  d-none">
+            <div class="mb-4 intervention-only d-none">
               <label for="subject" class="form-label main-label">
                 Teacher & Subject
               </label>
@@ -427,8 +452,14 @@
       <h3>Success!</h3>
       <p>
         Your update has been saved. Click
-        <a id="attendance-link-updated" class="script-link" href="" target="_top">here</a> to
-        return to the attendance page.
+        <a
+          id="attendance-link-updated"
+          class="script-link"
+          href=""
+          target="_top"
+          >here</a
+        >
+        to return to the attendance page.
       </p>
     </div>
   </div>

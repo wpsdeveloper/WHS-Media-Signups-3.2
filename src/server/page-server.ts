@@ -71,8 +71,9 @@ function createIndexTemplate() {
 }
 
 function getInitialSignupData(): string {
+  const userIsStaff = isStaff();
   const appSettings = getAppSettings();
-  const students = getStudents();
+  const students = userIsStaff ? getStudents() : [];
   const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   const signups = getSignups();
   

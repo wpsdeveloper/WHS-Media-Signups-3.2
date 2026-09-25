@@ -27,8 +27,6 @@ export const initializeApp = async () => {
 
 // Registers all UI observers/subscribers to listen to store updates.
 export const initObservers = () => {
-  studentInput.setupStudentInputObserver();
-  
   setupDailyScheduleBlocksObserver();
   dateSelect.setupDateObserver();
   periodSelect.setupPeriodObservers();

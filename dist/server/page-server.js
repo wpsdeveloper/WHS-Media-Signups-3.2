@@ -64,8 +64,9 @@ function createIndexTemplate() {
     return template;
 }
 function getInitialSignupData() {
+    const userIsStaff = isStaff();
     const appSettings = getAppSettings();
-    const students = getStudents();
+    const students = userIsStaff ? getStudents() : [];
     const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
     const signups = getSignups();
     if (!students || !dailySchedules || !appSettings)

@@ -33,7 +33,7 @@ export const initObservers = () => {
 
     // Update state with new rows
     store.setState({ ui_dataRows: newRows });
-  }, ["signups", "ui_currentSortField", "ui_currentSortOrder", "requestedStudentEmail"]);
+  }, ["signups", "ui_currentSortField", "ui_currentSortOrder", "ui_requestedStudentEmail"]);
 
   // updates the sort header ui
   store.subscribe((state) => {

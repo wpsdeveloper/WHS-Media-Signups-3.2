@@ -60,6 +60,6 @@ export const setupAuditObserver = () => {
     store.setState({signups: signups});
     
     messaging.hideLoadingModal();
-  }, ['requestedStudentEmail']);
+  }, ['ui_requestedStudentEmail']);
 };
 

@@ -36,6 +36,7 @@ interface ServerFunctions {
   getSignupByRow(id: string): string;
   submitForm(formData: string): void;
   getStudentAudit(studentId: string): Signup[];
+  searchStudents(query: string): Student[];
 }
 
 // Define the shape of your server-side API
