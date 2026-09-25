@@ -54,15 +54,4 @@ interface WithHandlers<T> {
 
 type TypedScriptRun = ServerFunctions & WithHandlers<TypedScriptRun>;
 
-type AppConfig = {
-  view: 'signup' | 'attendance' | 'admin',
-  wedInt: boolean,
-  s2Date: string,
-  isEditor: boolean,
-  isAdmin: boolean,
-  isStaff: boolean,
-  email: string,
-  scriptUrl: string,
-}
-
 export {};

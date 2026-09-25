@@ -180,8 +180,7 @@ function wednesdayInterventions(date: Date) {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
-  const appConfig = getAppConfig();
-  const wedIntActive = appConfig.wedInt;
+  const wedIntActive = store.getState().appConfig?.wedInt;
 
   return dateIsWednesday && wedIntActive;
 }

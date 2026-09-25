@@ -3,6 +3,7 @@ import { Store } from "../common/store";
 import { CheckinStore } from "../common/checkin-box";
 
 const initialState: AttendanceState = {
+  appConfig: null,
   dailySchedules: [],
   signups: [],
   
@@ -34,6 +35,7 @@ export const checkinStore: CheckinStore = {
 };
 
 export interface AttendanceState {
+  appConfig: AppConfig | null,
   dailySchedules: DailyBlock[],
   signups: Signup[],
   

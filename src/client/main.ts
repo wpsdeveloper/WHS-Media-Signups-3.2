@@ -30,8 +30,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Client-side router based on server-validated state
 async function mountApp() {
-  const appConfig = getAppConfig();
-  const view = IS_DEBUG ? 'attendance' : appConfig.view;
+  const appConfig = await getAppConfig();
+  if (!appConfig) throw new Error("Error initializing app");
+  const view = IS_DEBUG ? 'signup' : appConfig.view;
 
   switch (view) {
     case 'attendance':

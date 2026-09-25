@@ -4,6 +4,7 @@ import * as glassRoom from '../signup/glass-rooms-input';
 import { CheckinBox, CheckinStore } from "../common/checkin-box";
 
 const initialState: SignupState = {
+  appConfig: null,
   settings: [],
   students: [],
   studentNames: [],
@@ -37,6 +38,7 @@ export const checkinStore: CheckinStore = {
 };
 
 export interface SignupState {
+  appConfig: AppConfig | null;
   settings: Setting[],
   students: Student[],
   studentNames: string[],

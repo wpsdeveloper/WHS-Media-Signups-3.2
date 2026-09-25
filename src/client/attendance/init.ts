@@ -6,7 +6,7 @@ import * as dataTable from "./attendance-data-table";
 import * as glassRooms from './glass-rooms-status';
 import * as studySelect from './study-select';
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
-import { AppConfig, getAppConfig, updateScriptLinks } from '../common/app-config';
+import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
 import { IS_DEBUG, getMockData } from '../common/debug';
 
@@ -26,7 +26,7 @@ function initObservers() {
 
 async function fetchServerData(): Promise<Partial<AttendanceState>> {
   const rawServerData = await getServerData();
-  return parseServerData(rawServerData);
+  return await parseServerData(rawServerData);
 }
 
 const getServerData = async (): Promise<string> => {
@@ -42,13 +42,14 @@ const getServerData = async (): Promise<string> => {
   });
 };
 
-function parseServerData(data: string): Partial<AttendanceState> {
+async function parseServerData(data: string): Promise<Partial<AttendanceState>> {
   const parsedData = parser.safeJsonParse(data);
   const signups = parser.parseSignups(parsedData.signups);
   const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
-  const appConfig = getAppConfig()
+  const appConfig = await getAppConfig()
 
   return {
+    appConfig,
     signups, dailySchedules, 
     currentEmail: appConfig.email,
     isStaff: appConfig.isStaff,

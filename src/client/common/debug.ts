@@ -1,9 +1,9 @@
 export const IS_DEBUG: boolean = import.meta.env.DEV;
+const mockPath = `./sampledata.ts`;
 
 export const getMockData = async(type: 'signup' | 'attendance' | 'admin' | 'audit'): Promise<string> => {
   if (!import.meta.env.DEV) return "";
   
-  const mockPath = `../sampledata.ts`;
   const sampleDataImport = await import(/* @vite-ignore */ mockPath);
   let sampleData: string;
 
@@ -26,4 +26,9 @@ export const getMockData = async(type: 'signup' | 'attendance' | 'admin' | 'audi
   await delay(2000);
 
   return sampleData;
+}
+
+export const getMockAppConfig = async(): Promise<AppConfig> => {
+  const sampleDataImport = await import(/* @vite-ignore */ mockPath);
+  return sampleDataImport.appConfig;
 }

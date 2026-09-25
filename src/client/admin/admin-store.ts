@@ -3,6 +3,8 @@ import { CheckinStore } from "../common/checkin-box";
 import { Store } from "../common/store";
 
 const initialState: AdminState = {
+  appConfig: null,
+
   students: [],
   studentNames: [],
   dailySchedules: [],
@@ -28,6 +30,8 @@ export const checkinStore: CheckinStore = {
 };
 
 export interface AdminState {
+  appConfig: AppConfig | null,
+
   students: Student[],
   studentNames: string[],
   dailySchedules: DailyBlock[],

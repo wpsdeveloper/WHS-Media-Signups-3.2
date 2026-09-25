@@ -44,7 +44,7 @@ export const initObservers = () => {
 
 async function fetchServerData(): Promise<SignupState> {
   const rawServerData = await getServerData();
-  return parseServerData(rawServerData);
+  return await parseServerData(rawServerData);
 }
 
 const getServerData = async (): Promise<string> => {
@@ -60,7 +60,7 @@ const getServerData = async (): Promise<string> => {
   }
 };
 
-function parseServerData(data: string): SignupState {
+async function parseServerData(data: string): Promise<SignupState> {
   const parsedData = parser.safeJsonParse(data);
   const students = parsedData.students;
   const studentNames = parser.parseStudentDataList(students);
@@ -71,9 +71,11 @@ function parseServerData(data: string): SignupState {
 
   const defaultMaxSetting = settings.find(s => s.key === "Max_Signups_Default");
   const defaultMax = defaultMaxSetting?.value as number ?? 10;
-  const appConfig = getAppConfig()
+  const appConfig = await getAppConfig();
+
   console.log(parsedData);
   return {
+    appConfig,
     students, studentNames, dailySchedules, signups, settings,
     defaultMax: defaultMax,
     ui_currentMax: defaultMax,

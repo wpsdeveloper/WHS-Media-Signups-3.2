@@ -1,36 +1,17 @@
-import { IS_DEBUG } from './debug';
+import { IS_DEBUG, getMockAppConfig } from './debug';
 import * as dom from './dom';
 
-export function getAppConfig(): AppConfig {
+export async function getAppConfig(): Promise<AppConfig> {
   if (IS_DEBUG) {
-    return {
-      view: 'signup', 
-      wedInt: true,
-      s2Date: '2026-01-25',
-      isEditor: true,
-      isAdmin: true,
-      isStaff: true,
-      email: 'wpsdeveloper@walpole.k12.ma.us',
-      scriptUrl: '#',
-    };
+    return await getMockAppConfig();
   }
   console.log('window.APP_CONFIG', window.APP_CONFIG);
-  return window.APP_CONFIG;
+  return await window.APP_CONFIG;
 }
 
-export interface AppConfig {
-  view: 'signup' | 'attendance' | 'admin',
-  wedInt: boolean,
-  s2Date: string,
-  isEditor: boolean,
-  isAdmin: boolean,
-  isStaff: boolean,
-  email: string,
-  scriptUrl: string,
-}
-
-export const updateScriptLinks = () => {
-  const scriptUrl = getAppConfig().scriptUrl;
+export const updateScriptLinks = async () => {
+  const appConfig = await getAppConfig();
+  const scriptUrl = appConfig.scriptUrl;
   if (!scriptUrl) return;
 
   dom.qsa('.script-link').forEach(link => {

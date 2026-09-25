@@ -12,10 +12,10 @@ import { AttendanceState } from '../attendance/attendance-store';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-    initObservers();
-    await refreshData();
-    initializeUi();
-    bindEvents();
+  initObservers();
+  await refreshData();
+  initializeUi();
+  bindEvents();
 }
 
 /**
@@ -30,7 +30,7 @@ export const initObservers = () => {
 
 async function fetchServerData(): Promise<AdminState> {
   const rawServerData = await getServerData();
-  return parseServerData(rawServerData);
+  return await parseServerData(rawServerData);
 }
 
 const getServerData = async (): Promise<string> => {
@@ -46,14 +46,14 @@ const getServerData = async (): Promise<string> => {
   }
 };
 
-function parseServerData(data: string): AdminState {
+async function parseServerData(data: string): Promise<AdminState> {
   const parsedData = parser.safeJsonParse(data);
   const students = parser.parseStudents(parsedData.students);
   const studentNames = parser.parseStudentDataList(students);
   const signups = parser.parseSignups(parsedData.signups);
   const settings = parser.parseSettings(parsedData.settings);
   const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
-  const appConfig = getAppConfig()
+  const appConfig = await getAppConfig();
   
   return {
     students, studentNames, dailySchedules, signups, settings,
@@ -64,6 +64,7 @@ function parseServerData(data: string): AdminState {
     ui_requestedStudentEmail: '',
     currentEmail: appConfig.email,
     isEditor: appConfig.isEditor, 
+    appConfig: appConfig,
   };
 }
 

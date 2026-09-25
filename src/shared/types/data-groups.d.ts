@@ -27,6 +27,5 @@ type AppConfig = {
   isAdmin: boolean,
   isStaff: boolean,
   email: string,
+  scriptUrl: string,
 }
-
-
