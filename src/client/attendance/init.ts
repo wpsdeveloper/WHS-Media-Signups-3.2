@@ -5,10 +5,12 @@ import * as dates from '../common/dates';
 import * as dataTable from "./attendance-data-table";
 import * as glassRooms from './glass-rooms-status';
 import * as studySelect from './study-select';
+import * as periodSelect from '../common/period-select';
 import { AttendanceStateRaw, AttendanceState, store } from "./attendance-store";
 import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { AttendanceDataRow } from './attendance-data-row';
 import { IS_DEBUG, getMockData } from '../common/debug';
+import * as attendancePanels from './attendance-panels';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
@@ -87,11 +89,11 @@ function initDateInput() {
 
 function bindEvents() {
   dom.addEventListener("#date", "change", (e) => dataTable.dateChangeHandler());
-  dom.addEventListener("#period", "change", (e) => dataTable.periodChangeHandler());
+  dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler(e as MouseEvent));
   dom.addEventListener("#study-select", "change", (e) => studySelect.studyTeacherChangeHandler(e as MouseEvent));
-  dom.addEventListener(".attendance-panel-link", "click", (e) => dataTable.panelViewListener('attendance'));
-  dom.addEventListener(".details-panel-link", "click", (e) => dataTable.panelViewListener('details'));
-  dom.addEventListener(".list-panel-link", "click", (e) => dataTable.panelViewListener('list'));
+  dom.addEventListener(".attendance-panel-link", "click", (e) => attendancePanels.panelViewListener('attendance'));
+  dom.addEventListener(".details-panel-link", "click", (e) => attendancePanels.panelViewListener('details'));
+  dom.addEventListener(".list-panel-link", "click", (e) => attendancePanels.panelViewListener('list'));
   dom.addEventListener('#refresh-data-btn', 'click', () => refreshData());
 }
 

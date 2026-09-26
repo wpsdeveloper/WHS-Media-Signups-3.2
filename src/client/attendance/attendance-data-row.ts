@@ -1,6 +1,6 @@
 import * as dom from '../common/dom';
 import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
-import { checkinStore } from './attendance-store';
+import { AttendanceState, checkinStore } from './attendance-store';
 import { getRoomBadge } from './glass-rooms-status';
 
 export class AttendanceDataRow {
@@ -15,25 +15,37 @@ export class AttendanceDataRow {
   render() {
     const vm = this.viewModel;
     const element = this.element;
-    
     if (!element) return;
-
+    
     element.removeAttribute('id');
     element.classList.add('data-row');
+    
+    dom.setHTML(element.querySelector('.student-name'), vm.studentNameLabel || '');
+    dom.setText(element.querySelector('.type'), vm.typeAndDetailsLabel || '');
+    dom.setText(element.querySelector('.study-teacher'), vm.teacherStudy || '');
+    dom.setText(element.querySelector('.comments'), vm.comments || '');
+    dom.setText(element.querySelector('.room'), vm.roomLabel);
 
-    this.renderStudentName(element, vm.lastname, vm.firstname, vm.room)
-    this.renderEditIcons(element, vm.userIsEditor, vm.rowId);
-    this.renderType(element, vm.type, vm.typeDetails);
-    this.renderStudyTeacher(element, vm.teacherStudy);
-    this.renderComments(element, vm.comments);
-    this.renderRoom(element, vm.room, vm.email);
+    const editIcons = element.querySelector('.edit-icons') as HTMLElement;
+    if (editIcons) {
+      dom.setVisible(editIcons, vm.userIsEditor);
+
+      if (vm.userIsEditor) {
+        const editLink = editIcons.querySelector(
+          'a.edit-link',
+        ) as HTMLAnchorElement;
+        if (editLink) {
+          dom.setAttribute(editLink, 'href', vm.editUrl);
+        }
+      }
+    } 
 
     this.mountCheckinBoxes(element);
   }
 
   getElement(rowIsStaff: boolean): HTMLElement | null {
     const templateSelector = rowIsStaff
-      ? '#staff-row-template'
+    ? '#staff-row-template'
       : '#student-row-template';
 
     const template = dom.qs<HTMLTemplateElement>(templateSelector); // clone the template
@@ -46,74 +58,9 @@ export class AttendanceDataRow {
     return firstChild || null;
   }
 
-  renderStudentName(element: HTMLElement, lastname: string, firstname: string, room: string) {
-    const studentNameDiv = element.querySelector(
-      '.student-name',
-    ) as HTMLElement;
-    if (studentNameDiv) {
-      const roomBadge = getRoomBadge(room);
-      dom.setHTML(
-        studentNameDiv,
-        `${lastname}, ${firstname}${roomBadge}`,
-      );
-    }
-  }
-
-  renderEditIcons(element: HTMLElement, userIsEditor: boolean, rowId: string) {
-    const editIcons = element.querySelector('.edit-icons') as HTMLElement;
-    if (editIcons) {
-      dom.setVisible(editIcons, userIsEditor);
-
-      if (userIsEditor) {
-        const editLink = editIcons.querySelector(
-          'a.edit-link',
-        ) as HTMLAnchorElement;
-        if (editLink) {
-          const editUrl = `${editLink.href}&id=${rowId}`;
-          dom.setAttribute(editLink, 'href', editUrl);
-        }
-      }
-    } 
-  }
-
-  renderType(element: HTMLElement, type: string, typeDetails: string) {
-    const typeLabel = getTypeLabel(type);
-    const detailsLabel = typeDetails.length > 0 ? ` (${typeDetails})` : '';
-    const typeDiv = element.querySelector('.type') as HTMLInputElement;
-    if (typeDiv) dom.setText(typeDiv, `${typeLabel}${detailsLabel}`);
-  }
-
-  renderStudyTeacher(element: HTMLElement, teacherStudy: string) {
-    const studyTeacherDiv = element.querySelector(
-      '.study-teacher',
-    ) as HTMLInputElement;
-    if (studyTeacherDiv) {
-      dom.setText(studyTeacherDiv, teacherStudy || '');
-    }
-  }
-
-  renderComments(element: HTMLElement, comments: string) {
-    const commentDiv = element.querySelector('.comments') as HTMLInputElement;
-    if (commentDiv) dom.setText(commentDiv, comments || '');
-  }
-
-  renderRoom(element: HTMLElement, room: string, email: string) {
-    const roomDiv = element.querySelector('.room') as HTMLInputElement;
-    if (roomDiv) {
-      const roomText = room
-        ? `Glass Room ${room}, reserved by ${email}`
-        : '';
-      dom.setText(roomDiv, roomText);
-    }
-  }
-
-
   mountCheckinBoxes(element: HTMLElement) {
     const attendancePanel: HTMLElement = element.querySelector(
       '.attendance-info',
-    ) as HTMLElement;
-    const detailsPanel: HTMLElement = element.querySelector(
-      '.details-info',
     ) as HTMLElement;
     
     if (!attendancePanel) return;
@@ -140,14 +87,56 @@ export class AttendanceDataRow {
     });
   }
 
-  handleEditClick() {}
-
-  handleSaveClick() {}
-
-  handleCancelClick() {}
-
   handleDeleteClick() {}
 }
+
+export type AttendanceDataRowViewModel = {
+  room: string,
+  studentNameLabel: string,
+  rowId: string,
+  teacherStudy: string,
+  comments: string,
+  typeAndDetailsLabel: string,
+  type: string,
+  roomLabel: string,
+  rowIsStaff: boolean,
+  userIsEditor: boolean,
+  editUrl: string,
+  studyIn1: string, 
+  studyIn2: string, 
+  mediaIn: string, 
+  mediaOut: string,
+};
+
+
+export const makeDataRowViewModel = (signup: Signup, state: AttendanceState): AttendanceDataRowViewModel => {
+  const { type, firstname, lastname, rowId, teacherStudy, comments, email, studyIn1, studyIn2, mediaIn, mediaOut } = signup;
+  
+  const rowIsStaff = signup.type === 'Staff reservation';
+  const userIsEditor = state.isEditor;
+  const scriptUrl = state.appConfig?.scriptUrl || "#";
+  const editUrl = `${scriptUrl}&id=${rowId}`;
+
+  const typeDetails = getSignupTypeDetails(signup) || "";
+  const typeLabel = getTypeLabel(type);
+  const detailsLabel = typeDetails.length > 0 ? ` (${typeDetails})` : '';
+  const typeAndDetailsLabel = `${typeLabel}${detailsLabel}`;
+  
+  const room = String(signup.room);
+  const roomLabel = room
+        ? `Glass Room ${room}, reserved by ${email}`
+        : '';
+
+  const roomBadge = getRoomBadge(room);
+  const studentNameLabel = `${lastname}, ${firstname}${roomBadge}`;
+
+
+    return {
+      type, room, studentNameLabel, rowId, teacherStudy, comments, typeDetails, rowIsStaff, userIsEditor, 
+      editUrl, typeAndDetailsLabel, roomLabel, studyIn1, studyIn2, mediaIn, mediaOut,
+    } as AttendanceDataRowViewModel;
+}
+
 
 const getTypeLabel = (type: string): string => {
   switch (type) {
@@ -165,21 +154,19 @@ const getTypeLabel = (type: string): string => {
   }
 };
 
-export type AttendanceDataRowViewModel = {
-  room: string,
-  firstname: string,
-  lastname: string,
-  rowId: string,
-  teacherStudy: string,
-  comments: string,
-  typeDetails: string,
-  type: string,
-  roomText: string,
-  rowIsStaff: boolean,
-  userIsEditor: boolean,
-  email: string,
-  studyIn1: string, 
-  studyIn2: string, 
-  mediaIn: string, 
-  mediaOut: string,
-};
+function getSignupTypeDetails(signup: Signup) {
+  switch (signup.type) {
+    case 'Intervention':
+    case 'Tutoring':
+      return signup.subject;
+    case 'Assessment':
+      case 'Alt setting':
+      return signup.teacherAcad;
+    case 'Non-intervention':
+      return `${signup.purpose}/${signup.teacherAcad})`;
+    case 'Staff reservation':
+      return '';
+    default:
+  }
+}
+

@@ -1,4 +1,4 @@
-type domParam = HTMLElement | string;
+type domParam = HTMLElement | string | null | undefined;
 
 export const qs = <T extends Element = Element>(selector: string): T | null => document.querySelector<T>(selector);
 export const qsa  = <T extends Element = Element>(selector: string): T[] => [...document.querySelectorAll<T>(selector)];
@@ -21,6 +21,7 @@ export const getAttribute = (selector: string, attrName: string): string => {
 }
 
 export const valueOf = (param: domParam): string => {
+  if (typeof param === null || typeof param === "undefined") return "";
   const get = (element:HTMLInputElement | HTMLSelectElement) => {
     let value = element.value; 
     if (element.type === "number") {
@@ -32,6 +33,7 @@ export const valueOf = (param: domParam): string => {
 }
 
 export const setVisible = (param: domParam, isVisible: boolean): void => {
+   if (typeof param === null || typeof param === "undefined") return;
   const toggleVisibility = (element: HTMLElement, visible: boolean): void => {
     element.classList.toggle("d-none", !visible);
     element.classList.toggle("hidden", !visible);
@@ -42,26 +44,31 @@ export const setVisible = (param: domParam, isVisible: boolean): void => {
 };
 
 export const setChecked = (param: domParam, isChecked: boolean): void => {
-  const set = (element:HTMLInputElement, checked: boolean) => element.checked = checked;
+   if (typeof param === null || typeof param === "undefined") return;
+   const set = (element:HTMLInputElement, checked: boolean) => element.checked = checked;
   setterFunction(set, param, isChecked);
 };
 
 export const setValue = (param: domParam, value:string) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (element:HTMLInputElement | HTMLSelectElement, value:string) => element.value = value || "";
   setterFunction(set, param, value);
 };
 
 export const setText = (param: domParam, text: string) => {
-  const set = (element:HTMLElement, text: string) => element.textContent = text || "";  
+   if (typeof param === null || typeof param === "undefined") return;
+   const set = (element:HTMLElement, text: string) => element.textContent = text || "";  
   setterFunction(set, param, text);
 };
 
 export const setHTML = (param: domParam, html: string) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (element: HTMLElement, text: string) => element.innerHTML = html || "";  
   setterFunction(set, param, html);
 };
 
 export const setDisabled = (param: domParam, isDisabled: boolean) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (
     element: HTMLInputElement | HTMLSelectElement | HTMLOptionElement, 
     isDisabled: boolean
@@ -70,11 +77,13 @@ export const setDisabled = (param: domParam, isDisabled: boolean) => {
 };
 
 export const setAttribute = (param: domParam, attrName: string, attrValue: string) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (element: HTMLElement, attrName: string, attrValue: string) => element.setAttribute(attrName, attrValue);
   setterFunction(set, param, attrName, attrValue);
 };
 
 export const setInvalid = (param: domParam, isInvalid: boolean) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (element: HTMLElement, isInvalid: boolean) => element.classList.toggle("invalid", isInvalid);
   setterFunction(set, param, isInvalid);
 }
@@ -82,6 +91,7 @@ export const setInvalid = (param: domParam, isInvalid: boolean) => {
 // export const parseJsonValue = value => typeof value === "string" ? JSON.parse(value) : value;
 
 export const appendOption = (param: domParam, value: string, text: string, selected: boolean = false) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (element: HTMLSelectElement, value: string, text: string, selected: boolean = false) => {
     const option = document.createElement("option");
     option.value = value;
@@ -93,6 +103,7 @@ export const appendOption = (param: domParam, value: string, text: string, selec
 };
 
 export const clearOptions = (param: domParam) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (element: HTMLSelectElement) => element.replaceChildren();
   setterFunction(set, param)
 }
@@ -102,6 +113,7 @@ export const addEventListener = <K extends keyof HTMLElementEventMap>(
   eventName: K, 
   callback: (event: HTMLElementEventMap[K]) => void
 ) => {
+  if (typeof param === null || typeof param === "undefined") return;
   const set = (
     element: HTMLElement, 
     eventName: K, 
@@ -134,6 +146,7 @@ function setterFunction(functionName: Function, param: domParam, ...args: unknow
   if (typeof functionName !== "function") {
     return;
   }
+  if (typeof param === null || typeof param === "undefined") return;
   
   if (param instanceof HTMLElement) {
     functionName(param, ...args);
@@ -149,6 +162,7 @@ function getterFunction(functionName: Function, param: domParam, ...args: unknow
   if (typeof functionName !== "function") {
     return;
   }
+  if (typeof param === null || typeof param === "undefined") return;
   
   if (param instanceof HTMLElement) {
     return functionName(param, ...args);
