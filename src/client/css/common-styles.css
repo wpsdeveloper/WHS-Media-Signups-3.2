@@ -254,7 +254,7 @@ span.twitter-typeahead {
 }
 
 .attendance {
-  .data-row {
+  .student-row {
     .student-name {
       font-weight: bold;
     }
@@ -267,6 +267,10 @@ span.twitter-typeahead {
 
     .type {
       font-style: italic;
+    }
+
+    .comments {
+      font-size: 80%;
     }
     
     button {
