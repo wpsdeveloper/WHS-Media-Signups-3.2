@@ -18,6 +18,7 @@ const initialState: AttendanceState = {
   ui_currentSortField: 'student', 
   ui_currentSortOrder: 'asc', 
   ui_currentStudy: 'All studies',
+  ui_currentView: 'attendance',
   
   ui_dataRows: [],
 };
@@ -49,7 +50,7 @@ export interface AttendanceState {
   ui_currentDate: Date | null,
   ui_currentPeriod: Period | null,
   ui_currentStudy: string,
-  
+  ui_currentView: 'attendance' | 'details' | 'list',  
   ui_dataRows: AttendanceDataRow[],
 
 };

@@ -2,9 +2,7 @@ import * as dom from "../common/dom";
 import { parseDateInput, isSameDate } from "../common/dates";
 import { AttendanceState, store } from "./attendance-store";
 import { updatePeriodOptions } from "../common/period-select";
-import * as messaging from "../common/messaging";
-import { AttendanceDataRow, AttendanceDataRow as DataRow } from "./attendance-data-row";
-import { getAppConfig } from "../common/app-config";
+import { AttendanceDataRowViewModel, AttendanceDataRow as DataRow } from "./attendance-data-row";
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
@@ -17,6 +15,11 @@ export const initObservers = () => {
   store.subscribe((state: AttendanceState) => {
     updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
   }, ["ui_currentDate", "dailySchedules"]);
+
+  // Updates the view panels when the datarows change
+  store.subscribe((state: AttendanceState) => {
+    setPanelView(state.ui_currentView);
+  }, ["ui_dataRows", "ui_currentView"]);
 
   // Rebuild the data table with date, signups or sort changes
   store.subscribe((state: AttendanceState) => {
@@ -44,57 +47,22 @@ export const initObservers = () => {
 
     sortedSignups.forEach(signup => {
       // adds a new empty student row
-      const dataRow = new DataRow(signup.rowId, signup);
-  
+      const dataRowVM = makeDataRowViewModel(signup, state)
+      const dataRow = new DataRow(dataRowVM);
+      const rowElement = dataRow.element;
+
+      if (!rowElement) return;
+      
       const targetTable = signup.type === "Staff reservation" ? staffTable : studentTable;
-      targetTable.append(dataRow.element);
-      dataRow.populate(currentDate, currentPeriod);
+      targetTable.append(rowElement);
+      
+      dataRow.render();
       newRows.push(dataRow);
-      console.log(signup);
     });
 
     // Update state with new rows
     store.setState({ ui_dataRows: newRows } as Partial<AttendanceState>);
   }, ["ui_currentDate", "ui_currentPeriod", "ui_currentSortField", "ui_currentSortOrder", "ui_currentStudy"]);
-
-
-  // // toggle row visibility and wed UI when period changes
-  // store.subscribe((state: AttendanceState)  => {
-  //   const { currentDate, currentPeriod, dataRows, currentStudy } = state;
-  //   if (!currentDate || !currentPeriod) return;
-
-  //   // update Wednesday-specific UI
-  //   const isWednesdayPM = currentPeriod === "Wed. PM";
-  //   dom.setVisible(".wed-int", isWednesdayPM);
-  //   dom.setVisible(".not-wed-int", !isWednesdayPM);
-  //   dom.setText(".study-checkin button", isWednesdayPM ? "Done" : "Check in");
-    
-  //   // update row highlight and visibility
-  //   updateRowVisibility(dataRows, currentDate, currentPeriod, currentStudy);
-
-  //   // if no current date/time data for students, shows the "No records" row
-  //   const activeStudentRows = dom.qsa(".student-row.current-period.current-date");
-  //   const activeStaffRows = dom.qsa(".staff-row.current-period.current-date");
-    
-  //   const hasStudentRows = Array.isArray(activeStudentRows) && activeStudentRows.length > 0;
-  //   const hasStaffRows = Array.isArray(activeStaffRows) && activeStaffRows.length > 0;
-
-  //   dom.setVisible(".student-row-empty", !hasStudentRows);
-  //   dom.setVisible("#staff-table", hasStaffRows);
-  // }, ["ui_currentDate", "ui_currentPeriod", "dataRows", 'ui_currentStudy']);
-
-
-  // updates the sort header ui
-  store.subscribe((state: AttendanceState) => {
-    const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
-    dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
-
-    const activeHeader = currentSortField === "student" ? ".sort-student" : ".sort-study";
-    dom.qs(activeHeader)?.classList.add("active");
-
-    const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
-    dom.qs(".sort-icon i.active")?.classList.add(directionIcon);
-  }, ["ui_currentSortField", "ui_currentSortOrder"]);
 };
 
 // =====================================================================
@@ -146,45 +114,6 @@ export const resort = (field: (AttendanceState['ui_currentSortField'])) => {
 // PURE UTILITIES & VISUAL TOGGLES
 // =====================================================================
 
-const updateRowVisibility = (
-  dataRows: AttendanceDataRow[], 
-  selectedDate: Date, 
-  period: string,
-  selectedStudy: string,
-) => {
-  dataRows.forEach(row => {
-    const signup = row.signup;
-    const suDate = typeof signup.date === "string" ? new Date(signup.date) : signup.date;
-    const suPeriod = String(signup.period);
-    const suStudy = signup.teacherStudy;
-    const suType = signup.type;
-
-    const element = row.element as HTMLElement;
-
-    const isMatchDate = isSameDate(selectedDate, suDate);
-    const isMatchPeriod = period === suPeriod;
-    const isMatchStudy = (selectedStudy === suStudy) 
-      || selectedStudy === 'All studies'
-      || suType === 'Staff reservation';
-    const isMatch = isMatchDate && isMatchPeriod && isMatchStudy;
-
-    // element.classList.toggle("ui_current-date", isMatchDate);
-    // element.classList.toggle("ui_current-period", isMatchPeriod);
-    
-    // THIS IS SET TO FALSE FOR DEBUGGING, BUT DOES NOT WORK
-    dom.setVisible(element, isMatch);
-  });
-};
-
-function wednesdayInterventions(date: Date) {
-  const wednesday = 3;
-  const weekday = date.getDay();
-  const dateIsWednesday = (weekday === wednesday);
-  const wedIntActive = store.getState().appConfig?.wedInt;
-
-  return dateIsWednesday && wedIntActive;
-}
-
 export const sortSignups = (
   signups: Signup[], 
   field: AttendanceState['ui_currentSortField'], 
@@ -200,43 +129,63 @@ export const sortSignups = (
   });
 }
 
-/**
- * Shows the attendance panel 
- * */
-export const showAttendance = () => {
-  // slide animation back to "original" position
-  dom.setVisible(".slider-wrapper", true);
+export const setPanelView = (view: AttendanceState['ui_currentView']) => {
+  const panelClassNames: Record<AttendanceState['ui_currentView'], string> = {
+    'attendance': '.attendance-info',
+    'details': '.details-info',
+    'list': '.list-info-null',
+  }
+  const headerClassNames: Record<AttendanceState['ui_currentView'], string> = {
+    'attendance': '.attendance-panel-link',
+    'details': '.details-panel-link',
+    'list': '.list-panel-link',
+  }
+  const newPanel: string = panelClassNames[view];
+  const newHeader: string = headerClassNames[view];
+  const sliderVisible = view !== 'list';
+  
+  dom.setVisible(".slider-wrapper", sliderVisible);
   dom.setVisible('.panel', false);
-  dom.setVisible(".attendance-info", true)
+  dom.setVisible(newPanel, true)
   
   // updates the header
   dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
-  dom.qs(".attendance-panel-link")?.classList.add('active');
+  dom.qs(newHeader)?.classList.add('active');
 }
 
-/**
- *  Shows the signup info panel
- * */
-export const showSignupInfo =() => {
-  // gets the width of the panel. Note: uses the header, because width
-  // calculations work best if the element is visible
-  dom.setVisible(".slider-wrapper", true);
-  dom.setVisible('.panel', false);
-  dom.setVisible(".details-info", true)
-
-  // updates the header
-  dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
-  dom.qs(".details-panel-link")?.classList.add('active');
+export const panelViewListener = (view: string) => {
+  store.setState({ ui_currentView: view as AttendanceState['ui_currentView'] });
 }
 
-/**
- *  Hides both attendance and details panels
- * */
-export const showListView =() => {
-  dom.setVisible(".slider-wrapper", false);
-  // updates the header
-  dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
-  dom.qs(".list-panel-link")?.classList.add('active');
+const makeDataRowViewModel = (signup: Signup, state: AttendanceState): AttendanceDataRowViewModel => {
+  const { type, firstname, lastname, rowId, teacherStudy, comments, email, studyIn1, studyIn2, mediaIn, mediaOut } = signup;
+  const rowIsStaff = signup.type === 'Staff reservation';
+  const userIsEditor = state.isEditor;
+  const typeDetails = getSignupTypeDetails(signup);
+  const room = String(signup.room);
+
+
+    return {
+      type, room, firstname, lastname, rowId, teacherStudy, comments, typeDetails, rowIsStaff, userIsEditor, email,
+      studyIn1, studyIn2, mediaIn, mediaOut,
+    } as AttendanceDataRowViewModel;
 }
+
+function getSignupTypeDetails(signup: Signup) {
+  switch (signup.type) {
+    case 'Intervention':
+    case 'Tutoring':
+      return signup.subject;
+    case 'Assessment':
+      case 'Alt setting':
+      return signup.teacherAcad;
+    case 'Non-intervention':
+      return `${signup.purpose}/${signup.teacherAcad})`;
+    case 'Staff reservation':
+      return '';
+    default:
+  }
+}
+
 
 

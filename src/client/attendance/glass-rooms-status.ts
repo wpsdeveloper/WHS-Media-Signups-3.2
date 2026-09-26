@@ -44,13 +44,11 @@ export const updateGlassRooms = (
   });
 }
 
-
-export const getRoomBadge = (room: Signup['room']) => {
-  const roomNum = String(room);
-  if (roomNum === '1') {
+export const getRoomBadge = (room: string) => {
+  if (room === '1') {
     return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
   }
-  if (roomNum === '2') {
+  if (room === '2') {
     return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
   }
   return '';

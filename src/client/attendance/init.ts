@@ -89,9 +89,9 @@ function bindEvents() {
   dom.addEventListener("#date", "change", (e) => dataTable.dateChangeHandler());
   dom.addEventListener("#period", "change", (e) => dataTable.periodChangeHandler());
   dom.addEventListener("#study-select", "change", (e) => studySelect.studyTeacherChangeHandler(e as MouseEvent));
-  dom.addEventListener(".attendance-panel-link", "click", (e) => dataTable.showAttendance());
-  dom.addEventListener(".details-panel-link", "click", (e) => dataTable.showSignupInfo());
-  dom.addEventListener(".list-panel-link", "click", (e) => dataTable.showListView());
+  dom.addEventListener(".attendance-panel-link", "click", (e) => dataTable.panelViewListener('attendance'));
+  dom.addEventListener(".details-panel-link", "click", (e) => dataTable.panelViewListener('details'));
+  dom.addEventListener(".list-panel-link", "click", (e) => dataTable.panelViewListener('list'));
   dom.addEventListener('#refresh-data-btn', 'click', () => refreshData());
 }
 

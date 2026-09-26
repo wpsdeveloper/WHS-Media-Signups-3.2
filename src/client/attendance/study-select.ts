@@ -6,7 +6,6 @@ import { AttendanceState, store } from './attendance-store';
  * Publisher: Responds to user changes in the study teacher select element.
  */
 export const studyTeacherChangeHandler = (event: MouseEvent) => {
-  console.log("Change!");
   const inputElement = event.target as HTMLSelectElement;
   if (!inputElement) return "";
   const selectedTeacher = inputElement.value ?? "";
