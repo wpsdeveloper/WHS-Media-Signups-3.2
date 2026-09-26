@@ -354,7 +354,12 @@ span.twitter-typeahead {
   }
 }
 
-.panel.attendance-info .cancel {
+.panel.attendance-info .cancel,
+.panel.attendance-info .edit-start-btn,
+.panel.attendance-info .save-btn,
+.panel.attendance-info .cancel-btn,
+.panel.attendance-info .delete-btn,
+.edit-icons .edit-link {
   cursor: pointer;
 }
 

@@ -1,0 +1,8 @@
+{
+  "name": "WHS Intervention & Media Center",
+  "description": "Media center signups, attendance tracking, and student audit administration.",
+  "prompt": "WHS Intervention & Media Center signups and attendance application",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,16 +1,16 @@
 import * as dom from '../common/dom';
-import { parseDateInput, isSameDate } from '../common/dates';
-import { AttendanceState, store } from '../attendance/attendance-store';
+import { isSameDate } from '../common/dates';
+import { AttendanceState, store } from './attendance-store';
 
 /**
 *  Responds to a change in the Period field 
 * */
-export const periodChangeHandler = (event: MouseEvent) => {
-  const target = event.target as HTMLSelectElement;
-  if (!target) return;
-  const selectedPeriod = target.value as Period;
+export const periodChangeHandler = (event?: MouseEvent) => {
+  const target = event?.target as HTMLSelectElement | undefined;
+  const selectedPeriod = (target?.value || dom.valueOf("#period")) as Period;
+  if (!selectedPeriod) return;
   store.setState({ ui_currentPeriod: selectedPeriod });
-}
+};
 
  /**
   * Updates the Periods select box based on the date 
@@ -30,7 +30,7 @@ export const updatePeriodOptions = (
       const periodName = schedule.period.length === 1 ? `Period ${schedule.period}` : schedule.period;
       dom.appendOption("#period", schedule.period, periodName);
     }
-  })
+  });
 
   if (wednesdayInterventions(currentDate)) {
     dom.appendOption("#period", "Wed. PM", "Wed. PM");
@@ -44,9 +44,9 @@ export const updatePeriodOptions = (
     dom.setValue("#period", oldPeriodVal);
   } else {
     dom.setValue("#period", firstAvailableValue);
-    store.setState({ui_currentPeriod: firstAvailableValue});
+    store.setState({ ui_currentPeriod: firstAvailableValue });
   }
- }
+};
 
  /**
  * Subscriber: Re-renders available options when date or schedule data changes.
@@ -57,7 +57,7 @@ export const setupPeriodObservers = () => {
     updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
   }, ['ui_currentDate', 'dailySchedules']);
 
-  // updates the selected period ui id data is changed externally
+  // updates the selected period ui if data is changed externally
   store.subscribe((state: AttendanceState) => {
     const periodSelect = dom.qs("#period") as HTMLSelectElement;
     if (periodSelect && state.ui_currentPeriod && periodSelect.value !== state.ui_currentPeriod) {
@@ -75,9 +75,5 @@ function wednesdayInterventions(date: Date) {
   const dateIsWednesday = (weekday === wednesday);
   
   const wedIntActive = store.getState().appConfig?.wedInt;
-
-  // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
   return dateIsWednesday && wedIntActive;
 }
- 
- 

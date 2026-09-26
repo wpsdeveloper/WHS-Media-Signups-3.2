@@ -1,42 +1,60 @@
 import * as dom from "../common/dom";
-import { parseDateInput, isSameDate } from "../common/dates";
 import { AttendanceState, store } from "./attendance-store";
-import { updatePeriodOptions } from "../common/period-select";
-import { AttendanceDataRowViewModel, AttendanceDataRow as DataRow } from "./attendance-data-row";
-import { getRoomBadge } from "./glass-rooms-status";
-import { appConfig } from "../common/sampledata";
 
+export type PanelView = AttendanceState["ui_currentView"];
+
+interface PanelConfig {
+  headerSelector: string;
+  panelSelector?: string;
+  sliderVisible: boolean;
+}
+
+const PANEL_CONFIGS: Record<PanelView, PanelConfig> = {
+  attendance: {
+    headerSelector: ".attendance-panel-link",
+    panelSelector: ".attendance-info",
+    sliderVisible: true,
+  },
+  details: {
+    headerSelector: ".details-panel-link",
+    panelSelector: ".details-info",
+    sliderVisible: true,
+  },
+  list: {
+    headerSelector: ".list-panel-link",
+    sliderVisible: false,
+  },
+};
+
+/**
+ * Subscriber: Updates panel visibility and tab highlights when the active view changes.
+ */
 export const initObservers = () => {
-  // Updates the view panels when the datarows change
   store.subscribe((state: AttendanceState) => {
     setPanelView(state.ui_currentView);
-  }, ["ui_dataRows", "ui_currentView"]);
-}
+  }, ["ui_currentView"]);
+};
 
-export const setPanelView = (view: AttendanceState['ui_currentView']) => {
-  const panelClassNames: Record<AttendanceState['ui_currentView'], string> = {
-    'attendance': '.attendance-info',
-    'details': '.details-info',
-    'list': '.list-info-null',
-  }
-  const headerClassNames: Record<AttendanceState['ui_currentView'], string> = {
-    'attendance': '.attendance-panel-link',
-    'details': '.details-panel-link',
-    'list': '.list-panel-link',
-  }
-  const newPanel: string = panelClassNames[view];
-  const newHeader: string = headerClassNames[view];
-  const sliderVisible = view !== 'list';
-  
-  dom.setVisible(".slider-wrapper", sliderVisible);
-  dom.setVisible('.panel', false);
-  dom.setVisible(newPanel, true)
-  
-  // updates the header
-  dom.qsa(".panel-link").forEach(panel => panel.classList.remove('active'));
-  dom.qs(newHeader)?.classList.add('active');
-}
+/**
+ * Updates DOM to show either attendance info, details info, or collapsed list view.
+ */
+export const setPanelView = (view: PanelView) => {
+  const config = PANEL_CONFIGS[view] ?? PANEL_CONFIGS.attendance;
 
-export const panelViewListener = (view: string) => {
-  store.setState({ ui_currentView: view as AttendanceState['ui_currentView'] });
-}
+  dom.setVisible(".slider-wrapper", config.sliderVisible);
+  dom.setVisible(".panel", false);
+
+  if (config.panelSelector) {
+    dom.setVisible(config.panelSelector, true);
+  }
+
+  dom.qsa(".panel-link").forEach((link) => link.classList.remove("active"));
+  dom.qs(config.headerSelector)?.classList.add("active");
+};
+
+/**
+ * Dispatches active panel view changes to store.
+ */
+export const panelViewListener = (view: PanelView) => {
+  store.setState({ ui_currentView: view });
+};

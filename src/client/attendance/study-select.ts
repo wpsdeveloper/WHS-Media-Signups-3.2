@@ -1,55 +1,97 @@
-import * as dom from "../common/dom";
-import * as dates from "../common/dates";
+import * as dom from '../common/dom';
+import { isSameDate } from '../common/dates';
 import { AttendanceState, store } from './attendance-store';
 
-/**
- * Publisher: Responds to user changes in the study teacher select element.
- */
-export const studyTeacherChangeHandler = (event: MouseEvent) => {
-  const inputElement = event.target as HTMLSelectElement;
-  if (!inputElement) return "";
-  const selectedTeacher = inputElement.value ?? "";
-  store.setState({ ui_currentStudy: selectedTeacher });
-};
+export const ALL_STUDIES = 'All studies';
 
 /**
- * Pure UI View: Calculates options from state and renders select dropdown/input elements.
+ * Pure calculation: Extracts unique sorted study teacher names from signups for the given date and period.
  */
-export const updateStudyOptions = (
-  currentDate: Date | null, 
-  currentPeriod: Period | null, 
-  signups: Signup[],
-) => {
-  dom.clearOptions("#study-select");
+export function getAvailableStudies(
+  signups: Signup[] = [],
+  currentDate: Date | null,
+  currentPeriod: Period | null
+): string[] {
+  if (!currentDate || !currentPeriod) {
+    return [ALL_STUDIES];
+  }
 
-  if (!currentDate || !currentPeriod) return;
+  const matchingSignups = signups.filter(
+    (su) => isSameDate(su.date, currentDate) && su.period === currentPeriod
+  );
 
-  const studiesAvailable: Set<string> = new Set();
-  studiesAvailable.add("All studies");
-
-  signups.forEach(su => {
-    if (dates.isSameDate(su.date, currentDate)
-    && su.period === currentPeriod
-    && su.teacherStudy !== "") {
-      studiesAvailable.add(su.teacherStudy);
+  const studiesSet = new Set<string>();
+  matchingSignups.forEach((signup) => {
+    if (signup.teacherStudy) {
+      studiesSet.add(signup.teacherStudy);
     }
   });
-  
-  studiesAvailable.forEach(study => {
-    dom.appendOption("#study-select", study, study, false);
-  })
+
+  const sortedStudies = Array.from(studiesSet).sort((a, b) => a.localeCompare(b));
+  return [ALL_STUDIES, ...sortedStudies];
+}
+
+/**
+ * Responds to a change in the Study select dropdown.
+ */
+export const studyTeacherChangeHandler = (event?: Event) => {
+  const target = event?.target as HTMLSelectElement | undefined;
+  const selectedStudy = target?.value ?? dom.valueOf('#study-select') ?? ALL_STUDIES;
+  store.setState({ ui_currentStudy: selectedStudy });
 };
 
 /**
- * Subscriber: Re-calculates and re-populates options when key state items change.
+ * Updates the Study select dropdown options and restores valid selection.
+ */
+export const updateStudyOptions = (
+  currentDate: Date | null,
+  currentPeriod: Period | null,
+  signups: Signup[] = []
+) => {
+  const currentSelectedStudy = store.getState().ui_currentStudy;
+  const studiesAvailable = getAvailableStudies(signups, currentDate, currentPeriod);
+
+  dom.clearOptions('#study-select');
+
+  studiesAvailable.forEach((study) => {
+    dom.appendOption('#study-select', study, study, false);
+  });
+
+  // Preserve existing study if still present in options, otherwise fallback to "All studies"
+  const selectElem = dom.qs('#study-select') as HTMLSelectElement | null;
+  const targetStudy =
+    currentSelectedStudy && studiesAvailable.includes(currentSelectedStudy)
+      ? currentSelectedStudy
+      : ALL_STUDIES;
+
+  if (selectElem) {
+    dom.setValue('#study-select', targetStudy);
+  }
+
+  if (store.getState().ui_currentStudy !== targetStudy) {
+    store.setState({ ui_currentStudy: targetStudy });
+  }
+};
+
+/**
+ * Subscriber: Re-renders available options when date, period, or signups change.
  */
 export const setupStudyObservers = () => {
-  // sets study teacher options based on date/period selection
-  store.subscribe((state: AttendanceState) => {
-    updateStudyOptions(
-      state.ui_currentDate,
-      state.ui_currentPeriod,
-      state.signups,   
-    );
-    }, ['ui_currentDate', 'ui_currentPeriod']);
+  store.subscribe(
+    (state: AttendanceState) => {
+      updateStudyOptions(state.ui_currentDate, state.ui_currentPeriod, state.signups);
+    },
+    ['ui_currentDate', 'ui_currentPeriod', 'signups']
+  );
+
+  // Sync dropdown if ui_currentStudy is updated externally
+  store.subscribe(
+    (state: AttendanceState) => {
+      const selectElem = dom.qs('#study-select') as HTMLSelectElement | null;
+      if (selectElem && state.ui_currentStudy && selectElem.value !== state.ui_currentStudy) {
+        dom.setValue('#study-select', state.ui_currentStudy);
+      }
+    },
+    ['ui_currentStudy']
+  );
 };

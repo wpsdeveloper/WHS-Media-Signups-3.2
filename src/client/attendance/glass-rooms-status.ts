@@ -1,65 +1,100 @@
-import * as dom from '../common/dom';
-import { parseDateInput, isSameDate } from "../common/dates";
-import { AttendanceState, store } from './attendance-store';
+import * as dom from "../common/dom";
+import { isSameDate } from "../common/dates";
+import { AttendanceState, store } from "./attendance-store";
 
+export interface RoomReservation {
+  room: string;
+  isBooked: boolean;
+  reservedBy?: string;
+}
+
+const GLASS_ROOM_IDS = ["1", "2"];
 
 /**
- *  Updates the Glass Room labels if the rooms are already reserved or not 
- * */
+ * Pure calculation: Returns the reservation status for each glass room.
+ */
+export function getGlassRoomReservations(
+  signups: Signup[] = [],
+  currentDate: Date | null,
+  currentPeriod: Period | null
+): Record<string, RoomReservation> {
+  const result: Record<string, RoomReservation> = {};
+  for (const roomId of GLASS_ROOM_IDS) {
+    result[roomId] = { room: roomId, isBooked: false };
+  }
+
+  if (!currentDate || !currentPeriod) {
+    return result;
+  }
+
+  const matchingSignups = signups.filter(
+    (su) => su.room && isSameDate(su.date, currentDate) && su.period === currentPeriod
+  );
+
+  for (const signup of matchingSignups) {
+    if (signup.room && result[signup.room]) {
+      result[signup.room] = {
+        room: signup.room,
+        isBooked: true,
+        reservedBy: `${signup.lastname}, ${signup.firstname}`,
+      };
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Updates the Glass Room DOM widget based on current date, period, and signups.
+ */
 export const updateGlassRooms = (
-  currentDate: Date | null, 
+  currentDate: Date | null,
   currentPeriod: Period | null,
   signups: Signup[] = []
 ) => {
-  // marks rooms as available by default
-  dom.setText("#glass-rooms-status .status", " ");
-  dom.qs("#glass-rooms-status room")?.classList.add('available');
-  dom.qs("#glass-rooms-status room")?.classList.remove('booked');
-  
-  // Exit early if missing date or period inputs
-  if (!currentDate || !currentPeriod ) {
-    return;
+  const reservations = getGlassRoomReservations(signups, currentDate, currentPeriod);
+
+  for (const roomId of GLASS_ROOM_IDS) {
+    const reservation = reservations[roomId];
+    const roomEl = dom.qs(`#glass-rooms-status .room-${roomId}`);
+    if (!roomEl) continue;
+
+    if (reservation.isBooked && reservation.reservedBy) {
+      roomEl.classList.add("booked");
+      roomEl.classList.remove("available");
+      dom.setText(`#glass-rooms-status .room-${roomId} .status`, reservation.reservedBy);
+    } else {
+      roomEl.classList.add("available");
+      roomEl.classList.remove("booked");
+      dom.setText(
+        `#glass-rooms-status .room-${roomId} .status`,
+        currentDate && currentPeriod ? "Available" : ""
+      );
+    }
   }
-    
-  // Cycles through signup data to calculate availability  
-  const matchingSignups = signups.filter( su =>
-    isSameDate(su.date, currentDate)
-    && (su.period === currentPeriod)
-  );
-  
-  if (matchingSignups.length === 0) {
-    return;
-  }
+};
 
-  dom.setText("#glass-rooms-status .status", "Available");
-
-  matchingSignups.forEach(signup => {
-    const room = signup.room;
-    if (room) {
-      // updates the label
-      const name = `${signup.lastname}, ${signup.firstname}`;
-      dom.setText(`#glass-rooms-status .room-${room} .status`, name);
-      dom.qs(`#glass-rooms-status .room-${room}`)?.classList.add('booked');
-    } 
-  });
-}
-
-export const getRoomBadge = (room: string) => {
-  if (room === '1') {
+/**
+ * Generates badge HTML for table rows indicating which glass room is assigned.
+ */
+export const getRoomBadge = (room: string): string => {
+  if (room === "1") {
     return ` <span class="badge text-bg-success room-badge">Room 1</span>`;
   }
-  if (room === '2') {
+  if (room === "2") {
     return ` <span class="badge text-bg-danger room-badge">Room 2</span>`;
   }
-  return '';
-}
-
+  return "";
+};
 
 /**
  * Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
  */
 export const setupGlassRoomsObserver = () => {
-  store.subscribe((state: AttendanceState) => {
-    updateGlassRooms(state.ui_currentDate, state.ui_currentPeriod, state.signups);
-  }, ['ui_currentDate', 'ui_currentPeriod' , 'signups']);
+  store.subscribe(
+    (state: AttendanceState) => {
+      updateGlassRooms(state.ui_currentDate, state.ui_currentPeriod, state.signups);
+    },
+    ["ui_currentDate", "ui_currentPeriod", "signups"]
+  );
 };

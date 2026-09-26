@@ -41,6 +41,9 @@ export default defineConfig(({ command, mode }) => {
     },
     root: 'src/client',
     server: {
+      host: '0.0.0.0',
+      port: 3000,
+      allowedHosts: true,
       sourcemapIgnoreList: false
     },
 

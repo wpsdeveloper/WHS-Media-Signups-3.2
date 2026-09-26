@@ -124,6 +124,24 @@ export class CheckinBox {
       dom.addEventListener(this.editSaveBtn, 'click', () => this.handleEditSaveClick());
       dom.addEventListener(this.cancelBtn, 'click', () => this.handleCancelClick());
       dom.addEventListener(this.deleteBtn, 'click', () => this.handleDeleteClick());
+
+      if (this.element) {
+        this.element.addEventListener('click', (event: MouseEvent) => {
+          const target = event.target as HTMLElement | null;
+          if (!target) return;
+          if (target.closest('.edit-start-btn')) {
+            if (this.state !== 'editing') {
+              this.handleEditStartClick();
+            }
+          } else if (target.closest('.save-btn')) {
+            this.handleEditSaveClick();
+          } else if (target.closest('.cancel-btn')) {
+            this.handleCancelClick();
+          } else if (target.closest('.delete-btn')) {
+            this.handleDeleteClick();
+          }
+        });
+      }
   }
 
  setComponentState(state: CheckinBoxState): void {
