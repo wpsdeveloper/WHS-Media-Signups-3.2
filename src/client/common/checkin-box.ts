@@ -212,14 +212,18 @@ export class CheckinBox {
     dom.setVisible(this.spinner, false);
   }
 
-  async handleCheckinClick(): Promise<void> {
+  async uploadCheckinValue() {
     this.setComponentState("loading");
-
-    const formattedTime = dates.formatTime(new Date());
-    this.timeValue = await checkin.checkin(this, formattedTime);
+  
+    await checkin.saveCheckinTime(this);
     const updatedSignups = this.updateSignups(this.rowId, this.timeValue);
     
     this.store.setSignups(updatedSignups);
+  }
+  
+  async handleCheckinClick(): Promise<void> {
+    this.timeValue = dates.formatTime(new Date());
+    this.uploadCheckinValue();
     this.setComponentState("hasData");
   }
   
@@ -242,13 +246,11 @@ export class CheckinBox {
       return;
     }
     this.timeValue = dates.convert24HrTo12Hr(inputtedValue);
-    checkin.checkin(this, this.timeValue);
+    this.uploadCheckinValue();
     
-    const updatedSignups = this.updateSignups(this.rowId, this.timeValue);   
-    this.store.setSignups(updatedSignups);
     this.setComponentState("hasData");
   }
-
+  
   handleCancelClick(): void {
     if (this.timeValue.length >0) {
       this.setComponentState("hasData");
@@ -256,8 +258,10 @@ export class CheckinBox {
       this.setComponentState("ready");   
     }
   }
-
+  
   handleDeleteClick(): void {
+    this.timeValue = "";
+    this.uploadCheckinValue();
     this.setComponentState("ready");
   }
 
