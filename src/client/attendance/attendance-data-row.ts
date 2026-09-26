@@ -1,5 +1,5 @@
 import * as dom from '../common/dom';
-import { CHECKIN_CONFIG, CheckinBox, CheckinType } from '../common/checkin-box';
+import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
 import { AttendanceState, checkinStore } from './attendance-store';
 import { getRoomBadge } from './glass-rooms-status';
 
@@ -80,7 +80,7 @@ export class AttendanceDataRow {
 
     (Object.keys(CHECKIN_CONFIG) as CheckinType[]).forEach((type) => {
       const propName = CHECKIN_CONFIG[type].propName;
-      const panel = attendancePanel.querySelector(`div[data-type="${type}"]`);
+      const panel = attendancePanel.querySelector(`div[data-type="${String(type)}"]`);
       if (panel) {
         const rowId = this.viewModel.rowId;
         const timeValue = this.viewModel[propName];

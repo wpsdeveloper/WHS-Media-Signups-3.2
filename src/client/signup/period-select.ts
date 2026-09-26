@@ -1,7 +1,7 @@
-import * as dom from './dom';
-import { parseDateInput, isSameDate } from './dates';
-import { getAppConfig } from './app-config';
-import { SignupState, store } from '../signup/signup-store';
+import * as dom from '../common/dom';
+import { parseDateInput, isSameDate } from '../common/dates';
+import { getAppConfig } from '../common/app-config';
+import { SignupState, store } from './signup-store';
 
 /**
 *  Responds to a change in the Period field 

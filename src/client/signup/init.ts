@@ -5,7 +5,7 @@ import * as dates from '../common/dates';
 import * as panels from './panels';
 import * as capacity from './capacity-validation';
 import * as dateSelect from './date-select';
-import * as periodSelect from '../common/period-select';
+import * as periodSelect from './period-select';
 import * as typeInput from './type-select';
 import * as studentInput from './student-input';
 import * as interventionTeacherSelect from './interventions-teacher-select';
@@ -19,10 +19,16 @@ import { IS_DEBUG, getMockData } from "../common/debug";
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  initObservers();
-  await refreshData();
-  bindEvents();
-  initializeUi();
+  try {
+    initObservers();
+    await refreshData();
+    bindEvents();
+    initializeUi();
+  } catch (error) {
+    messaging.processError(error as Error, 'Failed to initialize app:');
+  } finally {
+    messaging.hideLoadingModal();
+  }
 }
 
 // Registers all UI observers/subscribers to listen to store updates.
@@ -104,7 +110,7 @@ export const initializeUi = () => {
   dom.toggleAdminOnlyViews(isAdmin);
   
   // sets limits on dates allowed in Date field
-  dateSelect.initDateInput('#date');
+  dateSelect.initDateInput();
   
   dom.setValue("#email", currentEmail);
   
@@ -116,7 +122,7 @@ export const initializeUi = () => {
 };
 
 function bindEvents() {
-  dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler(e as MouseEvent));
+  dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler());
   dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler(e as MouseEvent));
   dom.addEventListener("#type-select, .purpose", "change", (e) => typeInput.typeChangeHandler(e as MouseEvent));
   dom.addEventListener("#study-teacher-select, #study-teacher-input", "change", (e) => studySelect.studyTeacherChangeHandler(e));
@@ -133,6 +139,7 @@ export const refreshData = async () => {
 
   try {
     const serverData = await fetchServerData();
+    
     console.log(serverData);
     store.setState({ ...serverData });
   } catch (error) {

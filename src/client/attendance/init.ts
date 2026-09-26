@@ -20,7 +20,7 @@ export const initializeApp = async () => {
     bindEvents();
     initializeUi();
   } catch (error) {
-    messaging.processError(error, 'Failed to initialize app:');
+    messaging.processError(error as Error, 'Failed to initialize app:');
   } finally {
     messaging.hideLoadingModal();
   }
@@ -120,7 +120,7 @@ export const refreshData = async () => {
     dom.toggleEditorOnlyViews(Boolean(state.isEditor));
     dom.toggleAdminOnlyViews(Boolean(state.isAdmin));
   } catch (error) {
-    messaging.processError(error, 'Failed to refresh data:');
+    messaging.processError(error as Error, 'Failed to refresh data:');
   } finally {
     messaging.hideLoadingModal();
   }
