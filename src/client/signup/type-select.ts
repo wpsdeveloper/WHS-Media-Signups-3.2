@@ -1,99 +1,85 @@
 import * as dom from '../common/dom';
 import { SignupState, store } from './signup-store';
 
+export interface TypeAvailability {
+  intervention: boolean;
+  assessment: boolean;
+  tutoring: boolean;
+  nonIntervention: boolean;
+  altSetting: boolean;
+}
+
 /**
- *  Responds to a change in the Type field
- * */
-export const typeChangeHandler = (event: MouseEvent) => {
-  if (!event) return;
-  const target = event.target as HTMLSelectElement;
-  const selectedType = target.value as SignupType;
+ * Pure calculation: Evaluates which signup types are permitted based on schedule block rules.
+ */
+export function getTypeAvailability(currentScheduleBlock: DailyBlock | null): TypeAvailability {
+  if (!currentScheduleBlock) {
+    return {
+      intervention: true,
+      assessment: true,
+      tutoring: true,
+      nonIntervention: true,
+      altSetting: true,
+    };
+  }
+
+  const periodIsWedInt = currentScheduleBlock.period === 'Wed. PM';
+
+  return {
+    intervention: Boolean(currentScheduleBlock.allowInterventions),
+    assessment: Boolean(currentScheduleBlock.allowAssessmentMakeups && !periodIsWedInt),
+    tutoring: Boolean(currentScheduleBlock.allowTutoring && !periodIsWedInt),
+    altSetting: Boolean(currentScheduleBlock.allowAltSetting),
+    nonIntervention: Boolean(currentScheduleBlock.allowNonInterventions || periodIsWedInt),
+  };
+}
+
+/**
+ * Event Handler: Responds to user selection change in the signup type dropdown.
+ */
+export const typeChangeHandler = (event?: Event) => {
+  const target = event?.target as HTMLSelectElement | undefined;
+  const selectedType = (target?.value ?? dom.valueOf('#type-select')) as SignupType;
   store.setState({ ui_currentType: selectedType });
 };
 
 /**
- * Helper Utilities: DOM UI resets and state indicators
+ * DOM View: Enables or disables individual type options in the type select element.
  */
-export const resetAllTypes = () => {
-  dom.setDisabled(`select[name='signup-type'], select[name='purpose']`, false);
-  dom.setVisible('span.type-warning', false);
+export const toggleInterventions = (allow: boolean) => {
+  dom.setDisabled('#type-select option[value="Intervention"]', !allow);
 };
 
-export const toggleInterventions = (show: boolean, message?: string) => {
-  dom.setDisabled('option[value="intervention"]', !show);
-  // if (!show) {
-  //   // dom.setChecked('input[value="Intervention"]', false);
-  //   dom.setVisible("label[for='intervention'] span.type-warning", true);
-  //   dom.setText(
-  //     "label[for='intervention'] span.type-warning",
-  //     message || 'Not available',
-  //   );
-  // }
+export const toggleAssessmentMakeups = (allow: boolean) => {
+  dom.setDisabled('#type-select option[value="Assessment"]', !allow);
 };
 
-export const toggleAssessmentMakeups = (show: boolean, message?: string) => {
-  dom.setDisabled('option[value="assessment"]', !show);
-  // if (!show) {
-  //   // dom.setChecked('input[value="assessment', false);
-  //   dom.setVisible("label[for='assessment'] span.type-warning", true);
-  //   dom.setText(
-  //     "label[for='assessment'] span.type-warning",
-  //     message || 'Not available',
-  //   );
-  // }
+export const toggleAltSetting = (allow: boolean) => {
+  dom.setDisabled('#type-select option[value="Alt setting"]', !allow);
 };
 
-export const toggleAltSetting = (show: boolean, message?: string) => {
-  dom.setDisabled('option[value="alt-setting"]', !show);
-  // if (!show) {
-  //   // dom.setChecked('input#alt-setting', false);
-  //   dom.setVisible("label[for='alt-setting'] span.type-warning", true);
-  //   dom.setText(
-  //     "label[for='alt-setting'] span.type-warning",
-  //     message || 'Not available',
-  //   );
-  // }
+export const toggleTutoring = (allow: boolean, _message?: string) => {
+  dom.setDisabled('#type-select option[value="Tutoring"]', !allow);
 };
 
-export const toggleTutoring = (show: boolean, message?: string) => {
-  dom.setDisabled('option[value="Tutoring"]', !show);
-  // if (!show) {
-  //   // dom.setChecked('input#tutoring', false);
-  //   dom.setVisible("label[for='tutoring'] span.type-warning", true);
-  //   dom.setText(
-  //     "label[for='tutoring'] span.type-warning",
-  //     message || 'Not available',
-  //   );
-  // }
+export const toggleNonInterventions = (allow: boolean, _message?: string) => {
+  dom.setDisabled('#type-select option[value="Non-intervention"]', !allow);
 };
 
-export const toggleWednesdayInterventions = (
-  show: boolean,
-  message?: string,
-) => {
-  dom.setDisabled('input#non-intervention', !show);
-  // if (!show) {
-  //   // dom.setChecked('input#non-intervention', false);
-  //   dom.setVisible("label[for='non-intervention'] span.type-warning", true);
-  //   dom.setText(
-  //     "label[for='non-intervention'] span.type-warning",
-  //     message || 'Not available',
-  //   );
-  // }
+/**
+ * DOM View: Updates option disabled states based on computed availability.
+ */
+export const updateTypeAvailabilityUi = (availability: TypeAvailability) => {
+  toggleInterventions(availability.intervention);
+  toggleAssessmentMakeups(availability.assessment);
+  toggleTutoring(availability.tutoring);
+  toggleAltSetting(availability.altSetting);
+  toggleNonInterventions(availability.nonIntervention);
 };
 
-export const toggleNonInterventions = (show: boolean, message?: string) => {
-  dom.setDisabled("option#non-intervention, option[name='purpose']", !show);
-  // if (!show) {
-  //   dom.setChecked("input#non-intervention, input[name='purpose'", false);
-  //   dom.setVisible("label[for='purpose'] span.type-warning", true);
-  //   dom.setText(
-  //     "label[for='purpose'] span.type-warning",
-  //     message || 'Not available',
-  //   );
-  // }
-};
-
+/**
+ * Static Link Helpers: Shows or hides links if configured.
+ */
 export const toggleInterventionsLink = () => {
   const show = (dom.getAttribute('.int-link', 'href') || '').length > 58;
   dom.setVisible('.int-link', show);
@@ -105,37 +91,26 @@ export const toggleTutoringLink = () => {
 };
 
 /**
- * Subscriber: Keeps input selections synchronized with state.currentType.
+ * Observer / Subscriber: Coordinates UI synchronization with state changes.
  */
 export const setupTypeInputObserver = () => {
-  // sets ui to already existing data
+  // Syncs #type-select dropdown with current store type
   store.subscribe(
     (state: SignupState) => {
-      if (state.ui_currentType) {
+      const selectElem = dom.qs('#type-select') as HTMLSelectElement | null;
+      if (selectElem && state.ui_currentType && selectElem.value !== state.ui_currentType) {
         dom.setValue('#type-select', state.ui_currentType);
       }
     },
-    ['ui_currentType'],
+    ['ui_currentType']
   );
 
-  // toggles available type choices based on special rules
+  // Updates option permissions whenever the active schedule block changes
   store.subscribe(
     (state: SignupState) => {
-      resetAllTypes();  
-      const currentScheduleBlock = state.ui_currentScheduleBlock;
-        if (!currentScheduleBlock ) return;
-      
-        // enables Wed PN Int is the period was set to it already. 
-        // This is for the update existing signup procedure
-        const periodIsWedInt = (currentScheduleBlock.period === "Wed. PM");
-        if (periodIsWedInt) toggleWednesdayInterventions(periodIsWedInt);
-        
-        // for the IF statements below ANY text value counts as "not allowed".
-        // if not allowed, disables the check, unchecks, and adds a label warning
-        toggleInterventions(currentScheduleBlock.allowInterventions);
-        toggleAssessmentMakeups(currentScheduleBlock.allowAssessmentMakeups && !periodIsWedInt);
-        toggleAltSetting(currentScheduleBlock.allowAltSetting);
-        toggleTutoring(currentScheduleBlock.allowTutoring && !periodIsWedInt);
-        toggleNonInterventions(currentScheduleBlock.allowNonInterventions || periodIsWedInt);
-    },['ui_currentType']);
+      const availability = getTypeAvailability(state.ui_currentScheduleBlock);
+      updateTypeAvailabilityUi(availability);
+    },
+    ['ui_currentScheduleBlock']
+  );
 };

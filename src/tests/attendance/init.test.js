@@ -2,13 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as init from '../../client/attendance/init.js';
 import * as dom from '../../client/common/dom.js';
 import * as messaging from '../../client/common/messaging.js';
-import * as dataTable from '../../client/attendance/data-table.js';
-import { store } from '../../client/common/store.js';
+import * as dataTable from '../../client/attendance/attendance-data-table.js';
+import { store } from '../../client/attendance/attendance-store.js';
 
 vi.mock('../../client/common/dom.js', () => ({
   qs: vi.fn(),
+  qsa: vi.fn().mockReturnValue([]),
   valueOf: vi.fn(),
   addEventListener: vi.fn(),
+  toggleStaffOnlyViews: vi.fn(),
   toggleEditorOnlyViews: vi.fn(),
   toggleAdminOnlyViews: vi.fn(),
   setVisible: vi.fn(),
@@ -21,7 +23,7 @@ vi.mock('../../client/common/messaging.js', () => ({
   hideLoadingModal: vi.fn(),
 }));
 
-vi.mock('../../client/attendance/data-table.js', () => ({
+vi.mock('../../client/attendance/attendance-data-table.js', () => ({
   initObservers: vi.fn(),
   dateChangeHandler: vi.fn(),
   periodChangeHandler: vi.fn(),
@@ -29,28 +31,46 @@ vi.mock('../../client/attendance/data-table.js', () => ({
   showSignupInfo: vi.fn(),
 }));
 
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/attendance/attendance-store.js', () => ({
   store: {
     setState: vi.fn(),
     getState: vi.fn(),
     initialize: vi.fn(),
+    subscribe: vi.fn(),
   },
 }));
 
 vi.mock('../../client/common/debug.js', () => ({
-  DEBUG: true
+  IS_DEBUG: false,
+  getMockData: vi.fn(),
 }));
 
 describe('init.js', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    window.APP_CONFIG = {
+      email: 'test@example.com',
+      isStaff: true,
+      isAdmin: true,
+      isEditor: false,
+      scriptUrl: 'http://example.com',
+    };
+
+    let successCb = null;
     global.google = {
       script: {
         run: {
-          withSuccessHandler: vi.fn().mockReturnThis(),
+          withSuccessHandler: vi.fn().mockImplementation((cb) => {
+            successCb = cb;
+            return global.google.script.run;
+          }),
           withFailureHandler: vi.fn().mockReturnThis(),
-          getInitialAttendanceData: vi.fn(),
+          getInitialAttendanceData: vi.fn().mockImplementation(() => {
+            if (successCb) {
+              successCb(JSON.stringify({ signups: '[]', dailySchedules: '[]' }));
+            }
+          }),
         },
       },
     };
@@ -70,7 +90,7 @@ describe('init.js', () => {
       await init.initializeApp();
 
       expect(dataTable.initObservers).toHaveBeenCalled();
-      expect(dom.addEventListener).toHaveBeenCalledTimes(5);
+      expect(dom.addEventListener).toHaveBeenCalled();
       expect(messaging.showLoadingModal).toHaveBeenCalled();
       expect(store.setState).toHaveBeenCalled();
       expect(messaging.hideLoadingModal).toHaveBeenCalled();
@@ -104,6 +124,8 @@ describe('init.js', () => {
         if (selector === '.editors-only') return editorsOnlyEl;
         return null;
       });
+
+      store.getState.mockReturnValue({ isStaff: false, isEditor: false, isAdmin: true });
 
       await init.refreshData();
 

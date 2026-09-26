@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function mountApp() {
   const appConfig = await getAppConfig();
   if (!appConfig) throw new Error("Error initializing app");
-  const view = IS_DEBUG ? 'attendance' : appConfig.view;
+  const view = IS_DEBUG ? 'signup' : appConfig.view;
 
   switch (view) {
     case 'attendance':

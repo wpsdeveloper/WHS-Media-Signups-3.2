@@ -5,7 +5,7 @@ import { AttendanceState, store } from './attendance-store';
 /**
 *  Responds to a change in the Period field 
 * */
-export const periodChangeHandler = (event?: MouseEvent) => {
+export const periodChangeHandler = (event?: Event) => {
   const target = event?.target as HTMLSelectElement | undefined;
   const selectedPeriod = (target?.value || dom.valueOf("#period")) as Period;
   if (!selectedPeriod) return;

@@ -104,13 +104,7 @@ export const initializeUi = () => {
   dom.toggleAdminOnlyViews(isAdmin);
   
   // sets limits on dates allowed in Date field
-  const today = new Date();
-  dateSelect.configureDateSelect(
-    '#date',
-    dates.toDateInputValue(new Date(today.getTime() - 14 * 86400000)),
-    dates.toDateInputValue(new Date(today.getTime() + 14 * 86400000)),
-    dates.toDateInputValue(today),
-  );
+  dateSelect.initDateInput('#date');
   
   dom.setValue("#email", currentEmail);
   
@@ -125,8 +119,10 @@ function bindEvents() {
   dom.addEventListener("#date", "change", (e) => dateSelect.dateChangeHandler(e as MouseEvent));
   dom.addEventListener("#period", "change", (e) => periodSelect.periodChangeHandler(e as MouseEvent));
   dom.addEventListener("#type-select, .purpose", "change", (e) => typeInput.typeChangeHandler(e as MouseEvent));
-  dom.addEventListener("#study-teacher-select", "change", (e) => studySelect.studyTeacherChangeHandler(e as MouseEvent));
-  dom.addEventListener("#subject-int-select", "change", (e) => subjectSelect.subjectChangeHandler(e as MouseEvent));
+  dom.addEventListener("#study-teacher-select, #study-teacher-input", "change", (e) => studySelect.studyTeacherChangeHandler(e));
+  dom.addEventListener("#study-teacher-input", "input", (e) => studySelect.studyTeacherChangeHandler(e));
+  dom.addEventListener("#subject-int-select, #subject-int-input, #subject-non-int", "change", (e) => subjectSelect.subjectChangeHandler(e));
+  dom.addEventListener("#subject-int-input", "input", (e) => subjectSelect.subjectChangeHandler(e));
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e as InputEvent));
   dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
   dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());

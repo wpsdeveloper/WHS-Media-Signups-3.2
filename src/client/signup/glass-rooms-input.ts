@@ -1,57 +1,110 @@
 import * as dom from '../common/dom';
-import { parseDateInput, isSameDate } from "../common/dates";
+import { isSameDate } from '../common/dates';
 import { SignupState, store } from './signup-store';
 
+export interface GlassRoomAvailability {
+  room: string;
+  isAvailable: boolean;
+  reservedBy?: string;
+}
+
+const GLASS_ROOM_IDS = ['1', '2'];
 
 /**
- *  Updates the Glass Room labels if the rooms are already reserved or not 
- * */
-export const updateGlassRooms = (
-  currentScheduleBlock: DailyBlock | null, 
+ * Pure calculation: Returns the reservation availability for each glass room
+ * for the current schedule block date and period.
+ */
+export function getGlassRoomAvailability(
+  currentScheduleBlock: DailyBlock | null,
   signups: Signup[] = []
-) => {
-  // marks rooms as available by default
-  dom.setVisible("#glass-room-1", true);
-  dom.setVisible("#glass-room-2", true);
-  dom.setDisabled("#glass-room-1", false);
-  dom.setDisabled("#glass-room-2", false);
-  dom.setText("#glass-room-1-label .availability", "Available");
-  dom.setText("#glass-room-2-label .availability", "Available");
-
- // Exit early if missing date or period inputs
-  if (!currentScheduleBlock) {
-    return;
+): Record<string, GlassRoomAvailability> {
+  const result: Record<string, GlassRoomAvailability> = {};
+  for (const roomId of GLASS_ROOM_IDS) {
+    result[roomId] = { room: roomId, isAvailable: true };
   }
 
-  // Cycles through signup data to calculate availability  
-  const matchingSignups = signups.filter( su =>
-    isSameDate(su.date, currentScheduleBlock.date)
-    && (su.period === currentScheduleBlock.period)
+  if (!currentScheduleBlock) {
+    return result;
+  }
+
+  const matchingSignups = signups.filter(
+    (su) =>
+      su.room &&
+      isSameDate(su.date, currentScheduleBlock.date) &&
+      su.period === currentScheduleBlock.period
   );
 
-  matchingSignups.forEach(signup => {
-    const room = signup.room;
-    if (room) {
-      // disables the checkbox
-      dom.setDisabled(`#glass-room-${room}`, true);
-      dom.setChecked(`#glass-room-${room}`, false);
+  for (const su of matchingSignups) {
+    if (su.room && result[su.room]) {
+      result[su.room] = {
+        room: su.room,
+        isAvailable: false,
+        reservedBy: `${su.lastname}, ${su.firstname}`,
+      };
+    }
+  }
 
-      // updates the label
-      dom.setText(`#glass-room-${room}-label .availability`, "Unavailable");
-    } 
-  });
+  return result;
 }
 
+/**
+ * DOM View: Updates radio button disabled states and availability labels.
+ */
+export function updateGlassRoomsUi(availabilityMap: Record<string, GlassRoomAvailability>) {
+  for (const roomId of GLASS_ROOM_IDS) {
+    const item = availabilityMap[roomId];
+    const radioSelector = `#glass-room-${roomId}`;
+    const labelAvailabilitySelector = `#glass-room-${roomId}-label .availability`;
+
+    dom.setVisible(radioSelector, true);
+
+    if (item && !item.isAvailable) {
+      dom.setDisabled(radioSelector, true);
+      // Uncheck if currently selected room became booked
+      if (dom.isChecked(radioSelector)) {
+        dom.setChecked(radioSelector, false);
+        dom.setChecked('#glass-room-none', true);
+      }
+      dom.setText(labelAvailabilitySelector, 'Unavailable');
+    } else {
+      dom.setDisabled(radioSelector, false);
+      dom.setText(labelAvailabilitySelector, 'Available');
+    }
+  }
+}
+
+/**
+ * Orchestrator: Computes glass room availability and updates UI.
+ */
+export const updateGlassRooms = (
+  currentScheduleBlock: DailyBlock | null,
+  signups: Signup[] = []
+) => {
+  const availability = getGlassRoomAvailability(currentScheduleBlock, signups);
+  updateGlassRoomsUi(availability);
+};
+
+/**
+ * Direct setter: Selects a specific glass room directly (used during edit / update mode).
+ */
 export const directSet = (room: string | null) => {
-  dom.setText(`#glass-room-${room}-label .availability`, "");
+  if (!room) {
+    dom.setChecked('#glass-room-none', true);
+    return;
+  }
+  dom.setDisabled(`#glass-room-${room}`, false);
   dom.setChecked(`#glass-room-${room}`, true);
-}
+  dom.setText(`#glass-room-${room}-label .availability`, 'Current');
+};
 
 /**
  * Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
  */
 export const setupGlassRoomsObserver = () => {
-  store.subscribe((state: SignupState) => {
-    updateGlassRooms(state.ui_currentScheduleBlock, state.signups);
-  }, ['ui_currentScheduleBlock', 'signups']);
+  store.subscribe(
+    (state: SignupState) => {
+      updateGlassRooms(state.ui_currentScheduleBlock, state.signups);
+    },
+    ['ui_currentScheduleBlock', 'signups']
+  );
 };
