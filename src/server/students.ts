@@ -3,28 +3,57 @@
  * Returns all students at the school, as found in the spreadsheet.
  * Note: a script in the spreadsheet imports these names into the ss nightly 
  */
-function getStudents():Student[] {
+function getStudents(): Student[] {
   const cache = CacheService.getScriptCache();
-  const cached = cache.get("students_v1");
-  if (cached) {
-    try {
-      console.log("Returning cached student data");
-      return JSON.parse(cached);
-    } catch (e) {
-      console.warn("Cache parse failed, refetching students", e);
+  try {
+    const countStr = cache.get("students_chunk_count");
+    if (countStr) {
+      const count = parseInt(countStr, 10);
+      const keys: string[] = [];
+      for (let i = 0; i < count; i++) {
+        keys.push(`students_chunk_${i}`);
+      }
+      const chunks = cache.getAll(keys);
+      let fullJson = "";
+      let complete = true;
+      for (let i = 0; i < count; i++) {
+        const part = chunks[`students_chunk_${i}`];
+        if (part) {
+          fullJson += part;
+        } else {
+          complete = false;
+          break;
+        }
+      }
+      if (complete && fullJson) {
+        console.log("Returning cached student data");
+        return JSON.parse(fullJson);
+      }
     }
+  } catch (e) {
+    console.warn("Cache parse failed, refetching students", e);
   }
 
-  const calendarBlocks = getStudentsFromSheets()
+  const students = getStudentsFromSheets();
 
   // Cache for 6 hours (21600 seconds = max allowed in GAS CacheService)
+  // Cache in chunks of 90KB to strictly stay under the 100KB per-item limit
   try {
-    console.log("Caching student data");
-    cache.put("students_v1", JSON.stringify(calendarBlocks), 21600);
+    console.log("Caching student data in chunks");
+    const json = JSON.stringify(students);
+    const CHUNK_SIZE = 90000;
+    const numChunks = Math.ceil(json.length / CHUNK_SIZE);
+    const cacheObj: Record<string, string> = {
+      students_chunk_count: String(numChunks)
+    };
+    for (let i = 0; i < numChunks; i++) {
+      cacheObj[`students_chunk_${i}`] = json.substring(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+    }
+    cache.putAll(cacheObj, 21600);
   } catch (e) {
     console.warn("Cache storage failed", e);
   }
-  return calendarBlocks;
+  return students;
 }
 
 function getStudentsFromSheets(): Student[] {
@@ -34,10 +63,17 @@ function getStudentsFromSheets(): Student[] {
 
   const values = sheet.getDataRange().getValues();
   
-  // creates an array to return
+  // creates an array to return, filtering out headers and empty rows
   const students: Student[] = [];
   values.forEach(row => {
-    students.push({email: row[0], lastname: row[1], firstname: row[2]});
+    const email = row[0] ? String(row[0]).trim() : "";
+    if (email && email.includes("@")) {
+      students.push({
+        email: email,
+        lastname: row[1] ? String(row[1]).trim() : "",
+        firstname: row[2] ? String(row[2]).trim() : ""
+      });
+    }
   });
   return students;
 }

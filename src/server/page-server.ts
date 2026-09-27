@@ -71,13 +71,14 @@ function createIndexTemplate() {
 }
 
 function getInitialSignupData(): string {
-  const userIsStaff = isStaff();
   const appSettings = getAppSettings();
-  const students = userIsStaff ? getStudents() : [];
+  // Autocomplete searches students dynamically via searchStudents(query) over RPC.
+  // Passing an empty array avoids shipping thousands of student objects in the initial payload.
+  const students: Student[] = [];
   const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   const signups = getSignups();
   
-  if (!students || !dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+  if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
   
   const initialData:SignupServerData = {
     students: students,
@@ -108,10 +109,11 @@ function getInitialAttendanceData(): string {
 
 function getInitialAdminData(): string {
   const appSettings = getAppSettings();
-  const students = getStudents();
+  // Autocomplete searches students dynamically via searchStudents(query) over RPC.
+  const students: Student[] = [];
   const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   
-  if (!students || !dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+  if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
   
   const initialData:AdminData = {
     students: students,

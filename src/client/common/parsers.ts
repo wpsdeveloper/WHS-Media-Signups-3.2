@@ -28,6 +28,8 @@ export const parseStudentDataList = (students: Student[]) => {
   return students.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
 };
 
+export const parseStudentNames = parseStudentDataList;
+
 /**
  *  parses daily schedule data from the server 
  * */

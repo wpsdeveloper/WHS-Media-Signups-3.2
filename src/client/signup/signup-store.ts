@@ -81,11 +81,11 @@ export const registerUpdateData = (updateData: Signup) => {
   });
   
 
-  const studentRecord = store.getState().students.find(st => st.email === updateData.emailStudent);
-  if (!studentRecord) return;
+  const studentDisplay = (updateData.lastname && updateData.firstname)
+    ? `${updateData.lastname}, ${updateData.firstname} <${updateData.emailStudent}>`
+    : (updateData.emailStudent || "");
 
-  
-  dom.setValue("#student", `${studentRecord.lastname}, ${studentRecord.firstname} <${studentRecord.email}>` || "");
+  dom.setValue("#student", studentDisplay);
   dom.setValue("#email", updateData.email || "");
   dom.setValue("#comments, #topic-intervention", updateData.comments || "");
   dom.setValue("#acad-teacher", updateData.teacherAcad || "");
