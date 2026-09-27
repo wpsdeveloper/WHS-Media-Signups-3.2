@@ -1,6 +1,7 @@
 import * as dom from "../common/dom";
 import { AdminState, store } from "./admin-store";
 import { AdminDataRow as DataRow } from "./admin-data-row";
+import * as adminPanels from "./admin-panels";
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
@@ -11,7 +12,7 @@ import { AdminDataRow as DataRow } from "./admin-data-row";
 export const initObservers = () => {
   // Rebuild the data table with date, signups or sort changes
   store.subscribe((state) => {
-    const { signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder, ui_requestedStudentEmail: requestedStudentEmail } = state;
+    const { signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder, ui_requestedStudentEmail: requestedStudentEmail, ui_currentView } = state;
     if (!requestedStudentEmail) return;
     
     const sortedSignups = sortSignups(signups, currentSortField, currentSortOrder);
@@ -20,7 +21,7 @@ export const initObservers = () => {
     dom.qsa("#student-panel .student-row").forEach(row => row.remove());
 
     // render new rows
-    const targetTable = dom.qs("#student-panel") as HTMLElement;
+    const targetTable = (dom.qs("#student-table") || dom.qs("#student-panel")) as HTMLElement;
     const newRows: DataRow[] = [];
 
     currentSignups.forEach(signup => {
@@ -31,9 +32,22 @@ export const initObservers = () => {
       newRows.push(dataRow);
     });
 
+    const emptyRow = dom.qs("#student-panel .student-row-empty");
+    if (emptyRow) {
+      dom.setVisible(emptyRow, currentSignups.length === 0);
+    }
+
+    setTimeout(() => {
+      adminPanels.setPanelView(ui_currentView);
+    }, 0);
+
     // Update state with new rows
     store.setState({ ui_dataRows: newRows });
   }, ["signups", "ui_currentSortField", "ui_currentSortOrder", "ui_requestedStudentEmail"]);
+
+  store.subscribe((state) => {
+    adminPanels.setPanelView(state.ui_currentView);
+  }, ["ui_currentView"]);
 
   // updates the sort header ui
   store.subscribe((state) => {
@@ -86,31 +100,17 @@ export const sortSignups = (
  * Shows the attendance panel 
  * */
 export const showAttendance = () => {
-  // slide animation back to "original" position
+  adminPanels.panelViewListener('attendance');
   const panels = dom.qsa(".panel") as HTMLElement[];
   panels.forEach(panel => panel.style.transform = "translate(0, 0)");
-
-  // updates the header
-  dom.setVisible(".header-row .signup-info", false);
-  dom.setVisible(".header-row .attendance-info", true);
 }
 
-/**
- *  Shows the signup info panel
- * */
-export const showSignupInfo =() => {
-  // gets the width of the panel. Note: uses the header, because width
-  // calculations work best if the element is visible
-  const attendancePanel = dom.qs(".header-row .attendance-info") as HTMLElement;
-  const width = attendancePanel.getBoundingClientRect().width - 24; // -24 to include the extra margin/padding
-
-  // animates the panel
+export const showSignupInfo = () => {
+  adminPanels.panelViewListener('details');
+  const sliderWrapper = dom.qs(".slider-wrapper") as HTMLElement;
+  const width = sliderWrapper ? sliderWrapper.getBoundingClientRect().width : 550;
   const panels = dom.qsa(".panel") as HTMLElement[];
   panels.forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
-
-  // updates the header
-  dom.setVisible(".header-row .signup-info", true);
-  dom.setVisible(".header-row .attendance-info", false);
 }
 
 

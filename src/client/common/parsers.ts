@@ -97,9 +97,10 @@ export const parseUpdateStudent = (signupJson: string) => {
 export const parseSettings = (settingsJson: string) => {
   const settings: Setting[] = [];
   try {
-    const settingsDBRows: string[] = safeJsonParse(settingsJson, []);
+    const settingsDBRows: any[] = safeJsonParse(settingsJson, []);
     settingsDBRows.forEach(row => {
-      if (row && Array.isArray(row) && row.length === 5) {
+      if (!row) return;
+      if (Array.isArray(row) && row.length >= 5) {
         settings.push({
           key: row[0],
           value: row[1],
@@ -107,9 +108,18 @@ export const parseSettings = (settingsJson: string) => {
           comments: row[3],
           dataType: row[4],
         });
+      } else if (typeof row === 'object' && row.key !== undefined) {
+        settings.push({
+          key: row.key,
+          value: row.value,
+          description: row.description,
+          comments: row.comments,
+          dataType: row.dataType,
+        });
       }
     });
   } catch (error) {
+    console.error("Failed to parse settings:", error);
     return [];
   }
   return hydrateSettings(settings);

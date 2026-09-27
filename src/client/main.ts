@@ -32,7 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
 async function mountApp() {
   const appConfig = await getAppConfig();
   if (!appConfig) throw new Error("Error initializing app");
-  const view = IS_DEBUG ? 'attendance' : appConfig.view;
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const pageParam = urlParams?.get('page');
+  const view = (pageParam && ['signup', 'attendance', 'admin'].includes(pageParam))
+    ? pageParam
+    : (IS_DEBUG ? 'admin' : appConfig.view);
 
   switch (view) {
     case 'attendance':

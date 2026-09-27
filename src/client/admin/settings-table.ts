@@ -17,7 +17,7 @@ export const initObservers = () => {
     dom.qsa("#settings-panel .settings-row").forEach(row => row.remove());
 
     // render new rows
-    const targetTable = dom.qs("#settings-panel") as HTMLElement;
+    const targetTable = (dom.qs("#settings-table") || dom.qs("#settings-panel")) as HTMLElement;
     const newRows = [];
 
     settings.forEach(setting => {

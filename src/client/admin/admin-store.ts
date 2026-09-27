@@ -18,6 +18,7 @@ const initialState: AdminState = {
   ui_currentSortOrder: "desc",
   ui_currentStudentName: "",
   ui_requestedStudentEmail: "",
+  ui_currentView: "attendance",
 
   ui_dataRows: [],
 };
@@ -47,6 +48,7 @@ export interface AdminState {
   currentEmail: string,
   ui_currentStudentName: string,
   ui_requestedStudentEmail: string,
+  ui_currentView: "attendance" | "details" | "list",
 };
 
 export type AdminStateRaw = Omit<AdminState, 'signups' | 'dailySchedules'> & {

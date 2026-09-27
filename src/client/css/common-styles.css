@@ -430,18 +430,171 @@ span.twitter-typeahead {
 /* ==========================================================================
    Feature: Admin
    ========================================================================== */
-.admin .tab-panel {
-  display: none;
-
-  &.active {
-    display: block;
-  }
+.admin {
+  background: #EBF3FF;
+  min-height: 100vh;
 }
 
-.admin .nav-link {
-  color: white;
+.admin .tab-panel {
+  display: none;
+}
 
-  &.active {
-    color: black;
-  }
+.admin .tab-panel.active {
+  display: block;
+}
+
+.admin .admin-tabs.nav-tabs {
+  border-bottom: none;
+  gap: 10px;
+}
+
+.admin .admin-tabs .nav-link {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.admin .admin-tabs .nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.admin .admin-tabs .nav-link.active {
+  color: #01256F;
+  background: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.admin .header-row {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 12px;
+}
+
+.admin .header-row h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  color: #475569;
+  font-family: 'Open Sans', sans-serif;
+  margin: 0;
+}
+
+.admin .header-row h4.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin .header-row h4.sortable:hover {
+  color: #01256F;
+}
+
+.admin .data-row,
+.admin .data-row.student-row-empty {
+  padding: 10px 14px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.admin .data-row.student-row:hover,
+.admin .data-row.settings-row:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.admin .data-row .signup-date,
+.admin .data-row .signup-period {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.admin .student-row .study-teacher {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.admin .student-row .type {
+  font-style: italic;
+  color: #334155;
+  font-size: 0.85rem;
+}
+
+.admin .student-row .room {
+  color: #0369a1;
+  font-size: 0.825rem;
+  font-weight: 500;
+}
+
+.admin .student-row .comments {
+  font-size: 0.825rem;
+  color: #64748b;
+}
+
+.admin .settings-row .description {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
+.admin .settings-row .comments {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.admin .settings-row .value input {
+  font-size: 0.9rem;
+}
+
+.admin .header-row .panel-link {
+  display: inline-block;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #475569;
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  margin-right: -1px;
+}
+
+.admin .header-row .panel-link:first-of-type {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.admin .header-row .panel-link:last-of-type {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  margin-right: 0;
+}
+
+.admin .header-row .panel-link.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  z-index: 2;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.admin .header-row .panel-link:hover:not(.active) {
+  background-color: #e2e8f0;
+  color: #1e293b;
 }

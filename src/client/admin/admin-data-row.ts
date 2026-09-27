@@ -95,7 +95,7 @@ export class AdminDataRow {
         const timeValue = this.signup[propName] as string || "";
         
         panel.innerHTML = ''; // Ensure container is clean before appending
-        const checkinBox = new CheckinBox(type, this.signup.rowId, timeValue, checkinStore);
+        const checkinBox = new CheckinBox(type, this.signup.rowId, timeValue, checkinStore, true);
         panel.append(checkinBox.element as HTMLElement);
         checkinBox.render();
       }

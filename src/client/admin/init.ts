@@ -3,6 +3,7 @@ import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
 import * as dataTable from "./admin-data-table";
 import * as settingsTable from "./settings-table";
+import * as adminPanels from "./admin-panels";
 import * as data from './data';
 import * as studentInput from './student-input';
 import { AdminState, store } from './admin-store';
@@ -26,6 +27,7 @@ export const initObservers = () => {
   data.setupAuditObserver();
   dataTable.initObservers();
   settingsTable.initObservers();
+  adminPanels.initObservers();
 };
 
 async function fetchServerData(): Promise<AdminState> {
@@ -69,6 +71,7 @@ async function parseServerData(data: string): Promise<AdminState> {
     ui_currentSortOrder: 'desc', 
     ui_dataRows: [], 
     ui_requestedStudentEmail: '',
+    ui_currentView: 'attendance',
     currentEmail: appConfig.email,
     isEditor: appConfig.isEditor, 
     appConfig: appConfig,
@@ -86,10 +89,12 @@ export const initializeUi = () => {
 function bindEvents() {
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
   dom.addEventListener('#get-audit-btn', 'click', () => data.getAuditHandler());
-  dom.addEventListener("#attendance-link", "click", (e) => dataTable.showAttendance());
-  dom.addEventListener("#details-link", "click", (e) => dataTable.showSignupInfo());
+  dom.addEventListener("#attendance-link", "click", () => adminPanels.panelViewListener('attendance'));
+  dom.addEventListener("#details-link", "click", () => adminPanels.panelViewListener('details'));
+  dom.addEventListener("#list-link", "click", () => adminPanels.panelViewListener('list'));
   dom.addEventListener('#date-header', 'click', () => dataTable.resort("date"));
   dom.addEventListener('#period-header', 'click', () => dataTable.resort("period"));
+  dom.addEventListener('#refresh-audit-btn', 'click', () => refreshData());
 }
 
 export const refreshData = async () => {
@@ -115,7 +120,7 @@ export const refreshData = async () => {
   if (!tabContainer) return;
 
   tabContainer.addEventListener("click", (e: Event) => {
-    const target = e.target as HTMLElement;
+    const target = (e.target as HTMLElement).closest('.nav-link') as HTMLElement;
     if (!target) return;
     
     // 1. Remove 'active' class from all buttons and panels
@@ -124,6 +129,13 @@ export const refreshData = async () => {
 
     // 2. Add 'active' class to clicked button and target panel
     target.classList.add('active');
+    const targetPanelId = target.getAttribute('data-target');
+    if (targetPanelId) {
+      const targetPanel = document.getElementById(targetPanelId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
+    }
   });
 }
 
