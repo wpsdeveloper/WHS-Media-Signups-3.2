@@ -12,6 +12,7 @@ declare global {
   interface Window {
     bootstrap: typeof import('bootstrap');
     APP_CONFIG: AppConfig,
+    INITIAL_DATA: string | null,
   }
 
   // Extend Google Apps Script's official type namespace
@@ -37,6 +38,7 @@ interface ServerFunctions {
   submitForm(formData: string): void;
   getStudentAudit(studentId: string): Signup[];
   searchStudents(query: string): Student[];
+  saveAppSettings(settingsString: string);
 }
 
 // Define the shape of your server-side API

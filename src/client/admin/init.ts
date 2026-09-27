@@ -13,10 +13,16 @@ import { AttendanceState } from '../attendance/attendance-store';
 
 // builds page based on existing schedules and settings
 export const initializeApp = async () => {
-  initObservers();
-  await refreshData();
-  initializeUi();
-  bindEvents();
+  try {
+    initObservers();
+    await refreshData();
+    initializeUi();
+    bindEvents();
+  } catch (error) {
+      messaging.processError(error as Error, 'Failed to initialize app:');
+    } finally {
+      messaging.hideLoadingModal();
+    }
 }
 
 /**

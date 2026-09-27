@@ -1,140 +1,198 @@
 import * as dom from '../common/dom';
 import * as dates from '../common/dates';
-import { store, checkinStore } from "./admin-store";
+import { store, checkinStore, AdminState } from "./admin-store";
 import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
 
+export interface AdminDataRowViewModel {
+  type: string;
+  room: string;
+  date: string;
+  period: string;
+  studentNameLabel: string;
+  rowId: string;
+  teacherStudy: string;
+  comments: string;
+  typeDetails: string;
+  typeAndDetailsLabel: string;
+  roomLabel: string;
+  rowIsStaff: boolean;
+  userIsEditor: boolean;
+  editUrl: string;
+  studyIn1: string;
+  studyIn2: string;
+  mediaIn: string;
+  mediaOut: string;
+}
+
 export class AdminDataRow {
-  element: HTMLElement;
-  signup: Signup;
-  rowId: string = '';
-  state: 'attendance' | 'settings' = 'attendance';
-  attendancePanel: HTMLElement;
-  detailsPanel: HTMLElement;
+  viewModel: AdminDataRowViewModel;
+  element: HTMLElement | null;
   
-  constructor(rowId: string, signup: Signup) {
-    this.rowId = rowId;
-    this.signup = signup;
-    
-    const templateSelector = signup.type === 'Staff reservation'
-      ? '#staff-row-template'
-      : '#student-row-template';
+  constructor(viewModel: AdminDataRowViewModel) {
+    this.viewModel = viewModel;
+    this.element = this.getElement();
 
-    const template = dom.qs<HTMLTemplateElement>(templateSelector); // clone the template
-    if (!template?.content) throw new Error(`${templateSelector} template not found`);;
-    const clonedNode = template.content.cloneNode(true) as DocumentFragment;
-    const firstChild = clonedNode.firstElementChild as HTMLElement;
-    if (!firstChild) throw new Error(`Empty template for ${templateSelector}`);
-    this.element = firstChild;
-    this.element.removeAttribute('id');
-    this.element.classList.add('data-row');
-
-    const attendancePanel: HTMLElement = this.element.querySelector('.attendance-info') as HTMLElement; 
-    const detailsPanel: HTMLElement = this.element.querySelector('.details-info') as HTMLElement; 
-    if (!attendancePanel || !detailsPanel) throw new Error("panel missing");
-
-    this.attendancePanel = attendancePanel;
-    this.detailsPanel = detailsPanel;
   }
 
-  populate() {
-    const { element, signup } = this;
+  render() {
+    const vm = this.viewModel;
+    const element = this.element;
+    if (!element) return;
 
-    // render student names and room badges
-    const dateDiv = element.querySelector('.signup-date') as HTMLInputElement;
-    if (dateDiv) dom.setHTML(dateDiv, dates.formatDateSlashes(new Date(signup.date)));
-    
-    const periodDiv = element.querySelector('.signup-period') as HTMLInputElement;
-    const period = signup?.period === "Wed. PM Int." ? signup.period : "Period " + signup.period;
-    if (periodDiv) dom.setHTML(periodDiv, period);
+    element.removeAttribute('id');
+    element.classList.add('data-row');
 
-    // render editor links/icons
-    const isEditor = store.getState()?.isEditor;
-    const editIcons = element.querySelector('.edit-icons') as HTMLElement;
+    dom.setHTML(element.querySelector('.signup-date'), vm.date || '');
+    dom.setHTML(element.querySelector('.signup-period'), vm.period || '');
+    dom.setHTML(element.querySelector('.student-name'), vm.studentNameLabel || '');
+    dom.setText(element.querySelector('.type'), vm.typeAndDetailsLabel || '');
+    dom.setText(element.querySelector('.study-teacher'), vm.teacherStudy || '');
+    dom.setText(element.querySelector('.comments'), vm.comments || '');
+
+    const editIcons = element.querySelector('.edit-icons') as HTMLElement | null;
     if (editIcons) {
-      dom.setVisible(editIcons, true);
-      if (isEditor) {
-        const editLink = editIcons.querySelector('a.edit-link') as HTMLAnchorElement;
+      dom.setVisible(editIcons, vm.userIsEditor);
+
+      if (vm.userIsEditor) {
+        const editLink = editIcons.querySelector('a.edit-link') as HTMLAnchorElement | null;
         if (editLink) {
-          const editUrl = `${editLink.href}&id=${signup.rowId}`
-          dom.setAttribute(editLink, "href", editUrl);
+          dom.setAttribute(editLink, 'href', vm.editUrl);
+          dom.setAttribute(editLink, 'target', '_blank');
         }
       }
     }
-    
-    //render type label and study info
-    const typeDiv = element.querySelector('.type') as HTMLElement;
-    if (typeDiv) dom.setText(typeDiv, getSignupTypeLabel(signup));
-    
-    const studyTeacherDiv = element.querySelector('.study-teacher') as HTMLElement;
-    if (studyTeacherDiv) dom.setText(studyTeacherDiv, signup.teacherStudy || "");
-    
-    const commentDiv = element.querySelector('.comments') as HTMLElement;
-    if (commentDiv) dom.setText(commentDiv, signup.comments || "");
 
-    // render room information
-    const roomDiv = element.querySelector('.room') as HTMLElement;
-    if (roomDiv) {
-      const roomText = signup.room
-      ? `Glass Room ${signup.room}, reserved by ${signup.email}`
-      : "";
-      dom.setText(roomDiv, roomText);
-    }
-
-  this.mountCheckinBoxes();
+    this.mountCheckinBoxes(element);
   }
 
- mountCheckinBoxes() {
-    if (!this.attendancePanel) return;
+  getElement(): HTMLElement | null {
+    const templateSelector = '#student-row-template';
 
-    const checkinType = Object.keys(CHECKIN_CONFIG);
-    checkinType
-    .forEach((type) => {
-      const panel = this.attendancePanel.querySelector(`div[data-type="${type}"]`);
+    const template = dom.qs<HTMLTemplateElement>(templateSelector);
+    if (!template?.content) {
+      throw new Error(`${templateSelector} template not found`);
+    }
+
+    const clonedNode = template.content.cloneNode(true) as DocumentFragment;
+    const firstChild = clonedNode.firstElementChild as HTMLElement;
+
+    return firstChild || null;
+  }
+
+  mountCheckinBoxes(element: HTMLElement) {
+    const attendancePanel = element.querySelector('.attendance-info') as HTMLElement | null;
+    if (!attendancePanel) return;
+
+    (Object.keys(CHECKIN_CONFIG) as CheckinType[]).forEach((type) => {
+      const propName = CHECKIN_CONFIG[type].propName;
+      const panel = attendancePanel.querySelector(`div[data-type="${String(type)}"]`);
       if (panel) {
-        const propName = CHECKIN_CONFIG[type].propName;
-        const timeValue = this.signup[propName] as string || "";
-        
+        const rowId = this.viewModel.rowId;
+        const timeValue = this.viewModel[propName];
+        const isEditor = this.viewModel.userIsEditor;
+
+        const checkinBox = new CheckinBox(type, rowId, timeValue, checkinStore, isEditor);
+
         panel.innerHTML = ''; // Ensure container is clean before appending
-        const checkinBox = new CheckinBox(type, this.signup.rowId, timeValue, checkinStore, true);
-        panel.append(checkinBox.element as HTMLElement);
-        checkinBox.render();
+        if (checkinBox.element) {
+          panel.append(checkinBox.element);
+          checkinBox.render();
+        }
       }
     });
   }
-
-  handleEditClick() {
-
-  }
-
-  handleSaveClick(){
-
-  }
-
-  handleCancelClick(){}
-
-  handleDeleteClick(){}
 }
 
-// =====================================================================
-// PURE HELPER FUNCTIONS
-// =====================================================================
+export const makeDataRowViewModel = (
+  signup: Signup,
+  state: AdminState
+): AdminDataRowViewModel => {
+  const {
+    type = '',
+    firstname = '',
+    lastname = '',
+    rowId = '',
+    teacherStudy = '',
+    comments = '',
+    email = '',
+    studyIn1 = '',
+    studyIn2 = '',
+    mediaIn = '',
+    mediaOut = '',
+  } = signup;
 
-function getSignupTypeLabel(signup: Signup) {
+  const rowIsStaff = type === 'Staff reservation';
+  const userIsEditor = state.isEditor;
+  const scriptUrl = state.appConfig?.scriptUrl || '';
+  const separator = scriptUrl.includes('?') ? '&' : '?';
+  const editUrl = scriptUrl
+    ? `${scriptUrl}${separator}page=update&id=${rowId}`
+    : `?page=update&id=${rowId}`;
+
+  const typeDetails = getSignupTypeDetails(signup);
+  const typeLabel = getTypeLabel(type);
+  const detailsLabel = typeDetails.length > 0 ? ` (${typeDetails})` : '';
+  const typeAndDetailsLabel = `${typeLabel}${detailsLabel}`;
+
+  const room = signup.room ? String(signup.room).trim() : '';
+  const roomLabel = room ? `Glass Room ${room}, reserved by ${email}` : '';
+
+  const studentNameLabel = `${lastname}, ${firstname}`;
+
+  const date = dates.formatDateSlashes(signup.date);
+  const period = signup?.period === "Wed. PM Int." ? signup.period : "Period " + signup.period;
+
+  return {
+    type,
+    date,
+    period,
+    room,
+    studentNameLabel,
+    rowId,
+    teacherStudy,
+    comments,
+    typeDetails,
+    rowIsStaff,
+    userIsEditor,
+    editUrl,
+    typeAndDetailsLabel,
+    roomLabel,
+    studyIn1,
+    studyIn2,
+    mediaIn,
+    mediaOut,
+  };
+};
+
+const getTypeLabel = (type: string): string => {
+  switch (type) {
+    case 'Intervention':
+    case 'Alt setting':
+    case 'Non-intervention':
+    case 'Staff reservation':
+      return type;
+    case 'Assessment':
+      return 'Assessment make-up';
+    case 'Tutoring':
+      return 'NHS Tutoring';
+    default:
+      return '';
+  }
+};
+
+function getSignupTypeDetails(signup: Signup): string {
   switch (signup.type) {
     case 'Intervention':
-      return `Intervention: ${signup.subject}`;
     case 'Tutoring':
-      return `NHS Tutoring: ${signup.subject}`;
+      return signup.subject || '';
     case 'Assessment':
-      return `Assessment Makeup: ${signup.teacherAcad}`;
     case 'Alt setting':
-      return `Alt Setting for ${signup.teacherAcad}`;
+      return signup.teacherAcad || '';
     case 'Non-intervention':
-      return `Non-Intervention (${signup.purpose}/${signup.teacherAcad})`;
+      return `${signup.purpose || ''}/${signup.teacherAcad || ''}`;
     case 'Staff reservation':
-      return 'Staff reservation';
+      return '';
     default:
-      console.warn('Unknown signup type:', signup.type);
-      return signup.type || '';
+      return '';
   }
 }

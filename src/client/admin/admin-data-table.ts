@@ -1,7 +1,11 @@
-import * as dom from "../common/dom";
-import { AdminState, store } from "./admin-store";
-import { AdminDataRow as DataRow } from "./admin-data-row";
-import * as adminPanels from "./admin-panels";
+import * as dom from '../common/dom';
+import { AdminState, store } from './admin-store';
+import { makeDataRowViewModel, AdminDataRow as DataRow } from './admin-data-row';
+import * as adminPanels from './admin-panels';
+import { filterSignups, sortSignups } from './admin-filter';
+import { setPanelView } from './admin-panels';
+
+export { filterSignups, sortSignups };
 
 // =====================================================================
 // STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
@@ -11,74 +15,82 @@ import * as adminPanels from "./admin-panels";
 
 export const initObservers = () => {
   // Rebuild the data table with date, signups or sort changes
-  store.subscribe((state) => {
-    const { signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder, ui_requestedStudentEmail: requestedStudentEmail, ui_currentView } = state;
-    if (!requestedStudentEmail) return;
-    
-    const sortedSignups = sortSignups(signups || [], currentSortField, currentSortOrder);
-    const targetEmail = (requestedStudentEmail || '').toLowerCase().trim();
-    const currentSignups = sortedSignups.filter(su => {
-      if (!targetEmail) return true;
-      const studentEmail = (su.emailStudent || '').toLowerCase().trim();
-      const submitterEmail = (su.email || '').toLowerCase().trim();
-      return studentEmail === targetEmail || submitterEmail === targetEmail || !studentEmail;
-    });
-    
-    dom.qsa("#student-panel .student-row").forEach(row => row.remove());
+  store.subscribe(
+    (state) => {
+      renderTable(state);
+    },
+    [
+      'signups',
+      'ui_currentSortField',
+      'ui_currentSortOrder',
+      'ui_requestedStudentEmail',
+    ],
+  );
+};
 
-    // render new rows
-    const targetTable = (dom.qs("#student-table") || dom.qs("#student-panel")) as HTMLElement;
-    const newRows: DataRow[] = [];
+/**
+ * Re-renders student and staff tables based on current filter & sort state
+ */
+export const renderTable = (state: AdminState) => {
+  const studentTable = dom.qs('#student-table') as HTMLElement | null;
 
-    currentSignups.forEach(signup => {
-      // adds a new empty student row
-      const dataRow = new DataRow(signup.rowId, signup);
-      targetTable.append(dataRow.element);
-      dataRow.populate();
-      newRows.push(dataRow);
-    });
+  // Always clear existing data rows first to avoid ghost rows
+  dom.qsa('#student-table .student-row').forEach((row) => row.remove());
 
-    const emptyRow = dom.qs("#student-panel .student-row-empty");
-    if (emptyRow) {
-      dom.setVisible(emptyRow, currentSignups.length === 0);
-    }
+  const {
+    signups,
+    ui_currentSortField: currentSortField,
+    ui_currentSortOrder: currentSortOrder,
+    ui_requestedStudentEmail: requestedStudentEmail,
+    ui_currentView,
+  } = state;
 
-    setTimeout(() => {
-      adminPanels.setPanelView(ui_currentView);
-    }, 0);
+  if (!requestedStudentEmail) return;
 
-    // Update state with new rows
-    store.setState({ ui_dataRows: newRows });
-  }, ["signups", "ui_currentSortField", "ui_currentSortOrder", "ui_requestedStudentEmail"]);
+  const currentSignups = filterSignups(signups || [], requestedStudentEmail);
+  const sortedSignups = sortSignups(
+    currentSignups,
+    currentSortField,
+    currentSortOrder,
+  );
 
-  store.subscribe((state) => {
-    adminPanels.setPanelView(state.ui_currentView);
-  }, ["ui_currentView"]);
+  let studentCount = 0;
 
-  // updates the sort header ui
-  store.subscribe((state) => {
-    const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = state;
-    dom.qsa(".sort-icon i").forEach(icon => icon.classList.remove("active", "fa-caret-up", "fa-caret-down"));
+  sortedSignups.forEach((signup) => {
+    const dataRowVM = makeDataRowViewModel(signup, state);
+    const dataRow = new DataRow(dataRowVM);
+    const rowElement = dataRow.element;
 
-    const sortIcon = dom.qs(`.sort-${currentSortField}`) as HTMLElement;
-    sortIcon.classList.add("active");
+    if (!rowElement) return;
 
-    const directionIcon = currentSortOrder === "asc" ? "fa-caret-down" : "fa-caret-up";
-    sortIcon.classList.add(directionIcon);
-  }, ["ui_currentSortField" , "ui_currentSortOrder"]);
+    studentTable?.append(rowElement);
+      studentCount++;
+
+    dataRow.render();
+  });
+
+  // Toggle "No records found" empty states
+  dom.setVisible('.student-row-empty', studentCount === 0);
+
+  // Ensure current panel view is applied to newly mounted rows
+  setPanelView(state.ui_currentView);
 };
 
 // =====================================================================
 // 2. DOM EVENT HANDLERS (The "Pub" in Pub/Sub)
-// These functions are called by user clicks/inputs. 
+// These functions are called by user clicks/inputs.
 // Notice how they ONLY write to the store, and touch NO DOM elements.
 // =====================================================================
 
 export const resort = (field: AdminState['ui_currentSortField']) => {
-  const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } = store.getState();
-  
-  const newOrder = (currentSortField === field && currentSortOrder === "asc") ? "desc" : "asc";
-  
+  const {
+    ui_currentSortField: currentSortField,
+    ui_currentSortOrder: currentSortOrder,
+  } = store.getState();
+
+  const newOrder =
+    currentSortField === field && currentSortOrder === 'asc' ? 'desc' : 'asc';
+
   store.setState({ ui_currentSortField: field, ui_currentSortOrder: newOrder });
 };
 
@@ -86,37 +98,23 @@ export const resort = (field: AdminState['ui_currentSortField']) => {
 // PURE UTILITIES & VISUAL TOGGLES
 // =====================================================================
 
-
-export const sortSignups = (
-  signups: Signup[], 
-  field: AdminState['ui_currentSortField'], 
-  order: 'asc' | 'desc'
-  ) => {
-  const modifier = (order === "asc" ? 1 : -1);
-  const targetField = field === "date" ? "date" : "period";
-  
-  return [...signups].sort((a, b) => {
-    if (a[targetField] < b[targetField]) return -1 * modifier;
-    if (a[targetField] > b[targetField]) return 1 * modifier;
-    return 0;
-  });
-}
-
 /**
- * Shows the attendance panel 
+ * Shows the attendance panel
  * */
 export const showAttendance = () => {
   adminPanels.panelViewListener('attendance');
-  const panels = dom.qsa(".panel") as HTMLElement[];
-  panels.forEach(panel => panel.style.transform = "translate(0, 0)");
-}
+  const panels = dom.qsa('.panel') as HTMLElement[];
+  panels.forEach((panel) => (panel.style.transform = 'translate(0, 0)'));
+};
 
 export const showSignupInfo = () => {
   adminPanels.panelViewListener('details');
-  const sliderWrapper = dom.qs(".slider-wrapper") as HTMLElement;
-  const width = sliderWrapper ? sliderWrapper.getBoundingClientRect().width : 550;
-  const panels = dom.qsa(".panel") as HTMLElement[];
-  panels.forEach(panel => panel.style.transform = `translate(-${width}px, 0)`);
-}
-
-
+  const sliderWrapper = dom.qs('.slider-wrapper') as HTMLElement;
+  const width = sliderWrapper
+    ? sliderWrapper.getBoundingClientRect().width
+    : 550;
+  const panels = dom.qsa('.panel') as HTMLElement[];
+  panels.forEach(
+    (panel) => (panel.style.transform = `translate(-${width}px, 0)`),
+  );
+};
