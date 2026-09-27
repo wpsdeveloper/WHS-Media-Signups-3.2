@@ -560,6 +560,35 @@ span.twitter-typeahead {
   overflow-y: auto;
 }
 
+/* Student search input clear button and helper */
+.student-clear-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #adb5bd;
+  transition: color 0.15s ease-in-out, transform 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  z-index: 5;
+}
+
+.student-clear-btn:hover {
+  color: #495057;
+  transform: translateY(-50%) scale(1.15) !important;
+}
+
+.student-clear-btn:focus {
+  outline: none;
+  color: var(--wps-orange);
+}
+
+#student-search-helper {
+  transition: all 0.15s ease-in-out;
+}
+
 /* ==========================================================================
    Feature: Signup Page
    ========================================================================== */

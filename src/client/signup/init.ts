@@ -136,7 +136,9 @@ function bindEvents() {
   dom.addEventListener("#study-teacher-input", "input", (e) => studySelect.studyTeacherChangeHandler(e));
   dom.addEventListener("#subject-int-select, #subject-int-input, #subject-non-int", "change", (e) => subjectSelect.subjectChangeHandler(e));
   dom.addEventListener("#subject-int-input", "input", (e) => subjectSelect.subjectChangeHandler(e));
-  dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e as InputEvent));
+  dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
+  dom.addEventListener(".student-autocomplete", "change", (e) => studentInput.studentInputChangeHandler(e));
+  dom.addEventListener("#student-clear-btn", "click", () => studentInput.clearStudentInput());
   dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
   dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
 }

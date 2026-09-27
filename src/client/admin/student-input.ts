@@ -4,31 +4,86 @@ import { store } from './admin-store';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
+const setHelperState = (isSearching: boolean, noResults = false) => {
+  const helper = dom.qs('#student-search-helper') as HTMLElement | null;
+  if (!helper) return;
+
+  if (isSearching) {
+    helper.textContent = 'Searching...';
+    helper.classList.remove('text-start');
+    helper.classList.add('text-end');
+  } else {
+    helper.textContent = noResults ? 'No matching students found' : 'Type at least 2 letters to search.';
+    helper.classList.remove('text-end');
+    helper.classList.add('text-start');
+  }
+};
+
+const updateClearButtonState = (hasValue: boolean, isSearching: boolean) => {
+  if (isSearching || !hasValue) {
+    dom.setVisible('#student-clear-btn', false);
+  } else {
+    dom.setVisible('#student-clear-btn', true);
+  }
+};
+
+export const clearStudentInput = () => {
+  clearTimeout(debounceTimer);
+  const input = dom.qs('.student-autocomplete') as HTMLInputElement | null;
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  dom.setVisible('#student-search-spinner', false);
+  dom.setVisible('#student-clear-btn', false);
+  setHelperState(false);
+  renderStudentDatalist([], '');
+  store.setState({ ui_currentStudentName: '', ui_requestedStudentEmail: '' });
+};
+
 /**
  * Publisher: Listens to input changes in the student text field and updates store state.
  */
-export const studentInputChangeHandler = (event: InputEvent) => {
+export const studentInputChangeHandler = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  const query = dom.valueOf(target);
+  const query = dom.valueOf(target).trim();
   store.setState({ ui_currentStudentName: query });
 
   clearTimeout(debounceTimer);
-  if (query.trim().length < 2) {
+  if (query.length < 2) {
+    dom.setVisible('#student-search-spinner', false);
+    updateClearButtonState(query.length > 0, false);
+    setHelperState(false);
     renderStudentDatalist([], query);
     return;
   }
 
+  // Show spinner and right-aligned Searching... immediately
+  dom.setVisible('#student-search-spinner', true);
+  dom.setVisible('#student-clear-btn', false);
+  setHelperState(true);
+
   debounceTimer = setTimeout(() => {
     if (typeof google === 'undefined' || !google?.script?.run) {
+      dom.setVisible('#student-search-spinner', false);
+      updateClearButtonState(query.length > 0, false);
+      setHelperState(false);
       return;
     }
 
     google.script.run
       .withSuccessHandler((matchingStudents: Student[]) => {
+        dom.setVisible('#student-search-spinner', false);
+        updateClearButtonState(true, false);
+        const hasNoResults = matchingStudents.length === 0;
+        setHelperState(false, hasNoResults);
         const formattedNames = parseStudentDataList(matchingStudents);
         renderStudentDatalist(formattedNames, query);
       })
       .withFailureHandler((error: Error) => {
+        dom.setVisible('#student-search-spinner', false);
+        updateClearButtonState(true, false);
+        setHelperState(false);
         console.error('Failed to search students:', error);
       })
       .searchStudents(query);

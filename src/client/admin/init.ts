@@ -88,6 +88,8 @@ export const initializeUi = () => {
 
 function bindEvents() {
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
+  dom.addEventListener(".student-autocomplete", "change", (e) => studentInput.studentInputChangeHandler(e));
+  dom.addEventListener("#student-clear-btn", "click", () => studentInput.clearStudentInput());
   dom.addEventListener('#get-audit-btn', 'click', () => data.getAuditHandler());
   dom.addEventListener('#save-settings-btn', 'click', () => data.saveSettingsHandler());
   dom.addEventListener('#save-settings-btn-top', 'click', () => data.saveSettingsHandler());

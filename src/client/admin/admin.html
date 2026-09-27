@@ -94,9 +94,34 @@
             <div class="mb-3">
               <label for="student-name" class="form-label main-label fw-bold">Student Name</label>
               <div id="student-input-div" class="position-relative">
-                <input type="text" class="form-control student-autocomplete" id="student-name" placeholder="Begin typing a name..." autocomplete="off">
+                <input type="text" class="form-control student-autocomplete pe-5" id="student-name" placeholder="Begin typing a name..." autocomplete="off">
+                <!-- Spinner positioned inside right edge of input -->
+                <div
+                  id="student-search-spinner"
+                  class="student-search-spinner position-absolute top-50 end-0 translate-middle-y me-3 d-none"
+                  style="pointer-events: none"
+                >
+                  <div
+                    class="spinner-border spinner-border-sm text-secondary"
+                    role="status"
+                  >
+                    <span class="visually-hidden">Searching...</span>
+                  </div>
+                </div>
+
+                <!-- Clear button ('X') positioned inside right edge of input -->
+                <button
+                  type="button"
+                  id="student-clear-btn"
+                  class="student-clear-btn position-absolute top-50 end-0 translate-middle-y me-3 d-none"
+                  aria-label="Clear student search"
+                >
+                  <i class="fa-solid fa-circle-xmark fa-lg"></i>
+                </button>
               </div>
-              <div class="form-text text-muted small mt-1">Type at least 2 letters to search.</div>
+              <div id="student-search-helper" class="form-text text-muted small mt-1 text-start">
+                Type at least 2 letters to search.
+              </div>
             </div>
 
             <div class="d-grid mb-3">
