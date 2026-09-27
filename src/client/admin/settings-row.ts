@@ -84,10 +84,9 @@ export class SettingsRow {
     if (dataType === "integer" || typeof value === "number") {
       input.type = "number";
       input.value = String(value);
-    } else if (dataType === "date" || value instanceof Date) {
+    } else if (dataType === "date" && value instanceof Date) {
       input.type = "date";
-      const dateObj = value instanceof Date ? value : new Date(value);
-      input.value = !isNaN(dateObj.getTime()) ? dates.toDateInputValue(dateObj) : String(value);
+      input.value = !isNaN(value.getTime()) ? dates.toDateInputValue(value) : String(value);
     } else if (dataType === "string-array" || Array.isArray(value)) {
       input.type = "text";
       input.value = Array.isArray(value) ? value.join(", ") : String(value);
