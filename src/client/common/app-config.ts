@@ -2,11 +2,9 @@ import { IS_DEBUG, getMockAppConfig } from './debug';
 import * as dom from './dom';
 
 export async function getAppConfig(): Promise<AppConfig> {
-  if (IS_DEBUG) {
-    return await getMockAppConfig();
-  }
-  console.log('window.APP_CONFIG', window.APP_CONFIG);
-  return await window.APP_CONFIG;
+  const appConfig = window.APP_CONFIG;
+  if (!appConfig) throw new Error("Error retrieveing server data: ");
+  return IS_DEBUG ? await getMockAppConfig(): appConfig;
 }
 
 export const updateScriptLinks = async () => {

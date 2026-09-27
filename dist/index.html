@@ -420,7 +420,6 @@ var safeJsonParse = (data, fallback = []) => {
 *  Receives student data from the server 
 */
 var parseStudents = (students) => {
-	console.log("students", students);
 	return Array.isArray(students) ? students : [];
 };
 var parseStudentDataList = (students) => {
@@ -1352,7 +1351,7 @@ var submitForm = function() {
 	var _ref = _asyncToGenerator(function* () {
 		const formData = validateForm(collectData());
 		if (!formData) {
-			console.log("Invalid form data, submission aborted.");
+			console.error("Invalid form data, submission aborted.");
 			return;
 		}
 		showLoadingModal("Submitting");
@@ -1502,7 +1501,7 @@ var startOver = () => {
 };
 function _mockSubmit() {
 	_mockSubmit = _asyncToGenerator(function* (data) {
-		console.log("Debug mode: Form data to submit:", data);
+		console.warn("Debug mode: Form data to submit:", data);
 		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 		yield delay(2e3);
 	});
@@ -1515,8 +1514,9 @@ function getAppConfig() {
 }
 function _getAppConfig() {
 	_getAppConfig = _asyncToGenerator(function* () {
-		console.log("window.APP_CONFIG", window.APP_CONFIG);
-		return yield window.APP_CONFIG;
+		const appConfig = window.APP_CONFIG;
+		if (!appConfig) throw new Error("Error retrieveing server data: ");
+		return appConfig;
 	});
 	return _getAppConfig.apply(this, arguments);
 }
@@ -1604,7 +1604,6 @@ function _parseServerData$2() {
 		const defaultMaxSetting = settings.find((s) => s.key === "Max_Signups_Default");
 		const defaultMax = (_defaultMaxSetting$va = defaultMaxSetting === null || defaultMaxSetting === void 0 ? void 0 : defaultMaxSetting.value) !== null && _defaultMaxSetting$va !== void 0 ? _defaultMaxSetting$va : 10;
 		const appConfig = yield getAppConfig();
-		console.log(parsedData);
 		return {
 			appConfig,
 			students,
@@ -1663,7 +1662,6 @@ var refreshData$2 = function() {
 		showLoadingModal("Retrieving data");
 		try {
 			const serverData = yield fetchServerData$2();
-			console.log(serverData);
 			store$2.setState(_objectSpread2({}, serverData));
 		} catch (error) {
 			processError(error, "Failed to initialize app:");

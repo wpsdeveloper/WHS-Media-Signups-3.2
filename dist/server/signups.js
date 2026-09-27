@@ -32,7 +32,7 @@ function filterSignupsByDate(originalSignups, firstDate, lastDate) {
  * Note: a script in the spreadsheet imports these names into the ss nightly
  */
 function getStudentAudit(submittedEmail) {
-    console.log(submittedEmail);
+    console.log(`Sending email to ${submittedEmail}`);
     // gets all signups for a particular student
     const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
     const archiveSheet = SPREADSHEET.getSheetByName(ARCHIVE_SHEET_NAME);

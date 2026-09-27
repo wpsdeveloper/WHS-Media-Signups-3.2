@@ -86,7 +86,6 @@ async function parseServerData(data: string): Promise<SignupState> {
   const defaultMax = defaultMaxSetting?.value as number ?? 10;
   const appConfig = await getAppConfig();
 
-  console.log(parsedData);
   return {
     appConfig,
     students, studentNames, dailySchedules, signups, settings,
@@ -148,8 +147,6 @@ export const refreshData = async () => {
 
   try {
     const serverData = await fetchServerData();
-    
-    console.log(serverData);
     store.setState({ ...serverData });
   } catch (error) {
     messaging.processError(error as Error, 'Failed to initialize app:');

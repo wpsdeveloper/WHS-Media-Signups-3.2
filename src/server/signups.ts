@@ -36,7 +36,7 @@ function filterSignupsByDate(originalSignups: SSRow[], firstDate: Date , lastDat
  * Note: a script in the spreadsheet imports these names into the ss nightly 
  */
 function getStudentAudit(submittedEmail: string) {
-  console.log(submittedEmail);
+  console.log(`Sending email to ${submittedEmail}`);
   // gets all signups for a particular student
   const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   const archiveSheet = SPREADSHEET.getSheetByName(ARCHIVE_SHEET_NAME);

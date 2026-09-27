@@ -119,7 +119,7 @@ function updateStudentNames() {
     
     // if no more users, cycling is done
     if (!users) {
-      console.log('No users found.');
+      console.warn('No users found.');
       return;
     }
 

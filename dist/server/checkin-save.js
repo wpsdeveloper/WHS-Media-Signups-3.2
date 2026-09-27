@@ -6,10 +6,6 @@ function testCheckin() {
  * Stores a time value for a checkin into the spreadsheet
  */
 function setCheckin(checkinType, id, value) {
-    console.log("Saving checkin value");
-    console.log("checkinType", checkinType);
-    console.log("rowId", id);
-    console.log("value", value);
     const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
     if (!sheet)
         throw STANDARD_SERVER_ERROR;

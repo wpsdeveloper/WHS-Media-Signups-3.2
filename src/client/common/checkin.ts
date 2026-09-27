@@ -50,5 +50,4 @@ async function sendCheckinToServer(type: CheckinBox['type'], id: CheckinBox['row
  * */
 export const checkinSuccess = (returnVal: {propName: string, id: CheckinBox['rowId'], value: string}) => {
   console.log("Checkin success:", returnVal);
-
 }

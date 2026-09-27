@@ -3,7 +3,6 @@ function getCachedOrParsedCalendarBlocks(appSettings: Setting[]): DailyBlock[] {
   const cached = cache.get("calendar_blocks_v1");
   if (cached) {
     try {
-      console.log("Returning cached calendar data");
       return JSON.parse(cached);
     } catch (e) {
       console.warn("Cache parse failed, refetching schedule blocks", e);
@@ -14,7 +13,6 @@ function getCachedOrParsedCalendarBlocks(appSettings: Setting[]): DailyBlock[] {
 
   // Cache for 6 hours (21600 seconds = max allowed in GAS CacheService)
   try {
-    console.log("Caching calendar data");
     cache.put("calendar_blocks_v1", JSON.stringify(calendarBlocks), 21600);
   } catch (e) {
     console.warn("Cache storage failed", e);

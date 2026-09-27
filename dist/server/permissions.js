@@ -37,8 +37,8 @@ function mayViewAdmin() {
     let range = SPREADSHEET.getRangeByName(ADMIN_ACCESS_RANGE_NAME);
     if (!range)
         throw STANDARD_SERVER_ERROR;
-    let admins = range.getValues().map(row => row[0].toLowerCase().trim());
-    admins = admins.filter(item => item.length > 0);
+    const adminsCellValue = range.getValue();
+    const admins = adminsCellValue.split(",").map((ad) => ad.trim().toLowerCase());
     admins.forEach(admin => {
         if (userEmail === admin) {
             // allowed if the allowed domains are part of the user's email address

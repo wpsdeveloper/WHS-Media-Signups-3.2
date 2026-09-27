@@ -76,8 +76,6 @@ function wednesdayInterventions(date: Date) {
   const dateIsWednesday = (weekday === wednesday);
   
   const wedIntActive = store.getState().appConfig?.wedInt;
-
-  // console.log("Wed Int - returning "+ (dateIsWednesday && wedIntActive));
   return dateIsWednesday && wedIntActive;
 }
  

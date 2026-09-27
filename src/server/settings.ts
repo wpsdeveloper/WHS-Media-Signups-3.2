@@ -36,7 +36,6 @@ function saveAppSettings(settingsJson: string) {
     ["Key", "Value", "Description", "Comments", "Type"]
   ];
   const newSheetRows = headers.concat(newSettings);
-  console.log(newSheetRows);
 
   sheet.getDataRange().clear();
   sheet.getRange(1, 1, newSheetRows.length, headers[0].length)

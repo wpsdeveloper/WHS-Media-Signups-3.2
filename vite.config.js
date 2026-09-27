@@ -27,6 +27,10 @@ export default defineConfig(({ command, mode }) => {
           {
             src: normalizePath(resolve(__dirname, 'appsscript.json')),
             dest: 'dist'
+          },
+          {
+            src: normalizePath(resolve(__dirname, 'src/server/not-allowed.html')),
+            dest: ''
           }
         ]
       })

@@ -27,11 +27,14 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
   const settings = getAppSettings();
   const wedInt = settings.find(setting => setting.key === "Wed_Int_Active")?.value === 'On';
 
+  const userIsStaff = isStaff();
+  const userIsAdmin = mayViewAdmin();
+
   const appConfig = {
     view: page ? page : "signup",
     isEditor: mayEdit(),
-    isAdmin: mayViewAdmin(),
-    isStaff: isStaff(),
+    isAdmin: userIsAdmin,
+    isStaff: userIsStaff,
     email: getEmail(),
     updateId: getPageId(event),
     wedInt: wedInt,
@@ -43,16 +46,18 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
     const view = appConfig.view;
     if (view === "signup" || view === "update") {
       initialDataJson = getInitialSignupData(appConfig.updateId);
-    } else if (view === "attendance") {
+    } else if (view === "attendance" && userIsStaff) {
       initialDataJson = getInitialAttendanceData();
-    } else if (view === "admin") {
+    } else if (view === "admin" && userIsAdmin) {
       initialDataJson = getInitialAdminData();
+    } else {
+      throw new Error(`Invalid permissions for view: ${view}`);
     }
   } catch (err) {
-    console.warn("Failed to prefetch initial data in doGet:", err);
-    initialDataJson = "";
+    console.warn(err);
+    return getNotAllowedTemplate();
   }
-
+  
   // adds meta data so tha page reformats nicely on mobile devices
   template.addMetaTag('viewport', 'width=device-width, initial-scale=1');
   template.setTitle("WHS Intervention & Media Center Sign Up");
@@ -64,6 +69,13 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
   `);
   // sends the HTML to the client
   return template
+}
+
+function getNotAllowedTemplate() {
+  const nopeTemplate = HtmlService.createHtmlOutputFromFile('server/not-allowed.html'); 
+  nopeTemplate.addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  nopeTemplate.setTitle("WHS Intervention & Media Center Sign Up");
+  return nopeTemplate;
 }
 
 function getPageId(event: GoogleAppsScript.Events.DoGet) {
@@ -119,7 +131,6 @@ function getInitialAttendanceData(): string {
   const signups = getSignups();
   
   if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
-  console.log(appSettings);
 
   const initialData:AttendanceServerData = {
     dailySchedules: dailySchedules,

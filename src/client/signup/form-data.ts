@@ -12,7 +12,7 @@ export const submitForm = async () => {
 
   // returns if form is not validated (validation indicators occur in validateForm function)
   if (!formData) {
-    console.log("Invalid form data, submission aborted.");
+    console.error("Invalid form data, submission aborted.");
     return;
   }
 
@@ -203,7 +203,7 @@ function updateComplete() {
 
 
 async function mockSubmit(data: Signup) {
-  console.log("Debug mode: Form data to submit:", data);
+  console.warn("Debug mode: Form data to submit:", data);
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);
   return;

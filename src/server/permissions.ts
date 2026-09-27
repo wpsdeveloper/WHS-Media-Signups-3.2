@@ -41,8 +41,8 @@ function mayViewAdmin(): boolean {
   let range = SPREADSHEET.getRangeByName(ADMIN_ACCESS_RANGE_NAME);
   if (!range) throw STANDARD_SERVER_ERROR;
 
-  let admins = range.getValues().map(row => row[0].toLowerCase().trim());
-  admins = admins.filter(item => item.length > 0);
+  const adminsCellValue = range.getValue();
+  const admins: string[] = adminsCellValue.split(",").map((ad: String) => ad.trim().toLowerCase());
 
   admins.forEach(admin => {
     if (userEmail === admin) {

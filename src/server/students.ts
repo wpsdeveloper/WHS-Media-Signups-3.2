@@ -26,7 +26,6 @@ function getStudents(): Student[] {
         }
       }
       if (complete && fullJson) {
-        console.log("Returning cached student data");
         return JSON.parse(fullJson);
       }
     }
@@ -39,7 +38,6 @@ function getStudents(): Student[] {
   // Cache for 6 hours (21600 seconds = max allowed in GAS CacheService)
   // Cache in chunks of 90KB to strictly stay under the 100KB per-item limit
   try {
-    console.log("Caching student data in chunks");
     const json = JSON.stringify(students);
     const CHUNK_SIZE = 90000;
     const numChunks = Math.ceil(json.length / CHUNK_SIZE);
