@@ -1,17 +1,95 @@
 /* ==========================================================================
-   Variables & Theme Reference
+   WHS Intervention & Media Center - Brand Theme & Stylesheet
    ========================================================================== */
-/*
-font-family: 'Open Sans', sans-serif;
-font-family: 'Roboto Slab', serif;
 
-#F65C02; WPS Orange 
-#042350; WPS Blue 
-#01256F; WPS Text Blue
-#4984D1; bright blue
-#EBF3FF; pale blue background
-#8AAEE3; gray-blue
-*/
+:root {
+  /* Brand Core Colors */
+  --wps-navy: #042350;          /* WPS Primary Brand Dark Navy */
+  --wps-orange: #F65C02;        /* WPS Primary Brand Accent Orange */
+
+  /* Cohesive Blue Shades (derived from WPS Brand Navy) */
+  --wps-blue-primary: #144282;  /* Medium Brand Royal Blue */
+  --wps-blue-vibrant: #235fb3;  /* Vibrant Interactive Blue */
+  --wps-blue-light: #3b82f6;    /* Lighter Accent Blue */
+  --wps-blue-tint: #eaf2fc;     /* Ice Blue Pill/Badge/Disabled Background */
+  --wps-bg: #f3f7fd;            /* Page Background */
+  --wps-card: #ffffff;          /* Card Background */
+  --wps-border: #d2e1f2;        /* Soft Blue Border */
+  --wps-border-strong: #a4c4e8; /* Emphasized Blue Border */
+
+  /* Text Hierarchy */
+  --wps-text-main: #061933;     /* Deep Navy Main Text */
+  --wps-text-subtle: #4c627d;   /* Muted Slate Text */
+
+  /* Orange Accent States */
+  --wps-orange-hover: #e04f00;
+  --wps-orange-active: #c74400;
+  --wps-orange-tint: #fff5ee;
+  --wps-orange-border: #fed7be;
+
+  /* Bootstrap 5 Primary Overrides */
+  --bs-primary: #144282;
+  --bs-primary-rgb: 20, 66, 130;
+  --bs-link-color: #144282;
+  --bs-link-color-rgb: 20, 66, 130;
+  --bs-link-hover-color: #F65C02;
+  --bs-link-hover-color-rgb: 246, 92, 2;
+  --bs-focus-ring-color: rgba(20, 66, 130, 0.25);
+  --bs-border-color: #d2e1f2;
+}
+
+/* ==========================================================================
+   Bootstrap Global Overrides (Replace Default #0d6efd)
+   ========================================================================== */
+a {
+  color: var(--wps-blue-primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+a:hover, a:focus {
+  color: var(--wps-orange);
+}
+
+.text-primary {
+  color: var(--wps-blue-primary) !important;
+}
+
+.border-primary {
+  border-color: var(--wps-blue-primary) !important;
+}
+
+.bg-primary {
+  background-color: var(--wps-blue-primary) !important;
+}
+
+.link-primary {
+  color: var(--wps-blue-primary) !important;
+}
+
+.link-primary:hover,
+.link-primary:focus {
+  color: var(--wps-orange) !important;
+}
+
+.spinner-border.text-primary {
+  color: var(--wps-blue-primary) !important;
+}
+
+.bg-light-subtle {
+  background-color: var(--wps-blue-tint) !important;
+  border-color: var(--wps-border) !important;
+}
+
+.form-check-input:checked {
+  background-color: var(--wps-blue-primary);
+  border-color: var(--wps-blue-primary);
+}
+
+.form-check-input:focus {
+  border-color: var(--wps-blue-vibrant);
+  box-shadow: 0 0 0 0.2rem rgba(35, 95, 179, 0.25);
+}
 
 /* ==========================================================================
    Base Styles & Typography
@@ -23,7 +101,8 @@ html {
 
 body {
   font-family: 'Open Sans', sans-serif;
-  background: #EBF3FF;
+  background-color: var(--wps-bg);
+  color: var(--wps-text-main);
   min-height: 100vh;
 }
 
@@ -33,10 +112,15 @@ body {
 
 h1, h2, h3, h4 {
   font-family: 'Roboto Slab', serif;
+  color: var(--wps-text-main);
 }
 
 header h1 {
   font-size: 1.6rem;
+  padding-top: 10px;
+  margin-bottom: 0;
+  color: var(--wps-orange);
+  letter-spacing: -0.01em;
 }
 
 .page-title h1 {
@@ -45,39 +129,98 @@ header h1 {
 
 h4 {
   margin-bottom: 0;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
 }
 
 h4.sortable {
   cursor: pointer;
-}
-
-h1, header h1 {
-  padding-top: 20px;
-  color: #F65C02; /* WPS Orange */
+  user-select: none;
 }
 
 h2.step-header {
-  font-size: 1.3rem;
-  padding-bottom: 8px;
-  color: #01256F; /* WPS Text Blue */
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--wps-navy);
+  border-bottom: 2px solid var(--wps-blue-tint);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+h2.step-header i {
+  color: var(--wps-blue-vibrant);
+  margin-right: 8px;
+  font-size: 1.15rem;
 }
 
 /* ==========================================================================
-   Layout & Global Components
+   Header & Navigation
    ========================================================================== */
 header {
-  background: #042350; /* WPS Blue */
+  background-color: var(--wps-navy);
+  box-shadow: 0 2px 10px rgba(4, 35, 80, 0.25);
 }
 
 header .logo img {
-  height: 75px;
+  height: 72px;
   margin: 0 auto;
-  padding: 10px;
+  padding: 8px;
 }
 
+header .logo {
+  font-family: 'Roboto Slab', serif;
+  color: #ffffff;
+}
+
+header .logo div {
+  line-height: 1.2;
+}
+
+header .logo span {
+  font-family: 'Roboto Slab', serif;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+header .logo .public-schools {
+  font-family: 'Roboto Slab', serif;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+header .link-icons .btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+header .link-icons .btn:hover {
+  background: var(--wps-orange);
+  color: #ffffff;
+  border-color: var(--wps-orange);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(246, 92, 2, 0.35);
+}
+
+/* ==========================================================================
+   Subheader & Sub-navigation
+   ========================================================================== */
 .subheader {
-  background: #4984D1;
+  background: var(--wps-blue-primary);
+  color: #ffffff;
+  border-bottom: 2px solid rgba(4, 35, 80, 0.25);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.subheader label {
+  color: #ffffff;
+  font-weight: 600;
 }
 
 #tools {
@@ -90,58 +233,268 @@ header .logo img {
 
 #tools .pager {
   padding: 0 15px;
-  color: #01256F; /* WPS Text Blue */
+  color: #ffffff;
+  font-weight: 600;
 }
 
-.step-card {
-  background: #fff;
-  border: 1px #aaa solid;
-  box-sizing: border-box;
-  border-radius: 8px;
-  padding: 20px;
-  -webkit-box-shadow: -1px 1px 4px 0px rgba(128,128,128,0.5); 
-  box-shadow: -1px 1px 4px 0px rgba(128,128,128,0.5);
+#tools .btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+#tools .btn:hover {
+  background: var(--wps-orange);
+  border-color: var(--wps-orange);
+  color: #ffffff;
 }
 
 /* ==========================================================================
-   Forms & Buttons
+   Step Cards & Containers
    ========================================================================== */
+.step-card {
+  background: var(--wps-card);
+  border: 1px solid var(--wps-border);
+  box-sizing: border-box;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(4, 35, 80, 0.05);
+  transition: border-color 0.15s ease;
+}
+
+/* ==========================================================================
+   Form Controls & Inputs
+   ========================================================================== */
+.form-control,
+.form-select {
+  border: 1px solid var(--wps-border);
+  border-radius: 6px;
+  color: var(--wps-text-main);
+  background-color: #ffffff;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--wps-blue-vibrant);
+  box-shadow: 0 0 0 0.2rem rgba(35, 95, 179, 0.2);
+}
+
+.form-control.invalid,
+.form-select.invalid {
+  border: 1px solid #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.2);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background-color: var(--wps-blue-tint);
+  border-color: var(--wps-border);
+  color: var(--wps-text-subtle);
+}
+
 .subheader .form-control,
 .subheader .form-select {
   width: auto;
 }
 
-.form-control.invalid,
-.form-select.invalid {
-  border: 1px solid red;
+.main-label {
+  font-weight: 600;
+  color: var(--wps-text-main);
+  margin-bottom: 0.35rem;
 }
 
-.form-control:disabled {
-  background-color: #EBF3FF;
+.info-icon {
+  color: var(--wps-blue-vibrant);
+  transition: color 0.15s ease;
 }
 
-.btn-orange {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #F65C02;
-  --bs-btn-border-color: #F65C02;
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #f77226;
-  --bs-btn-hover-border-color: #f0691b;
-  --bs-btn-focus-shadow-rgb: 60, 153, 110;
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #f0691b;
-  --bs-btn-active-border-color: #f5630f;
-  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  --bs-btn-disabled-color: #fff;
-  --bs-btn-disabled-bg: #F65C02;
-  --bs-btn-disabled-border-color: #F65C02;
+.info-icon:hover {
+  color: var(--wps-orange);
 }
 
-.checkin-btn.btn{
-  --bs-btn-bg: #4984D1;
-  --bs-btn-color: #fff;
-  --bs-btn-hover-bg: #1b63c2;
-   --bs-btn-hover-color: #fff;
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn-primary,
+button.btn-primary,
+a.btn-primary,
+.btn.btn-primary {
+  --bs-btn-bg: var(--wps-blue-primary);
+  --bs-btn-border-color: var(--wps-blue-primary);
+  --bs-btn-hover-bg: var(--wps-navy);
+  --bs-btn-hover-border-color: var(--wps-navy);
+  --bs-btn-active-bg: var(--wps-navy);
+  --bs-btn-active-border-color: var(--wps-navy);
+  --bs-btn-color: #ffffff;
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-active-color: #ffffff;
+  background-color: var(--wps-blue-primary) !important;
+  border-color: var(--wps-blue-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(20, 66, 130, 0.25);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+button.btn-primary:hover,
+button.btn-primary:focus,
+a.btn-primary:hover,
+a.btn-primary:focus {
+  background-color: var(--wps-navy) !important;
+  border-color: var(--wps-navy) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(4, 35, 80, 0.3);
+}
+
+.btn-primary:active,
+button.btn-primary:active,
+a.btn-primary:active {
+  background-color: #021633 !important;
+  border-color: #021633 !important;
+  color: #ffffff !important;
+  transform: translateY(0);
+}
+
+/* Brand Accent (Orange) Buttons */
+.btn-accent,
+.btn-orange,
+button.btn-accent,
+button.btn-orange,
+a.btn-accent,
+a.btn-orange,
+.btn.btn-accent,
+.btn.btn-orange {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: var(--wps-orange);
+  --bs-btn-border-color: var(--wps-orange);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: var(--wps-orange-hover);
+  --bs-btn-hover-border-color: var(--wps-orange-hover);
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-active-bg: var(--wps-orange-active);
+  --bs-btn-active-border-color: var(--wps-orange-active);
+  --bs-btn-disabled-color: #ffffff;
+  --bs-btn-disabled-bg: var(--wps-orange);
+  --bs-btn-disabled-border-color: var(--wps-orange);
+  background-color: var(--wps-orange) !important;
+  border-color: var(--wps-orange) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(246, 92, 2, 0.28);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-accent:hover,
+.btn-accent:focus,
+.btn-orange:hover,
+.btn-orange:focus,
+button.btn-accent:hover,
+button.btn-accent:focus,
+button.btn-orange:hover,
+button.btn-orange:focus,
+a.btn-accent:hover,
+a.btn-accent:focus,
+a.btn-orange:hover,
+a.btn-orange:focus {
+  background-color: var(--wps-orange-hover) !important;
+  border-color: var(--wps-orange-hover) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(246, 92, 2, 0.35);
+}
+
+.btn-accent:active,
+.btn-orange:active,
+button.btn-accent:active,
+button.btn-orange:active,
+a.btn-accent:active,
+a.btn-orange:active {
+  background-color: var(--wps-orange-active) !important;
+  border-color: var(--wps-orange-active) !important;
+  color: #ffffff !important;
+  transform: translateY(0);
+}
+
+.btn-outline-accent,
+button.btn-outline-accent,
+a.btn-outline-accent,
+.btn.btn-outline-accent {
+  background-color: transparent !important;
+  border-color: var(--wps-orange) !important;
+  color: var(--wps-orange) !important;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-accent:hover,
+.btn-outline-accent:focus,
+button.btn-outline-accent:hover,
+button.btn-outline-accent:focus,
+a.btn-outline-accent:hover,
+a.btn-outline-accent:focus {
+  background-color: var(--wps-orange) !important;
+  border-color: var(--wps-orange) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(246, 92, 2, 0.25);
+}
+
+.btn-accent-subtle,
+button.btn-accent-subtle,
+a.btn-accent-subtle {
+  background-color: var(--wps-orange-tint) !important;
+  border-color: var(--wps-orange-border) !important;
+  color: var(--wps-orange) !important;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-accent-subtle:hover,
+.btn-accent-subtle:focus,
+button.btn-accent-subtle:hover,
+button.btn-accent-subtle:focus,
+a.btn-accent-subtle:hover,
+a.btn-accent-subtle:focus {
+  background-color: var(--wps-orange) !important;
+  border-color: var(--wps-orange) !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--wps-blue-primary);
+  --bs-btn-border-color: var(--wps-blue-primary);
+  --bs-btn-hover-bg: var(--wps-blue-primary);
+  --bs-btn-hover-border-color: var(--wps-blue-primary);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-active-bg: var(--wps-navy);
+  --bs-btn-active-border-color: var(--wps-navy);
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-focus-shadow-rgb: 20, 66, 130;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.checkin-btn.btn {
+  --bs-btn-color: var(--wps-blue-primary);
+  --bs-btn-border-color: var(--wps-blue-primary);
+  --bs-btn-hover-bg: var(--wps-blue-primary);
+  --bs-btn-hover-border-color: var(--wps-blue-primary);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-active-bg: var(--wps-navy);
+  --bs-btn-active-border-color: var(--wps-navy);
+  --bs-btn-active-color: #ffffff;
+  --bs-btn-focus-shadow-rgb: 20, 66, 130;
+  font-weight: 600;
+  border-radius: 6px;
 }
 
 /* ==========================================================================
@@ -157,6 +510,7 @@ header .logo img {
 
 .hint, .signup #purpose .hint {
   font-size: 75%;
+  color: var(--wps-text-subtle);
 }
 
 .hide-left {
@@ -170,10 +524,12 @@ header .logo img {
 .sort-icon i {
   font-size: 75%;
   opacity: 50%;
+  color: var(--wps-blue-vibrant);
 }
 
 .sort-icon .active {
   opacity: 100%;
+  color: var(--wps-orange) !important;
 }
 
 .sort-icon .loading {
@@ -182,7 +538,7 @@ header .logo img {
 
 .type-warning {
   font-size: 75%;
-  text-decoration: italic; /* Note: This was left strictly as written, but 'text-decoration: italic' is invalid CSS; it should likely be 'font-style: italic' if you ever intend to fix it. */
+  font-style: italic;
 }
 
 /* ==========================================================================
@@ -197,225 +553,256 @@ span.twitter-typeahead {
   margin-top: 12px;
   padding: 8px 8px;
   background-color: #fff;
-  border: 1px solid #ccc;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--wps-border);
   border-radius: 8px;
-  box-shadow: 0 5px 10px rgba(0,0,0,.2);
+  box-shadow: 0 5px 15px rgba(4, 35, 80, 0.15);
   max-height: 300px;
   overflow-y: auto;
 }
 
 /* ==========================================================================
-   Feature: Signup
+   Feature: Signup Page
    ========================================================================== */
 .signup {
-  background: #EBF3FF; /*pale blue background*/
+  background-color: var(--wps-bg);
   min-height: 100vh;
   width: 100%;
 }
 
-.signup {
-  .main-label {
-    font-weight: bold;
-  }
+.signup #type a[data-bs-toggle="tooltip"] {
+  text-decoration: none;
+  color: inherit;
+}
 
-  .info-icon {
-    color: #8AAEE3;
-  }
+.signup #type .schedule-link {
+  font-size: 80%;
+  color: var(--wps-blue-vibrant);
+}
 
-  #type a[data-bs-toggle="tooltip"] {
-    text-decoration: none;
-    color: inherit;
-  }
+.signup #type .staff-only-type {
+  font-style: italic;
+}
 
-  #type .schedule-link {
-    font-size: 80%;
-  }
-
-  #type .staff-only-type {
-    font-style: italic;
-  }
-
-  .editor-only {
-    display: none;
-  }
+.signup .editor-only {
+  display: none;
 }
 
 /* ==========================================================================
-   Feature: Attendance
+   Feature: Attendance Page
    ========================================================================== */
+.attendance {
+  background-color: var(--wps-bg);
+  min-height: 100vh;
+}
+
 .attendance .data-row,
 .attendance .data-row.student-row-empty {
   padding: 10px 14px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--wps-card);
+  border: 1px solid var(--wps-border);
   border-radius: 8px;
   margin-bottom: 10px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 1px 3px rgba(4, 35, 80, 0.03);
 }
 
 .attendance .data-row.student-row:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+  border-color: var(--wps-border-strong);
+  box-shadow: 0 3px 8px rgba(4, 35, 80, 0.08);
 }
 
-.attendance {
-  .student-row {
-    .student-name {
-      font-weight: 600;
-      color: #0f172a;
-      font-size: 0.95rem;
-    }
-    
-    .study-teacher {
-      font-size: 0.825rem;
-      font-weight: 500;
-      color: #64748b;
-    }
+.attendance .student-row .student-name {
+  font-weight: 600;
+  color: var(--wps-text-main);
+  font-size: 0.95rem;
+}
 
-    .type {
-      font-style: italic;
-      color: #475569;
-    }
+.attendance .student-row .study-teacher {
+  font-size: 0.825rem;
+  font-weight: 500;
+  color: var(--wps-text-subtle);
+}
 
-    .comments {
-      font-size: 80%;
-      color: #64748b;
-    }
-    
-    button {
-      font-size: 0.75rem;
-    }
-    
-    .attendance-info {
-      label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        font-weight: 600;
-        color: #64748b;
-      }
-      .time-value {
-        font-weight: 600;
-      }
-    }
-  }
+.attendance .student-row .type {
+  font-style: italic;
+  color: var(--wps-text-subtle);
+}
 
-  .checkin-box-inner {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-  }
+.attendance .student-row .comments {
+  font-size: 80%;
+  color: var(--wps-text-subtle);
+}
 
-  .time-badge {
-    transition: all 0.15s ease-in-out;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: normal;
-  }
+.attendance .student-row button {
+  font-size: 0.75rem;
+}
 
-  .time-badge[role="button"] {
-    cursor: pointer;
-  }
+.attendance .student-row .attendance-info label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  color: var(--wps-text-subtle);
+}
 
-  .time-badge[role="button"]:hover, .time-badge[role="button"]:focus-visible {
-    background-color: #d1e7dd !important;
-    border-color: #a3cfbb !important;
-    transform: translateY(-1px);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
+.attendance .student-row .attendance-info .time-value {
+  font-weight: 600;
+  color: var(--wps-text-main);
+}
 
-  .time-badge .edit-hint-icon {
-    font-size: 0.7rem;
-    transition: opacity 0.15s ease-in-out;
-  }
+.attendance .checkin-box-inner {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 
-  .time-badge[role="button"]:hover .edit-hint-icon {
-    color: #0f5132 !important;
-    opacity: 1 !important;
-  }
+.attendance .time-badge {
+  transition: all 0.15s ease-in-out;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 
-  .time-edit input[type="time"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    filter: invert(0.3);
-  }
-    
-  .room-badge {
-    position: relative;
-    font-size: 60%;
-    margin-left: 10px;
-    display: inline-block;
-    top: -2px;
-    /* margin-bottom: 8px; */
-  }
+.attendance .time-badge[role="button"] {
+  cursor: pointer;
+}
 
-  .room {
-    min-height: 2.0rem;
+.attendance .time-badge[role="button"]:hover,
+.attendance .time-badge[role="button"]:focus-visible {
+  background-color: var(--wps-orange-tint) !important;
+  border-color: var(--wps-orange-border) !important;
+  color: var(--wps-orange) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 4px rgba(246, 92, 2, 0.2);
+}
 
-    .status {
-      margin-left: 5px;
-    }
+.attendance .time-badge .edit-hint-icon {
+  font-size: 0.7rem;
+  transition: opacity 0.15s ease-in-out;
+}
 
-    &.available .status {
-      color: #4984D1;
-    }
-  }
-  
-  
-  .panel-link {
+.attendance .time-badge[role="button"]:hover .edit-hint-icon {
+  color: var(--wps-orange) !important;
+  opacity: 1 !important;
+}
 
-    cursor: pointer;
+.attendance .time-edit input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.3);
+}
 
-    &:not(.active) {
-      color: blue;
-      text-decoration: underline;
-    }
-    
-    &.active {
-      font-weight: bold;
-    }
-  }
-  
-  .slider-wrapper {
-    overflow: hidden;
-    padding-bottom: 4px;
-    margin-top: 4px;
-  }
-  
-  .slider {
-    position: relative;
-    display: flex;
-    overflow: hidden;
-  }
-  
-  .panel {
-    flex: 1 0 100%;
-    position: relative;
-    transition: transform 0.5s ease;
-    background: transparent;
-    padding: 6px 4px;
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-    -webkit-box-shadow: none;
-  }
+.attendance .room-badge {
+  position: relative;
+  font-size: 65%;
+  margin-left: 10px;
+  display: inline-block;
+  top: -2px;
+  background: var(--wps-blue-tint);
+  color: var(--wps-blue-primary);
+  border: 1px solid #c4d9f2;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
 
-  .panel.attendance-info {
-    border-top: 1px solid #f1f5f9;
-    padding-top: 8px;
-  }
+.attendance .room {
+  min-height: 2.0rem;
+}
 
-  .panel.details-info {
-    border-top: 1px solid #f1f5f9;
-    padding-top: 8px;
-  }
+.attendance .room .status {
+  margin-left: 5px;
+}
 
-  .staff-row .comments {
-    font-size: 80%;
-  }
+.attendance .room.available .status {
+  color: var(--wps-blue-vibrant);
+}
+
+/* Segmented View Control (Attendance | Details | List) */
+.panel-links-group,
+.admin .header-row .d-inline-flex {
+  background: var(--wps-blue-tint);
+  border: 1px solid var(--wps-border);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.panel-link,
+.admin .header-row .panel-link {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--wps-blue-primary);
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  user-select: none;
+}
+
+.panel-link:hover:not(.active),
+.admin .header-row .panel-link:hover:not(.active) {
+  background-color: rgba(20, 66, 130, 0.08);
+  color: var(--wps-navy);
+}
+
+.panel-link.active,
+.admin .header-row .panel-link.active {
+  background-color: var(--wps-navy);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(4, 35, 80, 0.25);
+  position: relative;
+}
+
+.panel-link.active::after,
+.admin .header-row .panel-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background-color: var(--wps-orange);
+  border-radius: 1px;
+}
+
+.slider-wrapper {
+  overflow: hidden;
+  padding-bottom: 4px;
+  margin-top: 4px;
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+.panel {
+  flex: 1 0 100%;
+  position: relative;
+  transition: transform 0.5s ease;
+  background: transparent;
+  padding: 6px 4px;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.panel.attendance-info,
+.panel.details-info {
+  border-top: 1px solid var(--wps-blue-tint);
+  padding-top: 8px;
+}
+
+.staff-row .comments {
+  font-size: 80%;
+  color: var(--wps-text-subtle);
 }
 
 .panel.attendance-info .cancel,
@@ -428,10 +815,10 @@ span.twitter-typeahead {
 }
 
 /* ==========================================================================
-   Feature: Admin
+   Feature: Admin Page
    ========================================================================== */
 .admin {
-  background: #EBF3FF;
+  background-color: var(--wps-bg);
   min-height: 100vh;
 }
 
@@ -450,7 +837,7 @@ span.twitter-typeahead {
 
 .admin .admin-tabs .nav-link {
   color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
   padding: 8px 18px;
@@ -462,21 +849,23 @@ span.twitter-typeahead {
 
 .admin .admin-tabs .nav-link:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
 .admin .admin-tabs .nav-link.active {
-  color: #01256F;
+  color: var(--wps-navy);
   background: #ffffff;
   border-color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  font-weight: 700;
+  border-top: 3px solid var(--wps-orange);
+  box-shadow: 0 3px 8px rgba(4, 35, 80, 0.15);
 }
 
 .admin .header-row {
   padding: 8px 14px;
   font-size: 0.85rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--wps-border);
   margin-bottom: 12px;
 }
 
@@ -485,75 +874,70 @@ span.twitter-typeahead {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-weight: 700;
-  color: #475569;
+  color: var(--wps-blue-primary);
   font-family: 'Open Sans', sans-serif;
   margin: 0;
 }
 
-.admin .header-row h4.sortable {
-  cursor: pointer;
-  user-select: none;
-}
-
 .admin .header-row h4.sortable:hover {
-  color: #01256F;
+  color: var(--wps-navy);
 }
 
 .admin .data-row,
 .admin .data-row.student-row-empty {
   padding: 10px 14px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
+  background-color: var(--wps-card);
+  border: 1px solid var(--wps-border);
   border-radius: 8px;
   margin-bottom: 10px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 1px 3px rgba(4, 35, 80, 0.03);
 }
 
 .admin .data-row.student-row:hover,
 .admin .data-row.settings-row:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+  border-color: var(--wps-border-strong);
+  box-shadow: 0 3px 8px rgba(4, 35, 80, 0.08);
 }
 
 .admin .data-row .signup-date,
 .admin .data-row .signup-period {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--wps-text-main);
   font-size: 0.95rem;
 }
 
 .admin .student-row .study-teacher {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #64748b;
+  color: var(--wps-text-subtle);
 }
 
 .admin .student-row .type {
   font-style: italic;
-  color: #334155;
+  color: var(--wps-text-subtle);
   font-size: 0.85rem;
 }
 
 .admin .student-row .room {
-  color: #0369a1;
+  color: var(--wps-blue-primary);
   font-size: 0.825rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .admin .student-row .comments {
   font-size: 0.825rem;
-  color: #64748b;
+  color: var(--wps-text-subtle);
 }
 
 .admin .settings-row .description {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--wps-text-main);
   font-size: 0.9rem;
 }
 
 .admin .settings-row .comments {
-  color: #64748b;
+  color: var(--wps-text-subtle);
   font-size: 0.85rem;
 }
 
@@ -561,40 +945,15 @@ span.twitter-typeahead {
   font-size: 0.9rem;
 }
 
-.admin .header-row .panel-link {
-  display: inline-block;
-  padding: 0.35rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #475569;
-  background-color: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  text-decoration: none;
-  margin-right: -1px;
+.edit-icons .edit-link {
+  color: var(--wps-blue-primary);
+  border-color: var(--wps-border);
+  background-color: var(--wps-bg);
+  transition: all 0.15s ease;
 }
 
-.admin .header-row .panel-link:first-of-type {
-  border-top-left-radius: 6px;
-  border-bottom-left-radius: 6px;
-}
-
-.admin .header-row .panel-link:last-of-type {
-  border-top-right-radius: 6px;
-  border-bottom-right-radius: 6px;
-  margin-right: 0;
-}
-
-.admin .header-row .panel-link.active {
-  background-color: #2563eb;
+.edit-icons .edit-link:hover {
+  background-color: var(--wps-blue-primary);
   color: #ffffff;
-  border-color: #2563eb;
-  z-index: 2;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.admin .header-row .panel-link:hover:not(.active) {
-  background-color: #e2e8f0;
-  color: #1e293b;
+  border-color: var(--wps-blue-primary);
 }

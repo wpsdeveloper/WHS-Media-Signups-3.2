@@ -36,7 +36,7 @@ async function mountApp() {
   const pageParam = urlParams?.get('page');
   const view = (pageParam && ['signup', 'attendance', 'admin'].includes(pageParam))
     ? pageParam
-    : (IS_DEBUG ? 'admin' : appConfig.view);
+    : (IS_DEBUG ? 'signup' : appConfig.view);
 
   switch (view) {
     case 'attendance':
