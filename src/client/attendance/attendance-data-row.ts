@@ -84,8 +84,9 @@ export class AttendanceDataRow {
       if (panel) {
         const rowId = this.viewModel.rowId;
         const timeValue = this.viewModel[propName];
+        const isEditor = this.viewModel.userIsEditor;
 
-        const checkinBox = new CheckinBox(type, rowId, timeValue, checkinStore);
+        const checkinBox = new CheckinBox(type, rowId, timeValue, checkinStore, isEditor);
 
         panel.innerHTML = ''; // Ensure container is clean before appending
         if (checkinBox.element) {

@@ -66,27 +66,29 @@ export class CheckinBox {
   checkinButton: HTMLButtonElement;
   checkinLabel: HTMLElement;
   timeDiv: HTMLElement;
+  timeBadge: HTMLElement;
   timeValueDiv: HTMLElement;
   timeEditDiv: HTMLElement;
   timeEditInput: HTMLInputElement;
-  primaryButtonsDiv: HTMLElement ;
-  editStartButton: HTMLButtonElement ;
   editSaveBtn: HTMLButtonElement;
   deleteBtn: HTMLButtonElement;
-  cancelBtn: HTMLButtonElement ;
+  cancelBtn: HTMLButtonElement;
   spinner: HTMLElement;
   store: CheckinStore;
+  isEditor: boolean;
 
   constructor(
     type: CheckinType, 
     rowId: string, 
     timeValue: string = "",
     store: CheckinStore,
+    isEditor: boolean = false,
   ){
     this.type = type;
     this.rowId = rowId;
     this.timeValue = timeValue || "";
     this.store = store;
+    this.isEditor = isEditor;
 
     const template = dom.qs<HTMLTemplateElement>("template#checkin-box");
     if (!template) throw new Error ('Checkbox template not found');
@@ -98,11 +100,10 @@ export class CheckinBox {
     this.checkinButton = this.element.querySelector(".checkin-btn") as HTMLButtonElement;
     this.checkinLabel = this.element.querySelector(".checkin-box-label") as HTMLElement;
     this.timeDiv = this.element.querySelector(".time") as HTMLElement;
+    this.timeBadge = this.element.querySelector(".time-badge") as HTMLElement;
     this.timeValueDiv = this.element.querySelector(".time-value") as HTMLElement;
     this.timeEditDiv = this.element.querySelector(".time-edit") as HTMLElement;
     this.timeEditInput = this.element.querySelector(".time-edit input") as HTMLInputElement;
-    this.primaryButtonsDiv = this.element.querySelector(".primary-buttons") as HTMLElement;
-    this.editStartButton = this.element.querySelector(".edit-start-btn") as HTMLButtonElement;
     this.editSaveBtn = this.element.querySelector(".save-btn") as HTMLButtonElement;
     this.deleteBtn = this.element.querySelector(".delete-btn") as HTMLButtonElement;
     this.cancelBtn = this.element.querySelector(".cancel-btn") as HTMLButtonElement;
@@ -119,32 +120,37 @@ export class CheckinBox {
   }
   
   bindEvents(): void {
-      dom.addEventListener(this.checkinButton, 'click', () => this.handleCheckinClick());
-      dom.addEventListener(this.editStartButton, 'click', () => this.handleEditStartClick());
-      dom.addEventListener(this.editSaveBtn, 'click', () => this.handleEditSaveClick());
-      dom.addEventListener(this.cancelBtn, 'click', () => this.handleCancelClick());
-      dom.addEventListener(this.deleteBtn, 'click', () => this.handleDeleteClick());
+    dom.addEventListener(this.checkinButton, 'click', () => this.handleCheckinClick());
+    
+    // Clicking the badge opens the editor
+    if (this.timeBadge) {
+      dom.addEventListener(this.timeBadge, 'click', () => this.handleEditStartClick());
+      this.timeBadge.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.handleEditStartClick();
+        }
+      });
+    }
 
-      if (this.element) {
-        this.element.addEventListener('click', (event: MouseEvent) => {
-          const target = event.target as HTMLElement | null;
-          if (!target) return;
-          if (target.closest('.edit-start-btn')) {
-            if (this.state !== 'editing') {
-              this.handleEditStartClick();
-            }
-          } else if (target.closest('.save-btn')) {
-            this.handleEditSaveClick();
-          } else if (target.closest('.cancel-btn')) {
-            this.handleCancelClick();
-          } else if (target.closest('.delete-btn')) {
-            this.handleDeleteClick();
-          }
-        });
-      }
+    dom.addEventListener(this.editSaveBtn, 'click', () => this.handleEditSaveClick());
+    dom.addEventListener(this.cancelBtn, 'click', () => this.handleCancelClick());
+    dom.addEventListener(this.deleteBtn, 'click', () => this.handleDeleteClick());
+
+    if (this.timeEditInput) {
+      this.timeEditInput.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.handleEditSaveClick();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          this.handleCancelClick();
+        }
+      });
+    }
   }
 
- setComponentState(state: CheckinBoxState): void {
+  setComponentState(state: CheckinBoxState): void {
     this.state = state;
     this.render();
   }
@@ -174,42 +180,54 @@ export class CheckinBox {
 
   renderReady(): void {
     dom.setVisible(this.checkinButton, true);
-    dom.setVisible(this.primaryButtonsDiv, true);
     dom.setVisible(this.timeDiv, false);
-    dom.setVisible(this.timeValueDiv, false);
+    dom.setVisible(this.timeBadge, false);
     dom.setVisible(this.timeEditDiv, false);
     dom.setVisible(this.spinner, false); 
   }
   
   renderLoading(): void {
     dom.setVisible(this.checkinButton, false);
-    dom.setVisible(this.primaryButtonsDiv, false);
     dom.setVisible(this.timeDiv, false);
-    dom.setVisible(this.timeValueDiv, false);
+    dom.setVisible(this.timeBadge, false);
     dom.setVisible(this.timeEditDiv, false);
     dom.setVisible(this.spinner, true);
   }
   
   renderEditing(): void {
     dom.setVisible(this.checkinButton, false);
-    dom.setVisible(this.primaryButtonsDiv, false);
     dom.setVisible(this.timeDiv, true);
-    dom.setVisible(this.timeValueDiv, false);
-    if (this.timeValue) dom.setValue(this.timeEditInput, this.timeValue);
+    dom.setVisible(this.timeBadge, false);
     dom.setVisible(this.timeEditDiv, true);
+    if (this.timeValue) dom.setValue(this.timeEditInput, this.timeValue);
     dom.setVisible(this.spinner, false);
+    setTimeout(() => this.timeEditInput?.focus(), 20);
   }
   
   renderHasData(): void {
     dom.setVisible(this.checkinButton, false);
-    dom.setVisible(this.primaryButtonsDiv, true);
-    
     dom.setVisible(this.timeDiv, true);
-    dom.setVisible(this.timeValueDiv, true);
+    dom.setVisible(this.timeBadge, true);
     dom.setText(this.timeValueDiv, this.timeValue);
     dom.setVisible(this.timeEditDiv, false);
-    
     dom.setVisible(this.spinner, false);
+
+    const editHintIcon = this.element?.querySelector(".edit-hint-icon") as HTMLElement | null;
+    if (this.isEditor) {
+      this.timeBadge.classList.add("cursor-pointer");
+      this.timeBadge.classList.remove("pe-none");
+      this.timeBadge.setAttribute("role", "button");
+      this.timeBadge.setAttribute("tabindex", "0");
+      this.timeBadge.setAttribute("title", "Click to edit or clear time");
+      if (editHintIcon) dom.setVisible(editHintIcon, true);
+    } else {
+      this.timeBadge.classList.remove("cursor-pointer");
+      this.timeBadge.classList.add("pe-none");
+      this.timeBadge.removeAttribute("role");
+      this.timeBadge.removeAttribute("tabindex");
+      this.timeBadge.removeAttribute("title");
+      if (editHintIcon) dom.setVisible(editHintIcon, false);
+    }
   }
 
   async uploadCheckinValue() {
@@ -228,6 +246,7 @@ export class CheckinBox {
   }
   
   handleEditStartClick(): void {
+    if (!this.isEditor) return;
     this.setComponentState("editing");
     dom.setTimeInputValue(this.timeEditInput, this.timeValue);
   }

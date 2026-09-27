@@ -246,46 +246,101 @@ span.twitter-typeahead {
    ========================================================================== */
 .attendance .data-row,
 .attendance .data-row.student-row-empty {
-  padding: 5px 0px;
- /* margin: 10 0px; /* Note: '10' is missing a unit (like px), preserved here exactly as written to ensure no visual changes. */
-  /* min-height: 90px; */
-  background-color: #FFF;
-  overflow: hidden;
+  padding: 10px 14px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.attendance .data-row.student-row:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
 }
 
 .attendance {
   .student-row {
     .student-name {
-      font-weight: bold;
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 0.95rem;
     }
     
     .study-teacher {
-      font-size: 80%;
-      font-weight: bold;
-      font-style: italic;
+      font-size: 0.825rem;
+      font-weight: 500;
+      color: #64748b;
     }
 
     .type {
       font-style: italic;
+      color: #475569;
     }
 
     .comments {
       font-size: 80%;
+      color: #64748b;
     }
     
     button {
-      font-size: 60%;
+      font-size: 0.75rem;
     }
     
     .attendance-info {
       label {
-       font-size: 75%;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-weight: 600;
+        color: #64748b;
       }
-     .time-value {
-        color: green;
-        font-weight: bold;
+      .time-value {
+        font-weight: 600;
       }
     }
+  }
+
+  .checkin-box-inner {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .time-badge {
+    transition: all 0.15s ease-in-out;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: normal;
+  }
+
+  .time-badge[role="button"] {
+    cursor: pointer;
+  }
+
+  .time-badge[role="button"]:hover, .time-badge[role="button"]:focus-visible {
+    background-color: #d1e7dd !important;
+    border-color: #a3cfbb !important;
+    transform: translateY(-1px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .time-badge .edit-hint-icon {
+    font-size: 0.7rem;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  .time-badge[role="button"]:hover .edit-hint-icon {
+    color: #0f5132 !important;
+    opacity: 1 !important;
+  }
+
+  .time-edit input[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.3);
   }
     
   .room-badge {
@@ -326,7 +381,8 @@ span.twitter-typeahead {
   
   .slider-wrapper {
     overflow: hidden;
-    padding-bottom: 12px;
+    padding-bottom: 4px;
+    margin-top: 4px;
   }
   
   .slider {
@@ -339,15 +395,23 @@ span.twitter-typeahead {
     flex: 1 0 100%;
     position: relative;
     transition: transform 0.5s ease;
-    background: #EBF3FF;
-    padding: 5px;
-    border-radius: 8px;
-    border: 1px solid #EBF3FF;
-    -webkit-box-shadow: 1px 1px 1px 0px rgba(128,128,128,0.3) inset; 
-     box-shadow: 1px 1px 1px 0px rgba(128,128,128,0.5) inset;
+    background: transparent;
+    padding: 6px 4px;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
   }
 
+  .panel.attendance-info {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 8px;
+  }
 
+  .panel.details-info {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 8px;
+  }
 
   .staff-row .comments {
     font-size: 80%;

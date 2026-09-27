@@ -206,32 +206,50 @@
     </template>
     
     <template id="checkin-box">
-      <div>
-
-        <div>
-          <label class="checkin-box-label">Study Return</label>
+      <div class="checkin-box-inner">
+        <div class="checkin-box-label-wrapper">
+          <label class="checkin-box-label text-muted mb-1 d-block"></label>
         </div>
 
         <!-- UI elements  -->
-        <button class="checkin-btn btn btn-light" >Return</button>
+        <!-- 1. Ready state: clean compact action button -->
+        <button class="checkin-btn btn btn-sm btn-outline-primary py-0 px-2 fw-semibold">Check In</button>
+
+        <!-- 2. Recorded state & Edit mode wrapper -->
         <div class="time d-none">
-          <span class="time-value text-success"></span>
-          <span class="time-edit d-none">
-            <input class="text-center" type="time"></input> 
-            <i class="save-btn edit fa-solid fa-check text-success" ></i>
-            <i class="cancel-btn edit fa-solid fa-ban text-danger" ></i>
-            <i class="delete-btn cancel fa-solid fa-trash text-danger"></i>
+          <!-- Clickable timestamp badge (90% view case) -->
+          <span 
+            class="time-badge badge bg-success-subtle text-success-emphasis border border-success-subtle px-2 py-1 user-select-none" 
+            role="button" 
+            tabindex="0"
+            title="Click to edit or clear time"
+          >
+            <span class="time-value"></span>
+            <i class="fa-solid fa-pen ms-1 edit-hint-icon text-muted opacity-75"></i>
           </span>
-          <span class="primary-buttons ms-1">
-            <i class="edit-start-btn edit fa-solid fa-edit text-primary" ></i>
-          </span>
+
+          <!-- Inline editor (10% edit case) -->
+          <div class="time-edit d-none align-items-center justify-content-center gap-1 mt-1">
+            <input class="form-control form-control-sm text-center py-0 px-1 border-primary" style="max-width: 82px; font-size: 0.8rem; height: 26px;" type="time" />
+            <button type="button" class="btn btn-sm btn-success save-btn p-0 px-1" style="height: 26px; line-height: 1;" title="Save (Enter)">
+              <i class="fa-solid fa-check"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger delete-btn p-0 px-1" style="height: 26px; line-height: 1;" title="Clear timestamp">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary cancel-btn p-0 px-1" style="height: 26px; line-height: 1;" title="Cancel (Esc)">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
         </div>
-        <div class="spinner d-none">
+
+        <!-- Loading spinner -->
+        <div class="spinner d-none py-1">
           <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">Loading...</span>
+          </div>
         </div>
       </div>
-    </div>
     </template>
 
 
