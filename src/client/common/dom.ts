@@ -125,12 +125,35 @@ export const addEventListener = <K extends keyof HTMLElementEventMap>(
 
 export const showBootstrapModal = (selector: string): void => {
   const el = qs(selector);
-  if (el) window.bootstrap.Modal.getOrCreateInstance(el).show();
+  if (el) {
+    (el as HTMLElement & { _bsPendingHide?: boolean })._bsPendingHide = false;
+    window.bootstrap.Modal.getOrCreateInstance(el).show();
+  }
 };
 
 export const hideBootstrapModal = (selector: string): void => {
-  const el = qs(selector);
-  if (el) window.bootstrap.Modal.getOrCreateInstance(el).hide();
+  const el = qs(selector) as (HTMLElement & { _bsPendingHide?: boolean }) | null;
+  if (!el) return;
+
+  const modal = window.bootstrap.Modal.getOrCreateInstance(el);
+  const modalWithTransition = modal as typeof modal & { _isTransitioning?: boolean };
+
+  if (modalWithTransition._isTransitioning) {
+    el._bsPendingHide = true;
+    el.addEventListener(
+      "shown.bs.modal",
+      () => {
+        if (el._bsPendingHide) {
+          el._bsPendingHide = false;
+          modal.hide();
+        }
+      },
+      { once: true }
+    );
+  } else {
+    el._bsPendingHide = false;
+    modal.hide();
+  }
 };
 
 export const showBootstrapToast = (selector: string, message: string): void => {
