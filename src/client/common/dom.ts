@@ -196,30 +196,53 @@ function getterFunction(functionName: Function, param: domParam, ...args: unknow
 
 
 export const setTimeInputValue = (element: HTMLInputElement, timeString: string) => {
-  // Extract hours, minutes, and AM/PM using Regex for "4:32 PM"
-  const match = timeString.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  
-  if (!match) {
-    console.error("Invalid time format");
+  if (!element) return;
+  if (!timeString) {
+    setValue(element, '');
     return;
   }
 
-  let hours = parseInt(match[1], 10);
-  const minutes = match[2];
-  const modifier = match[3].toUpperCase();
+  const trimmed = timeString.trim();
 
-  // Convert to 24-hour format (required by HTML time inputs)
-  if (modifier === 'PM' && hours < 12) {
-    hours += 12;
-  } else if (modifier === 'AM' && hours === 12) {
-    hours = 0;
+  // If already 24-hour format (HH:mm)
+  if (/^\d{1,2}:\d{2}$/.test(trimmed)) {
+    setValue(element, trimmed.padStart(5, '0'));
+    return;
   }
 
-  // Pad single-digit hours (e.g., "04") and combine into HH:mm
-  const finalTimeValue = `${hours.toString().padStart(2, '0')}:${minutes}`;
+  // Extract hours, minutes, and AM/PM using Regex for "4:32 PM" or "10:30 AM"
+  const match = trimmed.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  
+  if (match) {
+    let hours = parseInt(match[1], 10);
+    const minutes = match[2];
+    const modifier = match[3].toUpperCase();
 
-  // Set the input value
-  setValue(element, finalTimeValue);
+    // Convert to 24-hour format (required by HTML time inputs)
+    if (modifier === 'PM' && hours < 12) {
+      hours += 12;
+    } else if (modifier === 'AM' && hours === 12) {
+      hours = 0;
+    }
+
+    // Pad single-digit hours (e.g., "04") and combine into HH:mm
+    const finalTimeValue = `${hours.toString().padStart(2, '0')}:${minutes}`;
+    setValue(element, finalTimeValue);
+    return;
+  }
+
+  // If ISO date string
+  try {
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) {
+      const hours = d.getHours().toString().padStart(2, '0');
+      const minutes = d.getMinutes().toString().padStart(2, '0');
+      setValue(element, `${hours}:${minutes}`);
+      return;
+    }
+  } catch (e) {}
+
+  console.error("Invalid time format", timeString);
 }
 
 

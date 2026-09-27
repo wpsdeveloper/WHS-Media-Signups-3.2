@@ -134,6 +134,34 @@ export const parseSettings = (settingsJson: string) => {
 
 }
 
+export const normalizeTimeString = (val: any): string => {
+  if (val === undefined || val === null) return "";
+  if (typeof val !== "string") {
+    if (val instanceof Date) return dates.formatTime(val);
+    val = String(val);
+  }
+  const trimmed = val.trim();
+  if (!trimmed) return "";
+  
+  // If already 12-hr format like "10:30 AM"
+  if (dates.isValidTime12Hr(trimmed)) {
+    return trimmed;
+  }
+  
+  // If 24-hr format like "10:30"
+  if (dates.isValidTime24Hr(trimmed)) {
+    return dates.convert24HrTo12Hr(trimmed);
+  }
+  
+  // If ISO date string like "1899-12-30T15:30:00.000Z"
+  const parsedDate = new Date(trimmed);
+  if (!isNaN(parsedDate.getTime()) && (trimmed.includes('T') || trimmed.includes('-'))) {
+    return dates.formatTime(parsedDate);
+  }
+  
+  return trimmed;
+};
+
 function hydrateDailyBlock(rawData: RawDailyBlock[]): DailyBlock[] {
   return rawData.map((block: any) => ({
     ...block,
@@ -148,23 +176,28 @@ function hydrateSignups(rawData: RawSignup[]): Signup[] {
     date: new Date(block.date),
     timestamp: new Date(block.timestamp),
     period: String(block.period),
+    studyIn1: normalizeTimeString(block.studyIn1),
+    mediaIn: normalizeTimeString(block.mediaIn),
+    mediaOut: normalizeTimeString(block.mediaOut),
+    studyIn2: normalizeTimeString(block.studyIn2),
   }));
 }
 
 function hydrateSettings(rawSettings: Setting[]): Setting[] {
   return rawSettings.map(setting => {
-    // stringified values sent by the server must be strings
-    if (typeof setting.value !=="string") return setting;
-
-    switch (setting.dataType) {
-      case 'boolean':
-        return { ...setting, value: setting.value === 'true' || setting.value === "On"} as Setting;
+    const dataType = setting.dataType || (setting as any).type;
+    switch (dataType) {
+      case 'boolean': {
+        const strVal = String(setting.value).trim().toLowerCase();
+        const isOn = strVal === 'on' || strVal === 'true' || setting.value === true;
+        return { ...setting, value: isOn ? "On" : "Off" } as Setting;
+      }
       case 'integer':
-        return { ...setting, value: parseInt(setting.value)} as Setting;
+        return { ...setting, value: typeof setting.value === 'number' ? setting.value : parseInt(String(setting.value)) } as Setting;
       case 'date':
-        return { ...setting, value: new Date(setting.value)} as Setting;
+        return { ...setting, value: setting.value instanceof Date ? setting.value : new Date(String(setting.value)) } as Setting;
       case 'string-array':
-        return { ...setting, value: setting.value.split(',').map(s => s.trim()) } as Setting;
+        return { ...setting, value: Array.isArray(setting.value) ? setting.value : String(setting.value).split(',').map(s => s.trim()) } as Setting;
       case 'string': 
       default:
         return setting;

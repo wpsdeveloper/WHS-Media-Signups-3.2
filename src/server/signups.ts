@@ -42,11 +42,13 @@ function getStudentAudit(submittedEmail: string) {
   const archiveSheet = SPREADSHEET.getSheetByName(ARCHIVE_SHEET_NAME);
   if (!sheet || !archiveSheet) throw STANDARD_SERVER_ERROR;
   
-  const currentValues = sheet.getDataRange().getValues();
-  const archivedValues = archiveSheet.getDataRange().getValues();
+  const currentValues = sheet.getDataRange().getDisplayValues();
+  const archivedValues = archiveSheet.getDataRange().getDisplayValues();
+  currentValues.shift(); // remove headers
+  archivedValues.shift(); // remove headers
   const values = currentValues.concat(archivedValues);
   
-  const filtered = values.filter(row => row[9] == submittedEmail);
+  const filtered = values.filter(row => row[SIGNUPS_COL.STUDENT_EMAIL] == submittedEmail || row[SIGNUPS_COL.SUBMITTED_BY] == submittedEmail);
 
   // creates an array to return
   const signups: Signup[] = [];

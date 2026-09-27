@@ -25,40 +25,56 @@ export class SettingsRow {
 
   populate() {
     const { element, setting } = this;
-    const { key, value, description, comments, dataType } = setting;
+    const { key, value, description, comments } = setting;
+    const dataType = setting.dataType || (setting as any).type;
 
     const keyDiv = element.querySelector(".key") as HTMLElement;
-    dom.setText(keyDiv, key);
+    if (keyDiv) dom.setText(keyDiv, key);
     
     const descriptionDiv = element.querySelector(".description") as HTMLElement;
-    dom.setText(descriptionDiv, description);
+    if (descriptionDiv) dom.setText(descriptionDiv, description);
     
     const commentsDiv = element.querySelector(".comments") as HTMLElement;
-    dom.setText(commentsDiv, comments);
+    if (commentsDiv) dom.setText(commentsDiv, comments);
+
+    const isBoolean = dataType === "boolean" || typeof value === "boolean" || value === "On" || value === "Off";
+
+    if (isBoolean) {
+      const isOn = value === "On" || value === "true" || value === true;
+      const safeKey = (key || 'setting').replace(/[^a-zA-Z0-9_-]/g, "_");
+      const valueDiv = element.querySelector(".value") as HTMLElement;
+      if (valueDiv) {
+        valueDiv.innerHTML = `
+          <div class="d-flex align-items-center gap-3 py-1">
+            <div class="form-check form-check-inline mb-0">
+              <input class="form-check-input" type="radio" name="setting-${safeKey}" id="setting-${safeKey}-on" value="On" ${isOn ? 'checked' : ''} />
+              <label class="form-check-label fw-semibold user-select-none" for="setting-${safeKey}-on">On</label>
+            </div>
+            <div class="form-check form-check-inline mb-0">
+              <input class="form-check-input" type="radio" name="setting-${safeKey}" id="setting-${safeKey}-off" value="Off" ${!isOn ? 'checked' : ''} />
+              <label class="form-check-label fw-semibold user-select-none" for="setting-${safeKey}-off">Off</label>
+            </div>
+          </div>
+        `;
+      }
+      return;
+    }
 
     const input = element.querySelector(".value input") as HTMLInputElement;
     if (!input) return;
 
-    if (typeof value === "string") {
-      input.type = "text";
-      input.value = value;
-    } else if (typeof value === "number") {
-      input.value = String(value);
+    if (dataType === "integer" || typeof value === "number") {
       input.type = "number";
-    } else if (typeof value === "boolean") {
-      const on = (value === true);
-      input.classList.remove("form-control");
-      input.classList.add("form-check-input");
-      input.type = "checkbox";
-      input.checked = on;
-    } else if (value instanceof Date) {
-      // Format date to YYYY-MM-DD (handling timezone offset issues)
+      input.value = String(value);
+    } else if (dataType === "date" || value instanceof Date) {
       input.type = "date";
-      input.value = dates.toDateInputValue(value);
-    } else if (Array.isArray(value)) {
+      const dateObj = value instanceof Date ? value : new Date(value);
+      input.value = !isNaN(dateObj.getTime()) ? dates.toDateInputValue(dateObj) : String(value);
+    } else if (dataType === "string-array" || Array.isArray(value)) {
       input.type = "text";
-      input.value = value.join(", ");
+      input.value = Array.isArray(value) ? value.join(", ") : String(value);
     } else {
+      input.type = "text";
       input.value = value !== undefined && value !== null ? String(value) : '';
     }
   }

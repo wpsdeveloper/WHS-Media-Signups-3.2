@@ -93,34 +93,36 @@ describe('SettingsRow', () => {
     });
 
     describe('boolean types', () => {
-      it('sets checkbox to checked when value is "On"', () => {
+      it('sets radio button to checked when value is "On"', () => {
         const setting = { key: 'ENABLED', value: 'On', type: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
-        const input = row.element.querySelector('.value input');
-        expect(input.type).toBe('checkbox');
+        const input = row.element.querySelector('.value input[value="On"]');
+        expect(input.type).toBe('radio');
         expect(input.checked).toBe(true);
         expect(input.classList.contains('form-check-input')).toBe(true);
         expect(input.classList.contains('form-control')).toBe(false);
       });
 
-      it('sets checkbox to checked when value is "true"', () => {
+      it('sets radio button to checked when value is "true"', () => {
         const setting = { key: 'ENABLED', value: 'true', type: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
-        const input = row.element.querySelector('.value input');
+        const input = row.element.querySelector('.value input[value="On"]');
         expect(input.checked).toBe(true);
       });
 
-      it('sets checkbox to unchecked when value is falsey or "Off"', () => {
+      it('sets radio button to checked for "Off" when value is falsey or "Off"', () => {
         const setting = { key: 'ENABLED', value: 'Off', type: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
-        const input = row.element.querySelector('.value input');
-        expect(input.checked).toBe(false);
+        const onInput = row.element.querySelector('.value input[value="On"]');
+        const offInput = row.element.querySelector('.value input[value="Off"]');
+        expect(onInput.checked).toBe(false);
+        expect(offInput.checked).toBe(true);
       });
     });
 
