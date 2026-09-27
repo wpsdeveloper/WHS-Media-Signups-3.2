@@ -943,6 +943,18 @@ span.twitter-typeahead {
 
 .admin .settings-row .value input {
   font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--wps-navy);
+  border: 1px solid var(--wps-border);
+  border-radius: 6px;
+  background-color: #ffffff;
+  transition: all 0.15s ease-in-out;
+}
+
+.admin .settings-row .value input:focus {
+  border-color: var(--wps-orange);
+  box-shadow: 0 0 0 0.2rem rgba(246, 92, 2, 0.2);
+  outline: none;
 }
 
 .edit-icons .edit-link {

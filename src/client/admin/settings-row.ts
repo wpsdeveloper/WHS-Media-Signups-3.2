@@ -37,25 +37,29 @@ export class SettingsRow {
     dom.setText(commentsDiv, comments);
 
     const input = element.querySelector(".value input") as HTMLInputElement;
+    if (!input) return;
 
     if (typeof value === "string") {
       input.type = "text";
+      input.value = value;
     } else if (typeof value === "number") {
       input.value = String(value);
       input.type = "number";
     } else if (typeof value === "boolean") {
-      const on = (value===true);
+      const on = (value === true);
       input.classList.remove("form-control");
       input.classList.add("form-check-input");
       input.type = "checkbox";
       input.checked = on;
     } else if (value instanceof Date) {
       // Format date to YYYY-MM-DD (handling timezone offset issues)
+      input.type = "date";
       input.value = dates.toDateInputValue(value);
-    } else if (Array.isArray(value)) 
+    } else if (Array.isArray(value)) {
+      input.type = "text";
       input.value = value.join(", ");
-    else {
-      console.error("Unsupported data type for setting value:", value);
+    } else {
+      input.value = value !== undefined && value !== null ? String(value) : '';
     }
   }
 

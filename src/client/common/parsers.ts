@@ -71,8 +71,16 @@ export const parseMaxSignups = (maxValue: string) => {
 /**
  *  parses signup data from the server 
  * */
-export const parseSignups = (signups: string): Signup[] => {
-  const rawData =  safeJsonParse(signups, []) as RawSignup[];
+export const parseSignups = (signups: any): Signup[] => {
+  let rawData: RawSignup[] = [];
+  if (typeof signups === 'string') {
+    const parsed = safeJsonParse(signups, []);
+    rawData = Array.isArray(parsed) ? parsed : (parsed?.signups || []);
+  } else if (Array.isArray(signups)) {
+    rawData = signups;
+  } else if (signups && typeof signups === 'object' && Array.isArray(signups.signups)) {
+    rawData = signups.signups;
+  }
   return hydrateSignups(rawData);
 }
 

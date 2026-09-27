@@ -15,8 +15,14 @@ export const initObservers = () => {
     const { signups, ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder, ui_requestedStudentEmail: requestedStudentEmail, ui_currentView } = state;
     if (!requestedStudentEmail) return;
     
-    const sortedSignups = sortSignups(signups, currentSortField, currentSortOrder);
-    const currentSignups = sortedSignups.filter(su => su.emailStudent === requestedStudentEmail);
+    const sortedSignups = sortSignups(signups || [], currentSortField, currentSortOrder);
+    const targetEmail = (requestedStudentEmail || '').toLowerCase().trim();
+    const currentSignups = sortedSignups.filter(su => {
+      if (!targetEmail) return true;
+      const studentEmail = (su.emailStudent || '').toLowerCase().trim();
+      const submitterEmail = (su.email || '').toLowerCase().trim();
+      return studentEmail === targetEmail || submitterEmail === targetEmail || !studentEmail;
+    });
     
     dom.qsa("#student-panel .student-row").forEach(row => row.remove());
 

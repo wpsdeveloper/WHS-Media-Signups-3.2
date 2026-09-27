@@ -57,11 +57,11 @@ const getServerData = async (): Promise<string> => {
 
 async function parseServerData(data: string): Promise<AdminState> {
   const parsedData = parser.safeJsonParse(data);
-  const students = parser.parseStudents(parsedData.students);
+  const students = parser.parseStudents(parsedData?.students);
   const studentNames = parser.parseStudentDataList(students);
-  const signups = parser.parseSignups(parsedData.signups);
-  const settings = parser.parseSettings(parsedData.settings);
-  const dailySchedules = parser.parseDailyBlocks(parsedData.dailySchedules);
+  const signups = parser.parseSignups(parsedData?.signups || []);
+  const settings = parser.parseSettings(parsedData?.settings || parsedData?.appSettings || []);
+  const dailySchedules = parser.parseDailyBlocks(parsedData?.dailySchedules || []);
   const appConfig = await getAppConfig();
   
   return {

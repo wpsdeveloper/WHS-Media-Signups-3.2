@@ -138,10 +138,11 @@ function getInitialAdminData(): string {
   
   if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
   
-  const initialData:AdminData = {
+  const initialData: AdminData & { settings?: Setting[] } = {
     students: students,
     dailySchedules: dailySchedules,
     appSettings: appSettings,
+    settings: appSettings,
   };
 
   return JSON.stringify(initialData);
