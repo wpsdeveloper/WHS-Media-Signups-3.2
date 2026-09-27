@@ -45,6 +45,13 @@ export const getServerData = async (): Promise<string> => {
     return await getMockData('attendance');
   } 
 
+  // Use pre-injected server payload from doGet if available
+  if (typeof window !== 'undefined' && window.INITIAL_DATA) {
+    const data = window.INITIAL_DATA;
+    window.INITIAL_DATA = null; // consume once so manual refreshes re-query
+    return typeof data === 'string' ? data : JSON.stringify(data);
+  }
+
   return new Promise((resolve, reject) => {
     google.script.run
       .withSuccessHandler(resolve)

@@ -22,10 +22,16 @@ type SSRow = string[];
 type AppConfig = {
   view: 'signup' | 'attendance' | 'admin',
   wedInt: boolean,
-  s2Date: string,
+  s2Date?: string,
   isEditor: boolean,
   isAdmin: boolean,
   isStaff: boolean,
   email: string,
   scriptUrl: string,
+  updateId?: string,
+}
+
+interface Window {
+  APP_CONFIG?: AppConfig;
+  INITIAL_DATA?: string | null;
 }

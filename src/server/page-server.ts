@@ -37,12 +37,29 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
     wedInt: wedInt,
     scriptUrl: getScriptUrl(),
   };
+  // Pre-fetch initial data to eliminate second round trip from client
+  let initialDataJson = "";
+  try {
+    const view = appConfig.view;
+    if (view === "signup" || view === "update") {
+      initialDataJson = getInitialSignupData(appConfig.updateId);
+    } else if (view === "attendance") {
+      initialDataJson = getInitialAttendanceData();
+    } else if (view === "admin") {
+      initialDataJson = getInitialAdminData();
+    }
+  } catch (err) {
+    console.warn("Failed to prefetch initial data in doGet:", err);
+    initialDataJson = "";
+  }
+
   // adds meta data so tha page reformats nicely on mobile devices
   template.addMetaTag('viewport', 'width=device-width, initial-scale=1');
   template.setTitle("WHS Intervention & Media Center Sign Up");
   template.append(`
     <script>
       window.APP_CONFIG = ${JSON.stringify(appConfig)};
+      window.INITIAL_DATA = ${initialDataJson ? JSON.stringify(initialDataJson) : "null"};
     </script>
   `);
   // sends the HTML to the client
@@ -70,7 +87,7 @@ function createIndexTemplate() {
   return template;
 }
 
-function getInitialSignupData(): string {
+function getInitialSignupData(updateId?: string): string {
   const appSettings = getAppSettings();
   // Autocomplete searches students dynamically via searchStudents(query) over RPC.
   // Passing an empty array avoids shipping thousands of student objects in the initial payload.
@@ -79,12 +96,18 @@ function getInitialSignupData(): string {
   const signups = getSignups();
   
   if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+
+  let updateData: Signup | null = null;
+  if (updateId) {
+    updateData = signups.find(s => s.rowId === updateId) || null;
+  }
   
-  const initialData:SignupServerData = {
+  const initialData: SignupServerData & { updateData?: string | null } = {
     students: students,
     dailySchedules: dailySchedules,
     signups: signups,
     appSettings: appSettings,
+    updateData: updateData ? JSON.stringify(updateData) : null,
   };
 
   return JSON.stringify(initialData);

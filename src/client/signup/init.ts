@@ -56,14 +56,21 @@ async function fetchServerData(): Promise<SignupState> {
 const getServerData = async (): Promise<string> => {
   if (IS_DEBUG) {
     return await getMockData('signup');
-  } else {
+  }
+
+  // Use pre-injected server payload from doGet if available
+  if (typeof window !== 'undefined' && window.INITIAL_DATA) {
+    const data = window.INITIAL_DATA;
+    window.INITIAL_DATA = null; // consume once so manual refreshes re-query
+    return typeof data === 'string' ? data : JSON.stringify(data);
+  }
+
   return new Promise((resolve, reject) => {
     google.script.run
       .withFailureHandler(reject)
       .withSuccessHandler(resolve)
       .getInitialSignupData();
-    });
-  }
+  });
 };
 
 async function parseServerData(data: string): Promise<SignupState> {
