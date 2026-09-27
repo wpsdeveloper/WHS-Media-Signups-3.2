@@ -681,7 +681,10 @@ span.twitter-typeahead {
   color: var(--wps-text-main);
 }
 
-.attendance .checkin-box-inner {
+/* ==========================================================================
+   Shared Checkin Box Component (Attendance & Admin)
+   ========================================================================== */
+.checkin-box-inner {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -689,19 +692,58 @@ span.twitter-typeahead {
   width: 100%;
 }
 
-.attendance .time-badge {
-  transition: all 0.15s ease-in-out;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
+.checkin-box-label-wrapper {
+  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
-.attendance .time-badge[role="button"] {
+.checkin-box-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  color: var(--wps-text-subtle);
+  margin-bottom: 0 !important;
+}
+
+.checkin-btn,
+.time-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  box-sizing: border-box;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0 10px;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
+.checkin-btn.d-none,
+.time-badge.d-none,
+.checkin-btn[hidden],
+.time-badge[hidden] {
+  display: none !important;
+}
+
+.checkin-btn {
+  white-space: nowrap;
+}
+
+.time-badge {
+  transition: all 0.15s ease-in-out;
+}
+
+.time-badge[role="button"] {
   cursor: pointer;
 }
 
-.attendance .time-badge[role="button"]:hover,
-.attendance .time-badge[role="button"]:focus-visible {
+.time-badge[role="button"]:hover,
+.time-badge[role="button"]:focus-visible {
   background-color: var(--wps-orange-tint) !important;
   border-color: var(--wps-orange-border) !important;
   color: var(--wps-orange) !important;
@@ -709,17 +751,32 @@ span.twitter-typeahead {
   box-shadow: 0 1px 4px rgba(246, 92, 2, 0.2);
 }
 
-.attendance .time-badge .edit-hint-icon {
+.time-badge .edit-hint-icon {
   font-size: 0.7rem;
   transition: opacity 0.15s ease-in-out;
 }
 
-.attendance .time-badge[role="button"]:hover .edit-hint-icon {
+.time-badge[role="button"]:hover .edit-hint-icon {
   color: var(--wps-orange) !important;
   opacity: 1 !important;
 }
 
-.attendance .time-edit input[type="time"]::-webkit-calendar-picker-indicator {
+.checkin-box-inner .spinner {
+  height: 26px;
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+}
+
+.attendance .time-edit input[type="time"],
+.admin .time-edit input[type="time"] {
+  cursor: pointer;
+}
+
+.attendance .time-edit input[type="time"]::-webkit-calendar-picker-indicator,
+.admin .time-edit input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   filter: invert(0.3);
 }
@@ -827,8 +884,34 @@ span.twitter-typeahead {
 
 .panel.attendance-info,
 .panel.details-info {
-  border-top: 1px solid var(--wps-blue-tint);
-  padding-top: 8px;
+  border-top: none;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.panel.details-info .study-teacher {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--wps-navy);
+  line-height: 1.35;
+}
+
+.panel.details-info .type,
+.panel.details-info .room,
+.panel.details-info .comments {
+  font-size: 0.8rem;
+  color: var(--wps-text-subtle);
+  line-height: 1.35;
+}
+
+.panel.details-info .room:empty,
+.panel.details-info .comments:empty {
+  display: none !important;
+}
+
+.panel.details-info .room {
+  color: var(--wps-blue-primary);
+  font-weight: 500;
 }
 
 .staff-row .comments {
@@ -840,9 +923,59 @@ span.twitter-typeahead {
 .panel.attendance-info .edit-start-btn,
 .panel.attendance-info .save-btn,
 .panel.attendance-info .cancel-btn,
-.panel.attendance-info .delete-btn,
-.edit-icons .edit-link {
+.panel.attendance-info .delete-btn {
   cursor: pointer;
+}
+
+/* Subtle Row Action / Edit Icon */
+.edit-icons {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spacer is only active when Attendance panel is visible to align with buttons below column labels */
+.data-row:has(.attendance-info:not(.d-none)) .edit-icons .checkin-box-label-wrapper {
+  display: block;
+}
+
+/* In Details view or List view, remove the label spacer so the edit button vertically centers with the details text */
+.data-row:has(.details-info:not(.d-none)) .edit-icons .checkin-box-label-wrapper,
+.data-row:not(:has(.attendance-info:not(.d-none))) .edit-icons .checkin-box-label-wrapper {
+  display: none !important;
+}
+
+.row-action-btn,
+.edit-icons .edit-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  min-width: 26px;
+  max-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 6px;
+  color: var(--wps-text-subtle);
+  background-color: transparent;
+  border: 1px solid transparent;
+  font-size: 0.825rem;
+  line-height: 1;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  text-decoration: none;
+  vertical-align: middle;
+}
+
+.row-action-btn:hover,
+.edit-icons .edit-link:hover {
+  color: var(--wps-blue-primary);
+  background-color: var(--wps-blue-tint);
+  border-color: var(--wps-border);
+  box-shadow: 0 1px 3px rgba(4, 35, 80, 0.08);
 }
 
 /* ==========================================================================
@@ -894,10 +1027,10 @@ span.twitter-typeahead {
 }
 
 .admin .header-row {
-  padding: 8px 14px;
+  padding: 6px 14px;
   font-size: 0.85rem;
-  border-bottom: 2px solid var(--wps-border);
-  margin-bottom: 12px;
+  border-bottom: none;
+  margin-bottom: 8px;
 }
 
 .admin .header-row h4 {

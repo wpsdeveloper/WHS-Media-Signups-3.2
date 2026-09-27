@@ -146,7 +146,7 @@
           <div class="step-card h-100">
             <div class="d-flex flex-row align-items-center justify-content-between mb-3 pb-2 border-bottom">
               <div class="flex-grow-1">
-                <h2 class="step-header mb-0">
+                <h2 class="step-header mb-0 border-0 pb-0">
                   <i class="fa-solid fa-clock-rotate-left"></i>
                   Signups & Attendance
                 </h2>
@@ -236,7 +236,7 @@
         <div class="col-12 col-lg-9">
           <div class="step-card h-100">
             <div class="d-flex flex-row align-items-center justify-content-between mb-3 pb-2 border-bottom">
-              <h2 class="step-header mb-0">
+              <h2 class="step-header mb-0 border-0 pb-0">
                 <i class="fa-solid fa-list-check"></i>
                 Configuration Parameters
               </h2>
@@ -273,18 +273,18 @@
   
   <!-- Student row of data -->
   <template id="student-row-template">
-    <div class="row data-row student-row mb-2">
+    <div class="row data-row student-row mb-2 align-items-center">
 
       <!-- Column 1: Date -->
-      <div class="col col-12 col-lg-2 mb-2 d-flex align-items-center">
+      <div class="col col-12 col-lg-2 mb-1 mb-lg-0 d-flex align-items-center">
         <div class="signup-date fw-semibold"></div>
       </div>
       
       <!-- Column 2: Period -->
-      <div class="signup-period col col-12 col-lg-2 mb-2 d-flex align-items-center"></div>
+      <div class="signup-period col col-12 col-lg-2 mb-1 mb-lg-0 d-flex align-items-center"></div>
       
       <!-- Column 3: Panels Slider & Edit Action -->
-      <div class="col col-12 col-lg-8 mb-2 d-flex align-items-center">
+      <div class="col col-12 col-lg-8 mb-1 mb-lg-0 d-flex align-items-center">
         <div id="slider-wrapper" class="slider-wrapper flex-grow-1" data-items="2">
           <div class="slider">
             
@@ -300,19 +300,26 @@
             
             <!-- Panel: Details -->
             <div class="panel details-info">
-              <div class="row">
-                <div class="study-teacher col-12"></div>
-                <div class="type col-12 col-lg-6"></div>
-                <div class="room col-12 col-lg-6"></div>
-                <div class="comments col-12"></div>
+              <div class="details-content d-flex flex-column justify-content-center gap-1">
+                <div class="study-teacher fw-semibold text-dark"></div>
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                  <div class="type"></div>
+                  <div class="comments"></div>
+                  <div class="room text-primary small"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="edit-icons d-none ms-auto flex-shrink-0">
-          <a class="edit-link script-link btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none" href="?page=update" target="_top" title="Edit this record">
-            <i class="fas fa-edit me-1"></i>Edit
-          </a>
+        <div class="edit-icons d-none ms-3 flex-shrink-0">
+          <div class="checkin-box-inner">
+            <div class="checkin-box-label-wrapper" aria-hidden="true" style="visibility: hidden;">
+              <label class="checkin-box-label">&nbsp;</label>
+            </div>
+            <a class="edit-link script-link row-action-btn text-decoration-none" href="?page=update" target="_top" title="Edit record details" aria-label="Edit record details">
+              <i class="fa-regular fa-pen-to-square"></i>
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -320,32 +327,39 @@
 
   <!-- Staff row of data -->
   <template id="staff-row-template">
-    <div class="row data-row staff-row mb-2">
+    <div class="row data-row staff-row mb-2 align-items-center">
       <!-- Column 1 -->
-      <div class="col col-12 col-lg-2 mb-2 d-flex align-items-center gap-2">
+      <div class="col col-12 col-lg-2 mb-1 mb-lg-0 d-flex align-items-center gap-2">
         <div class="student-name"></div>
-        <div class="signup-date"></div>
+        <div class="signup-date fw-semibold"></div>
       </div>
 
       <!-- Column 2 -->
-      <div class="signup-period col col-12 col-lg-2 mb-2 d-flex align-items-center"></div>
+      <div class="signup-period col col-12 col-lg-2 mb-1 mb-lg-0 d-flex align-items-center"></div>
 
       <!-- Column 3 -->
-      <div class="col col-12 col-lg-8 mb-2 d-flex align-items-center">
+      <div class="col col-12 col-lg-8 mb-1 mb-lg-0 d-flex align-items-center">
         <div id="slider-wrapper" class="slider-wrapper flex-grow-1" data-items="2">
           <div class="slider">
             <div class="panel attendance-info">
               <div class="comments col-12"></div>
             </div>
             <div class="panel details-info">
-              <div class="comments col-12"></div>
+              <div class="details-content d-flex flex-column justify-content-center">
+                <div class="comments col-12"></div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="edit-icons d-none ms-auto flex-shrink-0">
-          <a class="edit-link script-link btn btn-sm btn-outline-secondary py-1 px-2 text-decoration-none" href="?page=update" target="_top" title="Edit this record">
-            <i class="fas fa-edit me-1"></i>Edit
-          </a>
+        <div class="edit-icons d-none ms-3 flex-shrink-0">
+          <div class="checkin-box-inner">
+            <div class="checkin-box-label-wrapper" aria-hidden="true" style="visibility: hidden;">
+              <label class="checkin-box-label">&nbsp;</label>
+            </div>
+            <a class="edit-link script-link row-action-btn text-decoration-none" href="?page=update" target="_top" title="Edit record details" aria-label="Edit record details">
+              <i class="fa-regular fa-pen-to-square"></i>
+            </a>
+          </div>
         </div>
       </div>
     </div>
