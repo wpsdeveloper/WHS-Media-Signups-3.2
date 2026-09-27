@@ -4,9 +4,18 @@ import { parseStudentDataList } from '../common/parsers';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
-const setHelperState = (isSearching: boolean, noResults = false) => {
+const setHelperState = (isSearching: boolean, noResults = false, isSelected = false) => {
   const helper = dom.qs('#student-search-helper') as HTMLElement | null;
   if (!helper) return;
+
+  if (isSelected) {
+    helper.style.visibility = 'hidden';
+    helper.classList.remove('d-none');
+    return;
+  }
+
+  helper.style.visibility = 'visible';
+  helper.classList.remove('d-none');
 
   if (isSearching) {
     helper.textContent = 'Searching...';
@@ -25,6 +34,25 @@ const updateClearButtonState = (hasValue: boolean, isSearching: boolean) => {
   } else {
     dom.setVisible('#student-clear-btn', true);
   }
+};
+
+const isStudentSelected = (query: string): boolean => {
+  if (!query) return false;
+  // If query contains '<' and '>' (standard datalist student format: "Lastname, Firstname <email>")
+  if (/<[^>]+>/.test(query)) {
+    return true;
+  }
+  // Check against current datalist options in the DOM
+  const datalist = dom.qs('#student-suggestions') as HTMLDataListElement | null;
+  if (datalist && datalist.options && datalist.options.length > 0) {
+    const queryLower = query.toLowerCase();
+    for (let i = 0; i < datalist.options.length; i++) {
+      if (datalist.options[i].value.toLowerCase() === queryLower) {
+        return true;
+      }
+    }
+  }
+  return false;
 };
 
 export const clearStudentInput = () => {
@@ -61,6 +89,14 @@ export const studentInputChangeHandler = (event: Event) => {
     return;
   }
 
+  // If a full student was selected from the datalist, do not trigger a backend search
+  if (isStudentSelected(query)) {
+    dom.setVisible('#student-search-spinner', false);
+    updateClearButtonState(true, false);
+    setHelperState(false, false, true);
+    return;
+  }
+
   // Show the spinner and change helper to right-justified "Searching..."
   dom.setVisible('#student-search-spinner', true);
   dom.setVisible('#student-clear-btn', false);
@@ -77,6 +113,15 @@ export const studentInputChangeHandler = (event: Event) => {
 
     google.script.run
       .withSuccessHandler((matchingStudents: Student[]) => {
+        // Re-check if user selected a student in the meantime
+        const currentVal = dom.valueOf(target).trim();
+        if (isStudentSelected(currentVal)) {
+          dom.setVisible('#student-search-spinner', false);
+          updateClearButtonState(true, false);
+          setHelperState(false, false, true);
+          return;
+        }
+
         dom.setVisible('#student-search-spinner', false);
         updateClearButtonState(true, false);
         const hasNoResults = matchingStudents.length === 0;
