@@ -30,30 +30,33 @@ function updateReservation(submittedData: Signup) {
 
   if (!SPREADSHEET) throw STANDARD_SERVER_ERROR;
 
-  // get all signup data
   var sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   if (!sheet) throw STANDARD_SERVER_ERROR;
 
-  let data = sheet.getDataRange().getValues() as SSRow[];
-
-  let success = false;
-  data.forEach((row: SSRow, index: number) => {
-    const rowId = row[SIGNUPS_COL.ROW_ID];
-    
-    // skip blank rows
-    if ((rowId === "") || (rowId === null) || (typeof rowId !== "string")) {
-      return;
-    }
-
-    if (row[SIGNUPS_COL.ROW_ID] === submittedData.rowId) {
-      updateReservationInSpreadsheet(submittedData, row, index + 1);
-      success = true;
-    }
-  });
-
-  if (!success) {
-    throw new Error("Error updating reservation");
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) {
+    throw new Error("Error updating reservation: no records found");
   }
+
+  // Fetch only the ROW_ID column (1-indexed: row 2 to lastRow, 1 column wide)
+  const idValues = sheet.getRange(2, SIGNUPS_COL.ROW_ID + 1, lastRow - 1, 1).getValues();
+
+  let targetRowIndex = -1;
+  for (let i = 0; i < idValues.length; i++) {
+    const rowId = idValues[i][0];
+    if (typeof rowId === "string" && rowId === submittedData.rowId) {
+      targetRowIndex = i + 2; // +2 for 1-based index and header row offset
+      break;
+    }
+  }
+
+  if (targetRowIndex === -1) {
+    throw new Error("Error updating reservation: row ID not found");
+  }
+
+  // Read only the existing row that needs updating to preserve timestamp and checkins
+  const existingRow = sheet.getRange(targetRowIndex, 1, 1, sheet.getLastColumn()).getValues()[0] as SSRow;
+  updateReservationInSpreadsheet(submittedData, existingRow, targetRowIndex);
 }
 
 function updateReservationInSpreadsheet(submittedData:Signup, row:SSRow, rowNum: number) {
