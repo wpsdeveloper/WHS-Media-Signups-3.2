@@ -9,16 +9,16 @@ import { IS_DEBUG } from "../common/debug";
 export const submitForm = async () => {
   const unvalidatedFormData = collectData();
   const formData = validateForm(unvalidatedFormData);
-
+  
   // returns if form is not validated (validation indicators occur in validateForm function)
   if (!formData) {
     console.error("Invalid form data, submission aborted.");
     return;
   }
-
+  
   messaging.showLoadingModal("Submitting");
-
   const updateRowId = store.getState().updateRowId;
+  debugger;
 
   try {
     if (IS_DEBUG) {
@@ -95,6 +95,9 @@ function collectData() {
   data.teacherStudy = dom.valueOf(".study-teacher");
   data.teacherAcad = dom.valueOf("#acad-teacher");
   data.comments = dom.valueOf("#topic-intervention");
+
+  const rowId = store.getState().updateRowId;
+  if (rowId) data.rowId = rowId;
 
   return data;
 }

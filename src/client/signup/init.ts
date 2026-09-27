@@ -104,7 +104,7 @@ async function parseServerData(data: string): Promise<SignupState> {
     isAdmin: appConfig.isAdmin,
     isEditor: appConfig.isEditor, 
     updateData: updateData,
-    updateRowId: null,
+    updateRowId: appConfig.updateId || "",
   };
 }
 
