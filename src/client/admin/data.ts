@@ -69,8 +69,11 @@ export const saveSettingsHandler = async () => {
       let value = setting.value;
 
       if (rowElem) {
+        const toggleSwitch = rowElem.querySelector(".setting-toggle-switch, input[type='checkbox']") as HTMLInputElement | null;
         const checkedRadio = rowElem.querySelector(".value input[type='radio']:checked") as HTMLInputElement | null;
-        if (checkedRadio) {
+        if (toggleSwitch) {
+          value = toggleSwitch.checked ? "On" : "Off";
+        } else if (checkedRadio) {
           value = checkedRadio.value; // "On" or "Off"
         } else {
           const input = rowElem.querySelector(".value input") as HTMLInputElement | null;

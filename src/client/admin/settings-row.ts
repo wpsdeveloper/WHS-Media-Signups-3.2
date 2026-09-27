@@ -37,25 +37,43 @@ export class SettingsRow {
     const commentsDiv = element.querySelector(".comments") as HTMLElement;
     if (commentsDiv) dom.setText(commentsDiv, comments);
 
-    const isBoolean = dataType === "boolean" || typeof value === "boolean" || value === "On" || value === "Off";
+    const isBoolean = dataType === "boolean" || typeof value === "boolean" || String(value).toLowerCase() === "on" || String(value).toLowerCase() === "off";
 
     if (isBoolean) {
-      const isOn = value === "On" || value === "true" || value === true;
+      const strVal = String(value).trim().toLowerCase();
+      const isOn = strVal === "on" || strVal === "true" || value === true;
       const safeKey = (key || 'setting').replace(/[^a-zA-Z0-9_-]/g, "_");
       const valueDiv = element.querySelector(".value") as HTMLElement;
       if (valueDiv) {
         valueDiv.innerHTML = `
-          <div class="d-flex align-items-center gap-3 py-1">
-            <div class="form-check form-check-inline mb-0">
-              <input class="form-check-input" type="radio" name="setting-${safeKey}" id="setting-${safeKey}-on" value="On" ${isOn ? 'checked' : ''} />
-              <label class="form-check-label fw-semibold user-select-none" for="setting-${safeKey}-on">On</label>
-            </div>
-            <div class="form-check form-check-inline mb-0">
-              <input class="form-check-input" type="radio" name="setting-${safeKey}" id="setting-${safeKey}-off" value="Off" ${!isOn ? 'checked' : ''} />
-              <label class="form-check-label fw-semibold user-select-none" for="setting-${safeKey}-off">Off</label>
-            </div>
+          <div class="form-check form-switch d-inline-flex align-items-center gap-2 mb-0 py-1">
+            <input 
+              class="form-check-input setting-toggle-switch" 
+              type="checkbox" 
+              role="switch" 
+              id="setting-${safeKey}" 
+              ${isOn ? 'checked' : ''} 
+            />
+            <label class="form-check-label fw-bold setting-toggle-label user-select-none ${isOn ? 'text-success' : 'text-secondary'}" for="setting-${safeKey}">
+              ${isOn ? 'On' : 'Off'}
+            </label>
           </div>
         `;
+        const toggleInput = valueDiv.querySelector(`#setting-${safeKey}`) as HTMLInputElement | null;
+        const toggleLabel = valueDiv.querySelector(`.setting-toggle-label`) as HTMLLabelElement | null;
+        if (toggleInput && toggleLabel) {
+          toggleInput.addEventListener("change", () => {
+            if (toggleInput.checked) {
+              toggleLabel.textContent = "On";
+              toggleLabel.classList.remove("text-secondary");
+              toggleLabel.classList.add("text-success");
+            } else {
+              toggleLabel.textContent = "Off";
+              toggleLabel.classList.remove("text-success");
+              toggleLabel.classList.add("text-secondary");
+            }
+          });
+        }
       }
       return;
     }

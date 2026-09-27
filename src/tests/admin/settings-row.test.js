@@ -93,36 +93,40 @@ describe('SettingsRow', () => {
     });
 
     describe('boolean types', () => {
-      it('sets radio button to checked when value is "On"', () => {
+      it('sets toggle switch to checked and label to "On" when value is "On"', () => {
         const setting = { key: 'ENABLED', value: 'On', type: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
-        const input = row.element.querySelector('.value input[value="On"]');
-        expect(input.type).toBe('radio');
+        const input = row.element.querySelector('.value input.setting-toggle-switch');
+        const label = row.element.querySelector('.value .setting-toggle-label');
+        expect(input.type).toBe('checkbox');
         expect(input.checked).toBe(true);
         expect(input.classList.contains('form-check-input')).toBe(true);
         expect(input.classList.contains('form-control')).toBe(false);
+        expect(label.textContent.trim()).toBe('On');
       });
 
-      it('sets radio button to checked when value is "true"', () => {
+      it('sets toggle switch to checked when value is "true"', () => {
         const setting = { key: 'ENABLED', value: 'true', type: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
-        const input = row.element.querySelector('.value input[value="On"]');
+        const input = row.element.querySelector('.value input.setting-toggle-switch');
+        const label = row.element.querySelector('.value .setting-toggle-label');
         expect(input.checked).toBe(true);
+        expect(label.textContent.trim()).toBe('On');
       });
 
-      it('sets radio button to checked for "Off" when value is falsey or "Off"', () => {
+      it('sets toggle switch to unchecked and label to "Off" when value is falsey or "Off"', () => {
         const setting = { key: 'ENABLED', value: 'Off', type: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
-        const onInput = row.element.querySelector('.value input[value="On"]');
-        const offInput = row.element.querySelector('.value input[value="Off"]');
-        expect(onInput.checked).toBe(false);
-        expect(offInput.checked).toBe(true);
+        const input = row.element.querySelector('.value input.setting-toggle-switch');
+        const label = row.element.querySelector('.value .setting-toggle-label');
+        expect(input.checked).toBe(false);
+        expect(label.textContent.trim()).toBe('Off');
       });
     });
 
