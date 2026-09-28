@@ -1,3 +1,8 @@
+/**
+ * @file attendance-data-table.ts
+ * @description Manages attendance data table rendering, sorting, and state observation subscriptions.
+ */
+
 import * as dom from "../common/dom";
 import { AttendanceState, store } from "./attendance-store";
 import { makeDataRowViewModel, AttendanceDataRow as DataRow } from "./attendance-data-row";
@@ -6,10 +11,9 @@ import { setPanelView } from "./attendance-panels";
 
 export { filterSignups, sortSignups };
 
-// =====================================================================
-// STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
-// =====================================================================
-
+/**
+ * Initializes store observers for re-rendering the attendance table on state changes.
+ */
 export const initObservers = () => {
   store.subscribe(
     (state: AttendanceState) => {
@@ -28,7 +32,9 @@ export const initObservers = () => {
 };
 
 /**
- * Re-renders student and staff tables based on current filter & sort state
+ * Re-renders student and staff tables based on current filter & sort state.
+ * 
+ * @param state - The current AttendanceState.
  */
 export const renderTable = (state: AttendanceState) => {
   const studentTable = dom.qs("#student-table") as HTMLElement | null;
@@ -84,10 +90,11 @@ export const renderTable = (state: AttendanceState) => {
   setPanelView(state.ui_currentView);
 };
 
-// =====================================================================
-// TABLE HEADER SORTING
-// =====================================================================
-
+/**
+ * Handles column header sorting by updating sort field and order in the store.
+ * 
+ * @param field - The field to sort by ("student" or "study").
+ */
 export const resort = (field: AttendanceState["ui_currentSortField"]) => {
   const { ui_currentSortField: currentSortField, ui_currentSortOrder: currentSortOrder } =
     store.getState();

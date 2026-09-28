@@ -1,7 +1,13 @@
+/**
+ * @file glass-rooms-status.ts
+ * @description Manages glass room reservation status calculation, UI widget updates, and room badge generation.
+ */
+
 import * as dom from "../common/dom";
 import { isSameDate } from "../common/dates";
 import { AttendanceState, store } from "./attendance-store";
 
+/** Interface representing a glass room reservation status */
 export interface RoomReservation {
   room: string;
   isBooked: boolean;
@@ -11,7 +17,12 @@ export interface RoomReservation {
 const GLASS_ROOM_IDS = ["1", "2"];
 
 /**
- * Pure calculation: Returns the reservation status for each glass room.
+ * Pure calculation: Returns the reservation status for each glass room for the selected date and period.
+ * 
+ * @param signups - Array of Signup records.
+ * @param currentDate - Currently selected date.
+ * @param currentPeriod - Currently selected period.
+ * @returns Record mapping room IDs to RoomReservation objects.
  */
 export function getGlassRoomReservations(
   signups: Signup[] = [],
@@ -46,6 +57,10 @@ export function getGlassRoomReservations(
 
 /**
  * Updates the Glass Room DOM widget based on current date, period, and signups.
+ * 
+ * @param currentDate - Currently selected date.
+ * @param currentPeriod - Currently selected period.
+ * @param signups - Array of Signup records.
  */
 export const updateGlassRooms = (
   currentDate: Date | null,
@@ -76,6 +91,9 @@ export const updateGlassRooms = (
 
 /**
  * Generates badge HTML for table rows indicating which glass room is assigned.
+ * 
+ * @param room - Room identifier string ('1' or '2').
+ * @returns HTML badge string.
  */
 export const getRoomBadge = (room: string): string => {
   if (room === "1") {

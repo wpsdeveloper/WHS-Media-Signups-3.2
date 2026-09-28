@@ -1,41 +1,46 @@
+/**
+ * @file constants.ts
+ * @description Defines global configuration constants, calendar IDs, sheet names, range references, column indices, and default values.
+ */
+
 // Calendar
-const CALENDAR_ID = "walpole.k12.ma.us_u7gud64fa4b010odr5cqkvd70k@group.calendar.google.com"; // id of calendar that holds the daily schedules
+const CALENDAR_ID = "walpole.k12.ma.us_u7gud64fa4b010odr5cqkvd70k@group.calendar.google.com"; // ID of calendar holding daily schedules
 
 // Permissions
-const ALLOWED_SUBMITTERS = ["@wpsma.org", "@walpole.k12.ma.us"]; // domains that can access the submission form
-const ALLOWED_ATTENDANCE = ["@walpole.k12.ma.us"]; // domains that can access the attendance form
+const ALLOWED_SUBMITTERS = ["@wpsma.org", "@walpole.k12.ma.us"]; // Domains that can access the submission form
+const ALLOWED_ATTENDANCE = ["@walpole.k12.ma.us"]; // Domains that can access the attendance form
 
 // Spreadsheet constants
-const SPREADSHEET_ID = '1LbVD6PYDns60osOfsRtUea3xyHr5BPyfAkhum0-eC5k'; // Google Sheet that holds the signup data
-const SPREADSHEET = SpreadsheetApp.openById(SPREADSHEET_ID); // Active spreadsheet object, used in most functions
+const SPREADSHEET_ID = '1LbVD6PYDns60osOfsRtUea3xyHr5BPyfAkhum0-eC5k'; // Google Sheet holding signup data
+const SPREADSHEET = SpreadsheetApp.openById(SPREADSHEET_ID); // Active spreadsheet object
 
-// sheet names
+// Sheet names
 const SETTINGS_SHEET_NAME = "App Settings";
-const SIGNUPS_SHEET_NAME = "Signups"; // name of the sheet that holds the signup data
-const DAILY_SCHEDULES_SHEET_NAME = "Recent Schedules"; // name of the sheet that holds the daily schedules (e.g. 3/1/2024 = "Day 2")
-const STUDENTS_SHEET_NAME = "Student Names"; // name of the sheet that holds all WHS students names and email addresses
-const SPECIAL_SCHEDULES_SHEET_NAME = "Special Schedules"; // name of the sheet that holds special limitations for signups
-const ARCHIVE_SHEET_NAME = "Signups Archive"; // name of the sheet that holds signups from the past
-const NO_FLY_LIST_SHEET_NAME = "No Fly List"; // email addresses of students not allowed to sign up
+const SIGNUPS_SHEET_NAME = "Signups"; // Name of sheet holding signup data
+const DAILY_SCHEDULES_SHEET_NAME = "Recent Schedules"; // Name of sheet holding daily schedules
+const STUDENTS_SHEET_NAME = "Student Names"; // Name of sheet holding WHS student names and email addresses
+const SPECIAL_SCHEDULES_SHEET_NAME = "Special Schedules"; // Name of sheet holding special limitations for signups
+const ARCHIVE_SHEET_NAME = "Signups Archive"; // Name of sheet holding past signups
+const NO_FLY_LIST_SHEET_NAME = "No Fly List"; // Email addresses of students not allowed to sign up
 
-// range names
-const S2_RANGE_NAME = "S2_Start_Date"; // name of the range that holds the first date of Semester 2
-const INTERVENTIONS_DOCID_RANGE_NAME = "Interventions_DocId"; // name of the range that holds the DocId of the Interventions Schedule
-const STUDY_TEACHERS_DOCID_RANGE_NAME = "Study_teachers_DocId"; // name of the range that holds the DocId of the Study Hall Teacher Schedule
-const TUTORING_DOCID_RANGE_NAME = "Tutoring_DocId"; // name of the range that holds the DocId of the Tutoring Schedule
-const WED_INTERVENTIONS_RANGE_NAME = "Wed_Intv"; // name of the range that holds the on/off switch for Wednesday Interventions
-const TUTORING_TOGGLE_RANGE_NAME = "Tutoring_toggle"; // name of the range that holds the on/off switch for Wednesday Interventions
-const DEFAULT_MAX_SIGNUPS_RANGE_NAME = "Default_Max_Signups" // name of the range that holds the value
-const ADMIN_ACCESS_RANGE_NAME = "Admin_Access" // name of the range that holds the value
-const EMAIL_CONTACTS_RANGE_NAME = "Email_contacts"; // name of the range that holds the email address for who to contact for corrections
-const DATA_EDITORS_RANGE_NAME = "Data_editors"; // name of the range that holds the email addresses of who can edit signup data
+// Range names
+const S2_RANGE_NAME = "S2_Start_Date"; // Name of range holding first date of Semester 2
+const INTERVENTIONS_DOCID_RANGE_NAME = "Interventions_DocId"; // DocId of Interventions Schedule
+const STUDY_TEACHERS_DOCID_RANGE_NAME = "Study_teachers_DocId"; // DocId of Study Hall Teacher Schedule
+const TUTORING_DOCID_RANGE_NAME = "Tutoring_DocId"; // DocId of Tutoring Schedule
+const WED_INTERVENTIONS_RANGE_NAME = "Wed_Intv"; // On/off switch for Wednesday Interventions
+const TUTORING_TOGGLE_RANGE_NAME = "Tutoring_toggle"; // On/off switch for Tutoring
+const DEFAULT_MAX_SIGNUPS_RANGE_NAME = "Default_Max_Signups" // Default max signups per block
+const ADMIN_ACCESS_RANGE_NAME = "Admin_Access" // Authorized admin emails
+const EMAIL_CONTACTS_RANGE_NAME = "Email_contacts"; // Contact email for corrections
+const DATA_EDITORS_RANGE_NAME = "Data_editors"; // Email addresses of data editors
 
 // Errors
 const STANDARD_SERVER_ERROR = new Error("Error communicating with database");
 
 const DEFAULT_MAX_SIGNUPS = 10;
-// Column headers
-// The column index (0-based) for signup data in the spreadsheet
+
+/** Column index (0-based) for signup data in the spreadsheet */
 const SIGNUPS_COL = {
   TIMESTAMP: 7,
   SUBMITTED_BY: 8,
@@ -58,13 +63,13 @@ const SIGNUPS_COL = {
   STUDY_IN_2: 17,
 };
 
-// The column index (0-based) for daily schedule data in the spreadsheet
+/** Column index (0-based) for daily schedule data in the spreadsheet */
 const DAILY_SCHED_COL = {
   DATE: 0,
   DAY: 1
 };
 
-// The column index (0-based) for special schedule data in the spreadsheet
+/** Column index (0-based) for special schedule data in the spreadsheet */
 const SPECIAL_SCHED_COL = {
   DATE: 0,
   PERIOD: 1,
@@ -76,7 +81,7 @@ const SPECIAL_SCHED_COL = {
   MAX: 7,
 }
 
-// The names of Days in the rotating schedule (also, the title of calendar events)
+/** Names of Days in the rotating schedule */
 const SCHEDULE_DAYS: Day[] = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7", "Day 8"];
 
 const MASTER_ROTATION_GRID: RotationGrid[] = [
@@ -90,7 +95,6 @@ const MASTER_ROTATION_GRID: RotationGrid[] = [
   {day: 'Day 8', periods: ['4','3','6','5','8','7']},
 ];
 
-
 const EMPTY_SPECIAL: SpecialSchedule = {
   allowInterventions: true,
   allowAssessmentMakeups: true,
@@ -100,7 +104,7 @@ const EMPTY_SPECIAL: SpecialSchedule = {
   max: DEFAULT_MAX_SIGNUPS,  
 };
 
-// Names of weekdays
+/** Names of weekdays */
 const WEEKDAYS = [
   "Sunday",
   "Monday",
@@ -110,7 +114,7 @@ const WEEKDAYS = [
   "Friday",
 ];
 
-// Names of months
+/** Names of months */
 const MONTHS = [
   "January",
   "February",

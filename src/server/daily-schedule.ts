@@ -1,3 +1,14 @@
+/**
+ * @file daily-schedule.ts
+ * @description Builds and caches calendar blocks, rotation grids, intervention schedules, and special schedule limitations.
+ */
+
+/**
+ * Retrieves cached calendar blocks or parses them from spreadsheet and calendar sources.
+ * 
+ * @param appSettings - Array of application settings.
+ * @returns Array of DailyBlock objects.
+ */
 function getCachedOrParsedCalendarBlocks(appSettings: Setting[]): DailyBlock[] {
   const cache = CacheService.getScriptCache();
   const cached = cache.get("calendar_blocks_v1");
@@ -9,7 +20,7 @@ function getCachedOrParsedCalendarBlocks(appSettings: Setting[]): DailyBlock[] {
     }
   }
 
-  const calendarBlocks = buildFlatScheduleData(appSettings)
+  const calendarBlocks = buildFlatScheduleData(appSettings);
 
   // Cache for 6 hours (21600 seconds = max allowed in GAS CacheService)
   try {
@@ -20,6 +31,12 @@ function getCachedOrParsedCalendarBlocks(appSettings: Setting[]): DailyBlock[] {
   return calendarBlocks;
 }
 
+/**
+ * Builds flat daily schedule data combining rotation, intervention teachers, study teachers, and calendar rows.
+ * 
+ * @param appSettings - Array of application settings.
+ * @returns Array of hydrated DailyBlock objects.
+ */
 function buildFlatScheduleData(appSettings: Setting[]): DailyBlock[] {
   const rotationGrid = MASTER_ROTATION_GRID;
   const interventionTeachers = parseInterventionsGrid(appSettings);
@@ -36,6 +53,12 @@ function buildFlatScheduleData(appSettings: Setting[]): DailyBlock[] {
   return dailySchedules;
 }
 
+/**
+ * Retrieves rows from a specified sheet, skipping the header row.
+ * 
+ * @param sheetName - The name of the sheet.
+ * @returns Array of spreadsheet row arrays.
+ */
 function getSheetData(sheetName: string): SSRow[] {
   const sheet = SPREADSHEET.getSheetByName(sheetName);
   if (!sheet) return [];
@@ -49,6 +72,14 @@ function getSheetData(sheetName: string): SSRow[] {
   return rows;
 }
 
+/**
+ * Parses rotation grid and matches intervention and study teachers.
+ * 
+ * @param rotationGrid - The master rotation grid.
+ * @param interventionTeachers - Parsed intervention teachers.
+ * @param studyTeachers - Parsed study teachers.
+ * @returns Array of ScheduleBlock objects.
+ */
 function parseRotation(
   rotationGrid: RotationGrid[], 
   interventionTeachers: InterventionsEntry[], 
@@ -89,6 +120,12 @@ function parseRotation(
   return blocks;
 }
 
+/**
+ * Parses calendar rows within the active date window.
+ * 
+ * @param rows - Raw calendar spreadsheet rows.
+ * @returns Array of CalendarRaw objects.
+ */
 function parseCalendarRows(rows: SSRow[]): CalendarRaw[] {
   const calendar: CalendarRaw[] = [];
   const { start, end } = getActiveDateWindow(2, 2);
@@ -99,7 +136,6 @@ function parseCalendarRows(rows: SSRow[]): CalendarRaw[] {
     if (isNaN(rowDate.getTime())) return;
 
     if (rowDate.getTime() >= start.getTime() && rowDate.getTime() <= end.getTime()) {
-
       calendar.push({
         date: row[0],
         day: row[1] as Day
@@ -110,6 +146,12 @@ function parseCalendarRows(rows: SSRow[]): CalendarRaw[] {
   return calendar;
 }
 
+/**
+ * Parses special schedule rows.
+ * 
+ * @param rows - Raw special schedules spreadsheet rows.
+ * @returns Array of SpecialRaw objects.
+ */
 function parseSpecialRows(rows: SSRow[]): SpecialRaw[] {
   const specials: SpecialRaw[] = [];
   
@@ -129,12 +171,20 @@ function parseSpecialRows(rows: SSRow[]): SpecialRaw[] {
   
   return specials;
 }
+
+/**
+ * Combines calendar days, schedule blocks, and special rows into daily calendar blocks.
+ * 
+ * @param calendarDays - Array of CalendarRaw items.
+ * @param scheduleBlocks - Array of ScheduleBlock items.
+ * @param specialRows - Array of SpecialRaw items.
+ * @returns Array of DailyBlock objects.
+ */
 function buildCalendarBlocks (
   calendarDays: CalendarRaw[], 
   scheduleBlocks: ScheduleBlock[],
   specialRows: SpecialRaw[]
 ): DailyBlock[] {
-  
   const schedMap = new Map<string, ScheduleBlock>();
   scheduleBlocks.forEach(b => schedMap.set(`${b.term}_${b.day}_${b.period}`, b));
 
@@ -152,7 +202,6 @@ function buildCalendarBlocks (
     });
   });
   
-  // gets the date when Semester 2 begins
   let s2DateTime = new Date("2100-01-01").getTime();
   const s2DateRange = SPREADSHEET.getRangeByName(S2_RANGE_NAME);
   if (s2DateRange) {

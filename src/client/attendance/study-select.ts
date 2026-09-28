@@ -1,3 +1,8 @@
+/**
+ * @file study-select.ts
+ * @description Manages study teacher filtering options, dropdown updates, and observers for the attendance module.
+ */
+
 import * as dom from '../common/dom';
 import { isSameDate } from '../common/dates';
 import { AttendanceState, store } from './attendance-store';
@@ -6,6 +11,11 @@ export const ALL_STUDIES = 'All studies';
 
 /**
  * Pure calculation: Extracts unique sorted study teacher names from signups for the given date and period.
+ * 
+ * @param signups - Array of Signup records.
+ * @param currentDate - Currently selected date.
+ * @param currentPeriod - Currently selected period.
+ * @returns Array of study teacher names including "All studies".
  */
 export function getAvailableStudies(
   signups: Signup[] = [],
@@ -32,7 +42,9 @@ export function getAvailableStudies(
 }
 
 /**
- * Responds to a change in the Study select dropdown.
+ * Responds to a change in the Study select dropdown and updates store state.
+ * 
+ * @param event - Optional Event object.
  */
 export const studyTeacherChangeHandler = (event?: Event) => {
   const target = event?.target as HTMLSelectElement | undefined;
@@ -42,6 +54,10 @@ export const studyTeacherChangeHandler = (event?: Event) => {
 
 /**
  * Updates the Study select dropdown options and restores valid selection.
+ * 
+ * @param currentDate - Currently selected date.
+ * @param currentPeriod - Currently selected period.
+ * @param signups - Array of Signup records.
  */
 export const updateStudyOptions = (
   currentDate: Date | null,
@@ -57,7 +73,6 @@ export const updateStudyOptions = (
     dom.appendOption('#study-select', study, study, false);
   });
 
-  // Preserve existing study if still present in options, otherwise fallback to "All studies"
   const selectElem = dom.qs('#study-select') as HTMLSelectElement | null;
   const targetStudy =
     currentSelectedStudy && studiesAvailable.includes(currentSelectedStudy)
@@ -74,7 +89,7 @@ export const updateStudyOptions = (
 };
 
 /**
- * Subscriber: Re-renders available options when date, period, or signups change.
+ * Subscriber: Re-renders available study options when date, period, or signups change.
  */
 export const setupStudyObservers = () => {
   store.subscribe(
@@ -84,7 +99,6 @@ export const setupStudyObservers = () => {
     ['ui_currentDate', 'ui_currentPeriod', 'signups']
   );
 
-  // Sync dropdown if ui_currentStudy is updated externally
   store.subscribe(
     (state: AttendanceState) => {
       const selectElem = dom.qs('#study-select') as HTMLSelectElement | null;

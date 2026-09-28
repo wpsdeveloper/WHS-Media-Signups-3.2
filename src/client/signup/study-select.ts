@@ -4,6 +4,11 @@ import { SignupState, store } from './signup-store';
 /**
  * Pure calculation: Computes available study teachers based on the schedule block
  * and current signup type.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block containing study teachers, or null.
+ * @param currentType - The selected signup type (e.g. "Alt setting", "Intervention", etc.).
+ * @param currentStudyTeacher - Optional currently selected study teacher to ensure inclusion.
+ * @returns An array of available study teacher names.
  */
 export function getAvailableStudyTeachers(
   currentScheduleBlock: DailyBlock | null,
@@ -38,6 +43,10 @@ export function getAvailableStudyTeachers(
 
 /**
  * Pure UI View: Updates the select dropdown and fallback input visibility.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block or null.
+ * @param teachersAvailable - Array of available teacher names.
+ * @param currentSelectedTeacher - Currently selected study teacher value.
  */
 export function updateStudyUi(
   currentScheduleBlock: DailyBlock | null,
@@ -70,6 +79,8 @@ export function updateStudyUi(
 
 /**
  * Pure UI Helper: Toggles visibility between dropdown and fallback input.
+ * 
+ * @param hasOptions - Boolean indicating whether study teacher options are available.
  */
 export function toggleStudyInputVisibility(hasOptions: boolean) {
   dom.setVisible("#study-teacher-select", hasOptions);
@@ -78,6 +89,8 @@ export function toggleStudyInputVisibility(hasOptions: boolean) {
 
 /**
  * Event Handler: Responds to user change in the study teacher select element.
+ * 
+ * @param event - Optional change or input event triggered by the user.
  */
 export const studyTeacherChangeHandler = (event?: Event) => {
   const target = event?.target as HTMLSelectElement | HTMLInputElement | undefined;
@@ -87,6 +100,10 @@ export const studyTeacherChangeHandler = (event?: Event) => {
 
 /**
  * Orchestrator: Calculates available teachers and renders UI accordingly.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block or null.
+ * @param currentType - The current signup type.
+ * @param currentStudyTeacher - The current study teacher selection.
  */
 export const updateStudyOptions = (
   currentScheduleBlock: DailyBlock | null,
@@ -99,6 +116,7 @@ export const updateStudyOptions = (
 
 /**
  * Subscriber: Re-calculates options when relevant state changes and keeps element synced.
+ * Registers store subscriptions for schedule block, period, and study teacher state.
  */
 export const setupStudyObservers = () => {
   // Sets study teacher options based on schedule block and signup type

@@ -1,8 +1,16 @@
+/**
+ * @file admin-data-row.ts
+ * @description Manages rendering and view-model construction for admin audit table rows.
+ */
+
 import * as dom from '../common/dom';
 import * as dates from '../common/dates';
 import { store, checkinStore, AdminState } from "./admin-store";
 import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
 
+/**
+ * Interface representing the view model for an admin data row.
+ */
 export interface AdminDataRowViewModel {
   type: string;
   room: string;
@@ -24,16 +32,26 @@ export interface AdminDataRowViewModel {
   mediaOut: string;
 }
 
+/**
+ * Class representing an individual admin table row component.
+ */
 export class AdminDataRow {
   viewModel: AdminDataRowViewModel;
   element: HTMLElement | null;
   
+  /**
+   * Constructs a new AdminDataRow.
+   * 
+   * @param viewModel - The view model containing row data.
+   */
   constructor(viewModel: AdminDataRowViewModel) {
     this.viewModel = viewModel;
     this.element = this.getElement();
-
   }
 
+  /**
+   * Renders the row element, populates fields, and mounts check-in boxes.
+   */
   render() {
     const vm = this.viewModel;
     const element = this.element;
@@ -65,6 +83,11 @@ export class AdminDataRow {
     this.mountCheckinBoxes(element);
   }
 
+  /**
+   * Retrieves and clones the student row template.
+   * 
+   * @returns The cloned HTMLElement template.
+   */
   getElement(): HTMLElement | null {
     const templateSelector = '#student-row-template';
 
@@ -79,6 +102,11 @@ export class AdminDataRow {
     return firstChild || null;
   }
 
+  /**
+   * Mounts check-in boxes into their respective containers within the row.
+   * 
+   * @param element - The row HTMLElement.
+   */
   mountCheckinBoxes(element: HTMLElement) {
     const attendancePanel = element.querySelector('.attendance-info') as HTMLElement | null;
     if (!attendancePanel) return;
@@ -103,6 +131,13 @@ export class AdminDataRow {
   }
 }
 
+/**
+ * Creates an AdminDataRowViewModel from a signup record and admin state.
+ * 
+ * @param signup - The Signup record.
+ * @param state - The current AdminState.
+ * @returns The populated AdminDataRowViewModel.
+ */
 export const makeDataRowViewModel = (
   signup: Signup,
   state: AdminState
@@ -164,6 +199,12 @@ export const makeDataRowViewModel = (
   };
 };
 
+/**
+ * Returns a human-readable label for a signup type.
+ * 
+ * @param type - The signup type string.
+ * @returns Formatted type label.
+ */
 const getTypeLabel = (type: string): string => {
   switch (type) {
     case 'Intervention':
@@ -180,6 +221,12 @@ const getTypeLabel = (type: string): string => {
   }
 };
 
+/**
+ * Extracts specific detail strings based on signup type.
+ * 
+ * @param signup - The Signup record.
+ * @returns Details string for the signup.
+ */
 function getSignupTypeDetails(signup: Signup): string {
   switch (signup.type) {
     case 'Intervention':

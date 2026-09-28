@@ -1,9 +1,17 @@
+/**
+ * @file data.ts
+ * @description Manages data fetching for student audit logs, student input parsing, and settings persistence.
+ */
+
 import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
 import { store } from './admin-store';
 import { IS_DEBUG, getMockData } from '../common/debug';
 
+/**
+ * Parses student search input and triggers student audit retrieval.
+ */
 export const getAuditHandler = async () => {
   try {
     const nameDiv = dom.qs("#student-name") as HTMLInputElement;
@@ -12,8 +20,7 @@ export const getAuditHandler = async () => {
     if (student.length < 2) {
       return;
     }
-    // this is a teacher submission
-    // breaks apart the line selected in the student datalist
+    // This is a teacher submission: breaks apart the line selected in the student datalist
     const brackets = student.indexOf(" <") > 0 ? student.split(" <") : [];
     let emailStudent = (brackets.length === 2) ? brackets[1].trim().substring(0, brackets[1].length - 1) : "";
   
@@ -31,8 +38,11 @@ export const getAuditHandler = async () => {
 };
 
 /**
- *  Requests student data from the server asynchronously
- */ 
+ * Requests student audit data from the server asynchronously.
+ * 
+ * @param emailStudent - Optional target student email.
+ * @returns A promise resolving to the raw audit data string.
+ */
 export const getStudentAudit = async (emailStudent?: string): Promise<string> => {
   const targetEmail = emailStudent !== undefined ? emailStudent : (store.getState().ui_requestedStudentEmail || (store.getState() as any).requestedStudentEmail);
   try {
@@ -54,7 +64,7 @@ export const getStudentAudit = async (emailStudent?: string): Promise<string> =>
 };
 
 /**
- * Handles saving all updated App Settings back to the spreadsheet
+ * Handles saving all updated App Settings back to the server spreadsheet.
  */
 export const saveSettingsHandler = async () => {
   try {
@@ -63,7 +73,6 @@ export const saveSettingsHandler = async () => {
     const currentSettings = state.settings || [];
 
     const updatedRows: [string, any, string, string, string][] = currentSettings.map(setting => {
-      const safeKey = (setting.key || '').replace(/[^a-zA-Z0-9_-]/g, "_");
       const rowElem = dom.qs(`.settings-row[data-key="${setting.key}"]`) as HTMLElement | null;
 
       let value = setting.value;
@@ -124,7 +133,7 @@ export const saveSettingsHandler = async () => {
 };
 
 /**
- * Subscriber: Updates suggestions when studentNames or current query change in store.
+ * Subscriber: Updates audit signups when ui_requestedStudentEmail changes in store.
  */
 export const setupAuditObserver = () => {
   store.subscribe(async (state) => {
@@ -141,4 +150,3 @@ export const setupAuditObserver = () => {
     }
   }, ['ui_requestedStudentEmail']);
 };
-

@@ -1,8 +1,16 @@
+/**
+ * @file attendance-data-row.ts
+ * @description Manages rendering and view-model construction for attendance table rows (student and staff records).
+ */
+
 import * as dom from '../common/dom';
 import { CHECKIN_CONFIG, CheckinBox } from '../common/checkin-box';
 import { AttendanceState, checkinStore } from './attendance-store';
 import { getRoomBadge } from './glass-rooms-status';
 
+/**
+ * Interface representing the view model for an attendance table row.
+ */
 export interface AttendanceDataRowViewModel {
   type: string;
   room: string;
@@ -22,15 +30,26 @@ export interface AttendanceDataRowViewModel {
   mediaOut: string;
 }
 
+/**
+ * Class representing an individual attendance table row component.
+ */
 export class AttendanceDataRow {
   viewModel: AttendanceDataRowViewModel;
   element: HTMLElement | null;
 
+  /**
+   * Constructs a new AttendanceDataRow.
+   * 
+   * @param viewModel - The view model containing row data and states.
+   */
   constructor(viewModel: AttendanceDataRowViewModel) {
     this.viewModel = viewModel;
     this.element = this.getElement(viewModel.rowIsStaff);
   }
 
+  /**
+   * Renders the row element, populates fields, manages edit links, and mounts check-in boxes.
+   */
   render() {
     const vm = this.viewModel;
     const element = this.element;
@@ -60,6 +79,12 @@ export class AttendanceDataRow {
     this.mountCheckinBoxes(element);
   }
 
+  /**
+   * Retrieves and clones the appropriate HTML template (staff or student row).
+   * 
+   * @param rowIsStaff - Whether the row represents a staff reservation.
+   * @returns The cloned HTMLElement template.
+   */
   getElement(rowIsStaff: boolean): HTMLElement | null {
     const templateSelector = rowIsStaff ? '#staff-row-template' : '#student-row-template';
 
@@ -74,6 +99,11 @@ export class AttendanceDataRow {
     return firstChild || null;
   }
 
+  /**
+   * Mounts check-in boxes into their respective containers within the row element.
+   * 
+   * @param element - The row HTMLElement.
+   */
   mountCheckinBoxes(element: HTMLElement) {
     const attendancePanel = element.querySelector('.attendance-info') as HTMLElement | null;
     if (!attendancePanel) return;
@@ -98,6 +128,13 @@ export class AttendanceDataRow {
   }
 }
 
+/**
+ * Creates an AttendanceDataRowViewModel from a signup record and attendance state.
+ * 
+ * @param signup - The raw Signup record.
+ * @param state - The current AttendanceState.
+ * @returns The populated AttendanceDataRowViewModel.
+ */
 export const makeDataRowViewModel = (
   signup: Signup,
   state: AttendanceState
@@ -155,6 +192,12 @@ export const makeDataRowViewModel = (
   };
 };
 
+/**
+ * Returns a human-readable label for a signup type.
+ * 
+ * @param type - The signup type string.
+ * @returns Formatted type label.
+ */
 const getTypeLabel = (type: string): string => {
   switch (type) {
     case 'Intervention':
@@ -171,6 +214,12 @@ const getTypeLabel = (type: string): string => {
   }
 };
 
+/**
+ * Extracts specific detail strings (subject, teacher, purpose) based on signup type.
+ * 
+ * @param signup - The Signup record.
+ * @returns Details string for the signup.
+ */
 function getSignupTypeDetails(signup: Signup): string {
   switch (signup.type) {
     case 'Intervention':

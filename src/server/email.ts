@@ -1,8 +1,13 @@
 /**
- * Sends an email confirmation to the user after a form submission
+ * @file email.ts
+ * @description Handles composing and sending confirmation emails to students and teachers via GmailApp.
+ */
+
+/**
+ * Sends an email confirmation to the user after a form submission.
  * 
- * @param signup The user submitted form data containing email addresses and reservation details
- * @throws Error if the email fails to send
+ * @param signup - The user submitted form data containing email addresses and reservation details.
+ * @throws Error if the email fails to send.
  */
 function sendConfirmationMessage(signup: Signup) {
   try {
@@ -15,11 +20,11 @@ function sendConfirmationMessage(signup: Signup) {
 }
 
 /**
- * Builds the body of the confirmation email message
+ * Builds the body of the confirmation email message.
  * 
- * @param signup The user submitted form data
- * @returns A formatted string containing the email message body
- * @throws Error if there's an issue communicating with the database or fetching settings
+ * @param signup - The user submitted form data.
+ * @returns A formatted string containing the email message body.
+ * @throws Error if there's an issue communicating with the database or fetching settings.
  */
 function createEmailMessage(signup: Signup): string {
     var date = new Date(signup.date);
@@ -28,14 +33,12 @@ function createEmailMessage(signup: Signup): string {
 
     if (!SPREADSHEET) throw STANDARD_SERVER_ERROR;
     
-    // Retrieve the contact emails from the spreadsheet settings
     var emailContactRange = SPREADSHEET.getRangeByName("Email_contacts");
     if (!emailContactRange) throw STANDARD_SERVER_ERROR;
 
     var emailContactVal = emailContactRange.getValue();
     var emailContacts = emailContactVal.split(",");
     
-    // Construct the email message step-by-step
     let message = "Thank you for signing up for time in the WHS Media Center. Here is your reservation confirmation.\n";
     message += "\n";
     message += "Date requested: " + dateFormatted +"\n";
@@ -47,7 +50,6 @@ function createEmailMessage(signup: Signup): string {
 
     message += "\nReason for visit: " + signup.type +"\n";
     
-    // Include optional fields only if they were provided
     if (signup.purpose !== "") {
       message += "Purpose: " + signup.purpose +"\n";
     }
@@ -73,15 +75,14 @@ function createEmailMessage(signup: Signup): string {
 }
 
 /**
- * Builds the options object for sending the email, including setting CC if necessary
+ * Builds the options object for sending the email, including setting CC if necessary.
  * 
- * @param teacherEmail The email address of the teacher (if a teacher submitted the form)
- * @returns An object containing email options (e.g., noReply, cc)
+ * @param teacherEmail - The email address of the teacher (if a teacher submitted the form).
+ * @returns An object containing email options (noReply, cc).
  */
 function buildEmailOptions(teacherEmail: string) {
   const options: {noReply: boolean, cc?: string } = {noReply: true};
 
-  // If a teacher submitted the form, adds the teacher as a cc to the email so they receive a copy
   if ((typeof teacherEmail === "string") && (teacherEmail.length > 0)) {
     options.cc = teacherEmail;
   }

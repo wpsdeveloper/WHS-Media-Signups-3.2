@@ -1,9 +1,16 @@
+/**
+ * @file checkin-box.ts
+ * @description Implements the reusable CheckinBox component for managing check-in, check-out, and study return actions.
+ */
+
 import * as dom from './dom';
 import * as checkin from './checkin';
 import * as dates from "./dates";
 
+/** Type representing checkin property names on signup records */
 export type CheckinPropName = 'studyIn1' | 'mediaIn' | 'mediaOut'|'studyIn2';
 
+/** Configuration record mapping checkin types to display labels, button texts, and properties */
 export type CheckinConfig = Record<
   CheckinType, {
     label: string,
@@ -12,6 +19,7 @@ export type CheckinConfig = Record<
     className: string,
   }>
 
+/** Configuration dictionary for all supported check-in types */
 export const CHECKIN_CONFIG: CheckinConfig = {
   'study-checkin': { 
     label: 'Study In', 
@@ -40,12 +48,17 @@ export const CHECKIN_CONFIG: CheckinConfig = {
   },
 } as const;
 
+/** Interface for store operations required by CheckinBox */
 export interface CheckinStore {
   getSignups(): readonly Signup[];
   setSignups(signups: Signup[]): void;
 }
 
+/**
+ * Component class managing individual check-in widgets within signup rows.
+ */
 export class CheckinBox {
+  /** Supported checkin box types */
   static readonly TYPES = {
     STUDY_CHECKIN: "study-checkin",
     MEDIA_CHECKIN: "media-checkin",
@@ -53,30 +66,61 @@ export class CheckinBox {
     STUDY_RETURN: "study-return",
   } as const;
 
+  /** The type of check-in */
   type: CheckinType;
+  /** Display label for the check-in */
   label: string;
+  /** Action button text */
   buttonText: string;
+  /** Signup property name */
   propName: CheckinKeys;
+  /** CSS class name */
   className: string = "";
+  /** Current time value string */
   timeValue: string = "";
+  /** Unique row identifier */
   rowId: string = "";
+  /** Current component state ("ready", "loading", "editing", "hasData") */
   state: CheckinBoxState = "ready";
   
+  /** Root HTML element */
   element: HTMLElement | null = null;
+  /** Checkin action button */
   checkinButton: HTMLButtonElement;
+  /** Label element */
   checkinLabel: HTMLElement;
+  /** Time display container */
   timeDiv: HTMLElement;
+  /** Time badge element */
   timeBadge: HTMLElement;
+  /** Time value text element */
   timeValueDiv: HTMLElement;
+  /** Time editing container */
   timeEditDiv: HTMLElement;
+  /** Time input element */
   timeEditInput: HTMLInputElement;
+  /** Save button for editing */
   editSaveBtn: HTMLButtonElement;
+  /** Delete button */
   deleteBtn: HTMLButtonElement;
+  /** Cancel button */
   cancelBtn: HTMLButtonElement;
+  /** Loading spinner element */
   spinner: HTMLElement;
+  /** Store instance */
   store: CheckinStore;
+  /** Whether user has editor privileges */
   isEditor: boolean;
 
+  /**
+   * Constructs a new CheckinBox instance.
+   * 
+   * @param type - The check-in type.
+   * @param rowId - The signup record row ID.
+   * @param timeValue - Initial time value if any.
+   * @param store - Store instance for updating signups.
+   * @param isEditor - Whether the current user is an editor.
+   */
   constructor(
     type: CheckinType, 
     rowId: string, 
@@ -119,6 +163,7 @@ export class CheckinBox {
     this.bindEvents();
   }
   
+  /** Binds DOM event listeners for buttons, badges, and keyboard navigation. */
   bindEvents(): void {
     dom.addEventListener(this.checkinButton, 'click', () => this.handleCheckinClick());
     
@@ -150,11 +195,17 @@ export class CheckinBox {
     }
   }
 
+  /**
+   * Sets the component state and triggers re-rendering.
+   * 
+   * @param state - The new CheckinBoxState.
+   */
   setComponentState(state: CheckinBoxState): void {
     this.state = state;
     this.render();
   }
   
+  /** Renders the component UI based on the current component state. */
   render(): void {
     dom.setText(this.checkinLabel, this.label);
     dom.setText(this.checkinButton, this.buttonText);
@@ -178,6 +229,7 @@ export class CheckinBox {
      }
   }
 
+  /** Renders the ready state (shows check-in button). */
   renderReady(): void {
     dom.setVisible(this.checkinButton, true);
     dom.setVisible(this.timeDiv, false);
@@ -186,6 +238,7 @@ export class CheckinBox {
     dom.setVisible(this.spinner, false); 
   }
   
+  /** Renders the loading spinner state. */
   renderLoading(): void {
     dom.setVisible(this.checkinButton, false);
     dom.setVisible(this.timeDiv, false);
@@ -194,6 +247,7 @@ export class CheckinBox {
     dom.setVisible(this.spinner, true);
   }
   
+  /** Renders the time editing input state. */
   renderEditing(): void {
     dom.setVisible(this.checkinButton, false);
     dom.setVisible(this.timeDiv, true);
@@ -204,6 +258,7 @@ export class CheckinBox {
     setTimeout(() => this.timeEditInput?.focus(), 20);
   }
   
+  /** Renders the saved time data state with badge and edit privileges. */
   renderHasData(): void {
     dom.setVisible(this.checkinButton, false);
     dom.setVisible(this.timeDiv, true);
@@ -230,6 +285,7 @@ export class CheckinBox {
     }
   }
 
+  /** Uploads current check-in value to server and updates store state. */
   async uploadCheckinValue() {
     this.setComponentState("loading");
   
@@ -239,18 +295,21 @@ export class CheckinBox {
     this.store.setSignups(updatedSignups);
   }
   
+  /** Handles click on check-in button by stamping current time. */
   async handleCheckinClick(): Promise<void> {
     this.timeValue = dates.formatTime(new Date());
     this.uploadCheckinValue();
     this.setComponentState("hasData");
   }
   
+  /** Starts time editing mode if the user is an editor. */
   handleEditStartClick(): void {
     if (!this.isEditor) return;
     this.setComponentState("editing");
     dom.setTimeInputValue(this.timeEditInput, this.timeValue);
   }
   
+  /** Validates and saves edited time input. */
   handleEditSaveClick(): void {
     const inputtedValue = dom.valueOf(this.timeEditInput);
     if (!this.element) return;
@@ -270,6 +329,7 @@ export class CheckinBox {
     this.setComponentState("hasData");
   }
   
+  /** Cancels editing mode and restores previous state. */
   handleCancelClick(): void {
     if (this.timeValue.length >0) {
       this.setComponentState("hasData");
@@ -278,19 +338,24 @@ export class CheckinBox {
     }
   }
   
+  /** Deletes check-in time value and resets component. */
   handleDeleteClick(): void {
     this.timeValue = "";
     this.uploadCheckinValue();
     this.setComponentState("ready");
   }
 
+  /**
+   * Updates the corresponding signup record in the store list.
+   * 
+   * @param rowId - Signup row ID.
+   * @param newValue - New time value.
+   * @returns Updated array of signups.
+   */
   updateSignups(rowId: Signup['rowId'], newValue: string): Signup[] {
-    // 1. Fallback to an empty array immediately to avoid the early return bug
     const signups = (this.store.getSignups() as Signup[]) || [];
-    
     const propName = CHECKIN_CONFIG[this.type].propName;
 
-    // 2. Map handles the iteration and replacement cleanly
     return signups.map(signup =>
       signup.rowId === rowId
         ? { ...signup, [propName]: newValue }

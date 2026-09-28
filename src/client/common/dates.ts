@@ -1,6 +1,18 @@
+/**
+ * @file dates.ts
+ * @description Provides date and time formatting, parsing, comparison, and semester selection utilities.
+ */
+
 export const month: string[] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 export const weekday: string[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/**
+ * Formats a Date object into a YYYY-MM-DD string suitable for HTML date inputs.
+ * 
+ * @param date - The Date object to format.
+ * @returns The formatted date string (YYYY-MM-DD).
+ * @throws Error if date is invalid.
+ */
 export const toDateInputValue = (date: Date):string => {
   try {
     const year: string = String(date.getFullYear());
@@ -13,11 +25,11 @@ export const toDateInputValue = (date: Date):string => {
 }
 
 /** 
- * Determines if two Date object are the same date, regardless of time-of-day
+ * Determines if two Date objects are the same date, regardless of time-of-day.
  * 
- * @param {Date} date1 The first date to compare
- * @param {Date} date2 The second date to compare
- * @return {boolean} True if the two dates are the same
+ * @param date1 - The first date to compare.
+ * @param date2 - The second date to compare.
+ * @returns True if the two dates represent the same calendar day.
  */
 export const isSameDate = (date1: Date, date2: Date) => {
   const monthMatch: boolean = date1.getMonth() === date2.getMonth();
@@ -27,6 +39,13 @@ export const isSameDate = (date1: Date, date2: Date) => {
   return monthMatch && yearMatch && dateMatch;
 }
 
+/**
+ * Parses a YYYY-MM-DD string into a Date object.
+ * 
+ * @param value - The date string in YYYY-MM-DD format.
+ * @returns The parsed Date object.
+ * @throws Error if value is missing or formatted incorrectly.
+ */
 export function parseDateInput(value: string): Date {
   if (!value) throw new Error("Missing parameter");
   
@@ -38,10 +57,10 @@ export function parseDateInput(value: string): Date {
 }
 
  /**
-  * Formats a Date into MM/DD/YYYY
+  * Formats a Date into MM/DD/YYYY string representation.
   * 
-  * @param {Date} date The date to format
-  * @return {string} The formatted string
+  * @param date - The Date to format.
+  * @returns The formatted date string (MM/DD/YYYY).
   */
 export const formatDateSlashes = (date: Date): string => {
   const month: number = date.getMonth() + 1 ;
@@ -52,6 +71,12 @@ export const formatDateSlashes = (date: Date): string => {
  }
 
  
+/**
+ * Validates whether a string is a valid 12-hour time format (e.g., "10:30 AM").
+ * 
+ * @param timeStr - The time string to validate.
+ * @returns True if valid 12-hour time, false otherwise.
+ */
 export const isValidTime12Hr = (timeStr: string): boolean => {
   // Regex Breakdown:
   // ^              : Start of the string
@@ -67,6 +92,12 @@ export const isValidTime12Hr = (timeStr: string): boolean => {
 
 }
 
+/**
+ * Validates whether a string is a valid 24-hour time format (e.g., "14:30").
+ * 
+ * @param timeStr - The time string to validate.
+ * @returns True if valid 24-hour time, false otherwise.
+ */
 export const isValidTime24Hr = (timeStr: string): boolean => {
   // Regex Breakdown:
   // ^                  : Start of the string
@@ -80,11 +111,11 @@ export const isValidTime24Hr = (timeStr: string): boolean => {
 };
 
 /**
- * Helper function to format a Time as HH:MM AM/PM 
+ * Formats a Date or time value as HH:MM AM/PM.
  * 
- * @param {Date} date The Datetime to format
- * @return {string} The formatted time
- * */
+ * @param date - The Date object or timestamp to format.
+ * @returns The formatted 12-hour time string.
+ */
 export const formatTime = (date: Date): string => {
   try {
     if (!(date instanceof Date)) {
@@ -116,6 +147,12 @@ export const formatTime = (date: Date): string => {
   }
 }
 
+/**
+ * Converts a 24-hour time string (HH:MM) to 12-hour AM/PM format.
+ * 
+ * @param time24Str - The 24-hour time string.
+ * @returns The converted 12-hour time string.
+ */
 export const convert24HrTo12Hr = (time24Str: string): string => {
   const [hoursStr, minutesStr] = time24Str.split(':');
   let hours: number = parseInt(hoursStr, 10);
@@ -130,6 +167,13 @@ export const convert24HrTo12Hr = (time24Str: string): string => {
 };
 
 
+/**
+ * Determines the academic semester ("1" or "2") based on current date and rollover date.
+ * 
+ * @param currentDate - The current date.
+ * @param rolloverDate - The semester rollover date.
+ * @returns "2" if current date is on or after rollover date, otherwise "1".
+ */
 export const chooseSemester = (currentDate: Date, rolloverDate: Date): string => {
   if (!(currentDate instanceof Date) || !(rolloverDate instanceof Date)) {
     return '0';

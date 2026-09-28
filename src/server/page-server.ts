@@ -1,25 +1,15 @@
-/** ======= SERVER CODE  ======== 
- *
- * Media Center Sign Up System
- * Walpole High School, Walpole, MA
- * @author: Tom Reeve, treeve@walpole.k12.ma.us
- *
- * Note: This script relies on the AdminDirectory Service to access student names
- * and email addresses. This Service requires admin-level access. 
+/**
+ * @file page-server.ts
+ * @description Serves HTML pages, handles doGet entry points, and packages initial JSON data payloads for client apps.
  */
-
 
 let email: string;
 
-// function doGet() {
-//   const data = getInitialSignupData();
-//   const stringified = JSON.stringify(data, null, 2);
-//   return ContentService.createTextOutput(data)
-//   .setMimeType(ContentService.MimeType.JSON);
-// }
-
 /**
- * Creates HTML and client-side script to serve to the user
+ * Handles HTTP GET requests to serve web app pages and pre-inject initial configuration and state data.
+ * 
+ * @param event - Google Apps Script event object containing request parameters.
+ * @returns The rendered HtmlOutput instance or permission denied template.
  */
 function doGet(event: GoogleAppsScript.Events.DoGet) {
   const template = createIndexTemplate();
@@ -40,7 +30,7 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
     wedInt: wedInt,
     scriptUrl: getScriptUrl(),
   };
-  // Pre-fetch initial data to eliminate second round trip from client
+
   let initialDataJson = "";
   try {
     const view = appConfig.view;
@@ -58,7 +48,6 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
     return getNotAllowedTemplate();
   }
   
-  // adds meta data so tha page reformats nicely on mobile devices
   template.addMetaTag('viewport', 'width=device-width, initial-scale=1');
   template.setTitle("WHS Intervention & Media Center Sign Up");
   template.append(`
@@ -67,10 +56,14 @@ function doGet(event: GoogleAppsScript.Events.DoGet) {
       window.INITIAL_DATA = ${initialDataJson ? JSON.stringify(initialDataJson) : "null"};
     </script>
   `);
-  // sends the HTML to the client
-  return template
+  return template;
 }
 
+/**
+ * Returns the "not allowed" HtmlOutput template when access permissions fail.
+ * 
+ * @returns HtmlOutput for restricted access.
+ */
 function getNotAllowedTemplate() {
   const nopeTemplate = HtmlService.createHtmlOutputFromFile('server/not-allowed.html'); 
   nopeTemplate.addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -78,12 +71,22 @@ function getNotAllowedTemplate() {
   return nopeTemplate;
 }
 
+/**
+ * Extracts the record ID from the event parameters if present.
+ * 
+ * @param event - Google Apps Script event object.
+ * @returns The update record ID string.
+ */
 function getPageId(event: GoogleAppsScript.Events.DoGet) {
   return getUrlParameter(event, "id");
 }
 
 /**
- * Gets a URL parameter value (e.g. "page" from "https://....?page=attendance")
+ * Gets a URL parameter value (e.g. "page" from URL).
+ * 
+ * @param e - Google Apps Script event object.
+ * @param parameterName - The query parameter name.
+ * @returns The parameter value string.
  */
 function getUrlParameter(e: GoogleAppsScript.Events.DoGet, parameterName: string): string {
   if (!e) return "";
@@ -94,20 +97,29 @@ function getUrlParameter(e: GoogleAppsScript.Events.DoGet, parameterName: string
   return "";
 }
 
+/**
+ * Creates the base HTML output template from index.html.
+ * 
+ * @returns HtmlOutput instance.
+ */
 function createIndexTemplate() {
   const template = HtmlService.createHtmlOutputFromFile('index.html');
   return template;
 }
 
+/**
+ * Gathers initial data payload for signup view.
+ * 
+ * @param updateId - Optional signup record ID being updated.
+ * @returns JSON string of initial signup data.
+ */
 function getInitialSignupData(updateId?: string): string {
   const appSettings = getAppSettings();
-  // Autocomplete searches students dynamically via searchStudents(query) over RPC.
-  // Passing an empty array avoids shipping thousands of student objects in the initial payload.
   const students: Student[] = [];
   const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   const signups = getSignups();
   
-  if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+  if (!dailySchedules || !appSettings) throw new Error ("Error retrieving server data");
 
   let updateData: Signup | null = null;
   if (updateId) {
@@ -125,14 +137,19 @@ function getInitialSignupData(updateId?: string): string {
   return JSON.stringify(initialData);
 }
 
+/**
+ * Gathers initial data payload for attendance view.
+ * 
+ * @returns JSON string of initial attendance data.
+ */
 function getInitialAttendanceData(): string {
   const appSettings = getAppSettings();
   const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   const signups = getSignups();
   
-  if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+  if (!dailySchedules || !appSettings) throw new Error ("Error retrieving server data");
 
-  const initialData:AttendanceServerData = {
+  const initialData: AttendanceServerData = {
     dailySchedules: dailySchedules,
     signups: signups,
     appSettings: appSettings,
@@ -141,13 +158,17 @@ function getInitialAttendanceData(): string {
   return JSON.stringify(initialData);
 }
 
+/**
+ * Gathers initial data payload for admin audit view.
+ * 
+ * @returns JSON string of initial admin data.
+ */
 function getInitialAdminData(): string {
   const appSettings = getAppSettings();
-  // Autocomplete searches students dynamically via searchStudents(query) over RPC.
   const students: Student[] = [];
   const dailySchedules = getCachedOrParsedCalendarBlocks(appSettings);
   
-  if (!dailySchedules || !appSettings) throw new Error ("Error retreiving server data");
+  if (!dailySchedules || !appSettings) throw new Error ("Error retrieving server data");
   
   const initialData: AdminData & { settings?: Setting[] } = {
     students: students,
@@ -158,41 +179,3 @@ function getInitialAdminData(): string {
 
   return JSON.stringify(initialData);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

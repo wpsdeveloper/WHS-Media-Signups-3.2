@@ -1,6 +1,12 @@
+/**
+ * @file admin-panels.ts
+ * @description Manages admin panel view switching (attendance, details, list views) and tab highlights.
+ */
+
 import * as dom from "../common/dom";
 import { AdminState, store } from "./admin-store";
 
+/** Type representing available admin panel views */
 export type PanelView = AdminState["ui_currentView"];
 
 interface PanelConfig {
@@ -37,6 +43,8 @@ export const initObservers = () => {
 
 /**
  * Updates DOM to show either attendance info, details info, or collapsed list view without sliding.
+ * 
+ * @param view - The target PanelView.
  */
 export const setPanelView = (view: PanelView) => {
   const config = PANEL_CONFIGS[view] ?? PANEL_CONFIGS.attendance;
@@ -54,6 +62,8 @@ export const setPanelView = (view: PanelView) => {
 
 /**
  * Dispatches active panel view changes to store.
+ * 
+ * @param view - The target PanelView to set.
  */
 export const panelViewListener = (view: PanelView) => {
   store.setState({ ui_currentView: view });

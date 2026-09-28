@@ -1,3 +1,8 @@
+/**
+ * @file parsers.ts
+ * @description Provides data parsing, JSON safety wrappers, and object hydration functions for students, signups, daily schedules, and settings.
+ */
+
 import * as dates from '../common/dates';
 import { getAppConfig } from "./app-config";
 

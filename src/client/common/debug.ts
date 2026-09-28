@@ -1,4 +1,9 @@
 /**
+ * @file debug.ts
+ * @description Provides environment debug flags and mock data loading utilities for standalone development mode.
+ */
+
+/**
  * Flag indicating whether the application is running in development/debug mode.
  */
 export const IS_DEBUG: boolean = import.meta.env.DEV;

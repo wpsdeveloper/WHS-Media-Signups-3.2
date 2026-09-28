@@ -1,5 +1,13 @@
 /**
- * Saves form data into the spreadsheet
+ * @file signup-save.ts
+ * @description Handles form submission saving, updating existing reservations, and adding new reservations to the spreadsheet.
+ */
+
+/**
+ * Saves form data into the spreadsheet (either adding a new reservation or updating an existing one).
+ * 
+ * @param submittedSignup - JSON string of submitted signup data.
+ * @returns The saved Signup object.
  */
 function submitForm(submittedSignup: string) {
   const parsed = safeJsonParse(submittedSignup);
@@ -9,7 +17,6 @@ function submitForm(submittedSignup: string) {
     signup = {...signup, firstname, lastname};
   }
   
-  // if row is blank, make a new signup entry. Otherwise, update the existing record.
   const rowIdExists = signup.hasOwnProperty("rowId") && (typeof signup.rowId === "string") && (signup.rowId.length > 0);
 
   if (rowIdExists) {
@@ -20,10 +27,12 @@ function submitForm(submittedSignup: string) {
 }
 
 /** 
- * Updates an existing signup row in the spreadsheet
+ * Updates an existing signup row in the spreadsheet.
+ * 
+ * @param submittedData - The updated Signup data.
+ * @throws Error if the user lacks edit permission or the row is not found.
  */
 function updateReservation(submittedData: Signup) {
-  // throw error if the user is not allowed to edit existing data
   if (!mayEdit()) {
     throw new Error("Insufficient access. You do not have permission to edit signup data.");
   }
@@ -38,14 +47,13 @@ function updateReservation(submittedData: Signup) {
     throw new Error("Error updating reservation: no records found");
   }
 
-  // Fetch only the ROW_ID column (1-indexed: row 2 to lastRow, 1 column wide)
   const idValues = sheet.getRange(2, SIGNUPS_COL.ROW_ID + 1, lastRow - 1, 1).getValues();
 
   let targetRowIndex = -1;
   for (let i = 0; i < idValues.length; i++) {
     const rowId = idValues[i][0];
     if (typeof rowId === "string" && rowId === submittedData.rowId) {
-      targetRowIndex = i + 2; // +2 for 1-based index and header row offset
+      targetRowIndex = i + 2;
       break;
     }
   }
@@ -54,24 +62,28 @@ function updateReservation(submittedData: Signup) {
     throw new Error("Error updating reservation: row ID not found");
   }
 
-  // Read only the existing row that needs updating to preserve timestamp and checkins
   const existingRow = sheet.getRange(targetRowIndex, 1, 1, sheet.getLastColumn()).getValues()[0] as SSRow;
   updateReservationInSpreadsheet(submittedData, existingRow, targetRowIndex);
 }
 
+/**
+ * Updates reservation data in the spreadsheet row, preserving check-ins and timestamps.
+ * 
+ * @param submittedData - The updated Signup data.
+ * @param row - Existing row data array.
+ * @param rowNum - Row number in sheet.
+ */
 function updateReservationInSpreadsheet(submittedData:Signup, row:SSRow, rowNum: number) {
   if (!SPREADSHEET) throw STANDARD_SERVER_ERROR;
 
   const newRow = makeSignupRow(submittedData);
   
-  // copy old checkin and timestamp data to the new row (so it doesn't get overwritten)
   newRow[SIGNUPS_COL.STUDY_IN_1] = row[SIGNUPS_COL.STUDY_IN_1];
   newRow[SIGNUPS_COL.MEDIA_IN] = row[SIGNUPS_COL.MEDIA_IN];
   newRow[SIGNUPS_COL.MEDIA_OUT] = row[SIGNUPS_COL.MEDIA_OUT];
   newRow[SIGNUPS_COL.STUDY_IN_2] = row[SIGNUPS_COL.STUDY_IN_2];
   newRow[SIGNUPS_COL.TIMESTAMP] = row[SIGNUPS_COL.TIMESTAMP];
 
-  // save the data in the spreadsheet
   const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   if (!sheet) throw STANDARD_SERVER_ERROR;
 
@@ -79,7 +91,10 @@ function updateReservationInSpreadsheet(submittedData:Signup, row:SSRow, rowNum:
 }
 
 /**
- * Adds a new signup to the spreadsheet 
+ * Adds a new signup to the spreadsheet and sends a confirmation email.
+ * 
+ * @param signup - The new Signup record.
+ * @returns The saved Signup object with generated UUID and timestamp.
  */
 function addNewReservation(signup: Signup) {
   saveNewReservationToSpreadsheet(signup)
@@ -88,11 +103,15 @@ function addNewReservation(signup: Signup) {
   return signup;
 }
 
+/**
+ * Appends a new reservation row to the spreadsheet.
+ * 
+ * @param signup - The Signup record to save.
+ */
 function saveNewReservationToSpreadsheet(signup: Signup) {
   signup.rowId = Utilities.getUuid();
   signup.timestamp = new Date();
 
-  // converts the object into an array in the correct order
   const newRow = makeSignupRow(signup);
   if (!SPREADSHEET) throw STANDARD_SERVER_ERROR;
 

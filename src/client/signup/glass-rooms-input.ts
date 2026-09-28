@@ -2,9 +2,15 @@ import * as dom from '../common/dom';
 import { isSameDate } from '../common/dates';
 import { SignupState, store } from './signup-store';
 
+/**
+ * Interface representing the reservation status of a glass room.
+ */
 export interface GlassRoomAvailability {
+  /** Room identifier (e.g., '1', '2') */
   room: string;
+  /** Whether the glass room is available for reservation */
   isAvailable: boolean;
+  /** Name of the student or staff member who reserved the room if unavailable */
   reservedBy?: string;
 }
 
@@ -13,6 +19,10 @@ const GLASS_ROOM_IDS = ['1', '2'];
 /**
  * Pure calculation: Returns the reservation availability for each glass room
  * for the current schedule block date and period.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block, or null.
+ * @param signups - Array of existing signup records.
+ * @returns A record mapping room IDs to their respective GlassRoomAvailability status.
  */
 export function getGlassRoomAvailability(
   currentScheduleBlock: DailyBlock | null,
@@ -49,6 +59,8 @@ export function getGlassRoomAvailability(
 
 /**
  * DOM View: Updates radio button disabled states and availability labels.
+ * 
+ * @param availabilityMap - Record mapping room IDs to GlassRoomAvailability status.
  */
 export function updateGlassRoomsUi(availabilityMap: Record<string, GlassRoomAvailability>) {
   for (const roomId of GLASS_ROOM_IDS) {
@@ -75,6 +87,9 @@ export function updateGlassRoomsUi(availabilityMap: Record<string, GlassRoomAvai
 
 /**
  * Orchestrator: Computes glass room availability and updates UI.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block or null.
+ * @param signups - Array of active signups.
  */
 export const updateGlassRooms = (
   currentScheduleBlock: DailyBlock | null,
@@ -86,6 +101,8 @@ export const updateGlassRooms = (
 
 /**
  * Direct setter: Selects a specific glass room directly (used during edit / update mode).
+ * 
+ * @param room - Room identifier string or null to clear selection.
  */
 export const directSet = (room: string | null) => {
   if (!room) {
@@ -99,6 +116,7 @@ export const directSet = (room: string | null) => {
 
 /**
  * Subscriber: Listens to state changes and updates Glass Room UI elements automatically.
+ * Registers store observer for schedule block and signup changes.
  */
 export const setupGlassRoomsObserver = () => {
   store.subscribe(

@@ -1,9 +1,14 @@
 /**
+ * @file students.ts
+ * @description Manages student roster caching, Google Sheets student retrieval, AdminDirectory lookups, no-fly lists, and autocomplete searches.
+ */
+
+/**
  * Returns all students at the school, as found in the spreadsheet.
  * Note: A script in the spreadsheet imports these names into the sheet nightly.
  * It uses cache chunks to stay within the 100KB per-item cache limit.
  * 
- * @returns Array of Student objects
+ * @returns Array of Student objects.
  */
 function getStudents(): Student[] {
   const cache = CacheService.getScriptCache();
@@ -18,13 +23,11 @@ function getStudents(): Student[] {
       const chunks = cache.getAll(keys);
       let fullJson = "";
       let complete = true;
-      // Reassemble JSON payload from separate cache chunks
       for (let i = 0; i < count; i++) {
         const part = chunks[`students_chunk_${i}`];
         if (part) {
           fullJson += part;
         } else {
-          // If any chunk is missing, consider cache incomplete
           complete = false;
           break;
         }
@@ -37,11 +40,8 @@ function getStudents(): Student[] {
     console.warn("Cache parse failed, refetching students", e);
   }
 
-  // Fetch directly from spreadsheet if not properly cached
   const students = getStudentsFromSheets();
 
-  // Cache for 6 hours (21600 seconds = max allowed in GAS CacheService)
-  // Cache in chunks of 90KB to strictly stay under the 100KB per-item limit
   try {
     const json = JSON.stringify(students);
     const CHUNK_SIZE = 90000;
@@ -60,23 +60,20 @@ function getStudents(): Student[] {
 }
 
 /**
- * Directly retrieves student data from the Google Sheet and converts it to objects
+ * Directly retrieves student data from the Google Sheet and converts it to objects.
  * 
- * @returns Array of Student objects parsed from the sheet
- * @throws Error if the sheet cannot be found
+ * @returns Array of Student objects parsed from the sheet.
+ * @throws Error if the sheet cannot be found.
  */
 function getStudentsFromSheets(): Student[] {
-  // gets all student data from the spreadsheet
   const sheet = SPREADSHEET.getSheetByName(STUDENTS_SHEET_NAME);
   if (!sheet) throw STANDARD_SERVER_ERROR;
 
   const values = sheet.getDataRange().getValues();
   
-  // creates an array to return, filtering out headers and empty rows
   const students: Student[] = [];
   values.forEach(row => {
     const email = row[0] ? String(row[0]).trim() : "";
-    // Basic validation to ensure email field has an "@" sign
     if (email && email.includes("@")) {
       students.push({
         email: email,
@@ -89,10 +86,10 @@ function getStudentsFromSheets(): Student[] {
 }
 
 /**
- * Looks up a student's first and last name from the Admin Directory based on their email address
+ * Looks up a student's first and last name from the Admin Directory based on their email address.
  * 
- * @param signup The signup object containing the student's email
- * @returns An object with the resolved firstname and lastname
+ * @param signup - The signup object containing the student's email.
+ * @returns An object with the resolved firstname and lastname.
  */
 function lookupStudentName(signup: Signup): {firstname: string, lastname: string} {
   const user = AdminDirectory!.Users.get(signup.emailStudent);
@@ -103,9 +100,9 @@ function lookupStudentName(signup: Signup): {firstname: string, lastname: string
 }
 
 /**
- * Retrieves the list of student emails that are not allowed to sign up (No Fly List)
+ * Retrieves the list of student emails that are not allowed to sign up (No Fly List).
  * 
- * @returns An array of email strings
+ * @returns An array of email strings.
  */
 function getNoFlyList(): string[] {
   const sheet = SPREADSHEET.getSheetByName(NO_FLY_LIST_SHEET_NAME);
@@ -118,32 +115,28 @@ function getNoFlyList(): string[] {
 }
 
 /**
- * Fast server-side lookup for students (returns a maximum of 10 matches)
- * Used by RPC to power the autocomplete dropdown on the frontend
+ * Fast server-side lookup for students (returns a maximum of 10 matches).
+ * Used by RPC to power the autocomplete dropdown on the frontend.
  * 
- * @param query The search query string
- * @returns Array of matching Student objects (up to 10)
+ * @param query - The search query string.
+ * @returns Array of matching Student objects (up to 10).
  */
 function searchStudents(query: string): Student[] {
   if (!query || query.trim().length < 2) return [];
   if (!isStaff() && !mayViewAdmin()) {
-    // Security check: non-staff cannot search other students
     return [];
   }
 
   const cleanQuery = query.trim().toLowerCase();
-  
-  // Use CacheService or read the sheet once
-  const students = getStudents(); // or cached roster
+  const students = getStudents();
   
   const matches: Student[] = [];
   for (let i = 0; i < students.length; i++) {
     const s = students[i];
     const fullName = `${s.lastname}, ${s.firstname}`.toLowerCase();
-    // Match against full name or email
     if (fullName.includes(cleanQuery) || s.email.toLowerCase().includes(cleanQuery)) {
       matches.push(s);
-      if (matches.length >= 10) break; // Limit payload to 10 suggestions for performance
+      if (matches.length >= 10) break;
     }
   }
 

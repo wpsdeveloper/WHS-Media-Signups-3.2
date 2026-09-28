@@ -1,9 +1,14 @@
+/**
+ * @file date-input.ts
+ * @description Manages date picker initialization, change event handling, and synchronization with attendance state.
+ */
+
 import * as dom from "../common/dom";
 import { parseDateInput, toDateInputValue } from "../common/dates";
 import { AttendanceState, store } from "./attendance-store";
 
 /**
- * Responds to a change in the Date input field
+ * Responds to a change in the Date input field and updates store state.
  */
 export const dateChangeHandler = () => {
   const newDate = dom.valueOf("#date");
@@ -19,7 +24,7 @@ export const dateChangeHandler = () => {
 };
 
 /**
- * Initializes the attendance date input with bounds (-14 days to +7 days) and today's date
+ * Initializes the attendance date input with allowable bounds (-14 days to +7 days) and today's date.
  */
 export const initDateInput = () => {
   const dateInput = dom.qs(".date-input") as HTMLInputElement | null;
@@ -41,7 +46,7 @@ export const initDateInput = () => {
 };
 
 /**
- * Subscriber: Keeps the date input DOM element in sync if state updates externally
+ * Subscriber: Keeps the date input DOM element in sync if state updates externally.
  */
 export const setupDateObserver = () => {
   store.subscribe((state: AttendanceState) => {

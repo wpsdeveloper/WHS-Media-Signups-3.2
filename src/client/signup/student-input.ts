@@ -139,7 +139,17 @@ export const studentInputChangeHandler = (event: Event): void => {
     if (typeof google === 'undefined' || !google?.script?.run) {
       dom.setVisible('#student-search-spinner', false);
       updateClearButtonState(query.length > 0, false);
-      setHelperState(false);
+      const allStudents: Student[] = (store.getState().students as Student[]) || [];
+      const lower = query.toLowerCase();
+      const matchingStudents = allStudents.filter(s =>
+        (s.lastname && s.lastname.toLowerCase().includes(lower)) ||
+        (s.firstname && s.firstname.toLowerCase().includes(lower)) ||
+        (s.email && s.email.toLowerCase().includes(lower))
+      );
+      const hasNoResults = matchingStudents.length === 0;
+      setHelperState(false, hasNoResults);
+      const formattedNames = parseStudentDataList(matchingStudents);
+      renderStudentDatalist(formattedNames, query);
       return;
     }
 

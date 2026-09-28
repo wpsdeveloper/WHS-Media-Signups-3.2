@@ -1,5 +1,14 @@
+/**
+ * @file signups.ts
+ * @description Retrieves signups within active date windows, executes student audit lookups, and handles array-to-object parsing for spreadsheet rows.
+ */
+
+/**
+ * Retrieves signups filtered for the active two-week past/future window.
+ * 
+ * @returns Array of Signup objects.
+ */
 function getSignups(): Signup[] {
-  // filters for records within two weeks in the past or future
   const today = new Date();
   const twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate()-14);
   const twoWeeksForward = new Date(today.getFullYear(), today.getMonth(), today.getDate()+14);
@@ -10,16 +19,28 @@ function getSignups(): Signup[] {
   return signups;
 }
 
+/**
+ * Retrieves raw data rows from the Signups sheet.
+ * 
+ * @returns Array of raw spreadsheet rows.
+ */
 function getSignupsRows(): SSRow[] {
   const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   if (!sheet) throw STANDARD_SERVER_ERROR;
 
-  // use of getDisplayValues to force time strings to remain as strings
   const values = sheet.getDataRange().getDisplayValues() as SSRow[];
   values.shift();
   return values;
 }
 
+/**
+ * Filters signups by date range.
+ * 
+ * @param originalSignups - Raw signup rows.
+ * @param firstDate - Start date filter.
+ * @param lastDate - End date filter.
+ * @returns Array of parsed Signup objects.
+ */
 function filterSignupsByDate(originalSignups: SSRow[], firstDate: Date , lastDate: Date) {
   const signups: Signup[] = [];
   originalSignups.forEach(row => {
@@ -32,25 +53,25 @@ function filterSignupsByDate(originalSignups: SSRow[], firstDate: Date , lastDat
 }
 
 /**
- * Returns all students at the school, as found in the spreadsheet.
- * Note: a script in the spreadsheet imports these names into the ss nightly 
+ * Returns all signups for a particular student across current and archive sheets.
+ * 
+ * @param submittedEmail - The student's email address to audit.
+ * @returns JSON string of matching Signup objects.
  */
 function getStudentAudit(submittedEmail: string) {
   console.log(`Sending email to ${submittedEmail}`);
-  // gets all signups for a particular student
   const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   const archiveSheet = SPREADSHEET.getSheetByName(ARCHIVE_SHEET_NAME);
   if (!sheet || !archiveSheet) throw STANDARD_SERVER_ERROR;
   
   const currentValues = sheet.getDataRange().getDisplayValues();
   const archivedValues = archiveSheet.getDataRange().getDisplayValues();
-  currentValues.shift(); // remove headers
-  archivedValues.shift(); // remove headers
+  currentValues.shift();
+  archivedValues.shift();
   const values = currentValues.concat(archivedValues);
   
   const filtered = values.filter(row => row[SIGNUPS_COL.STUDENT_EMAIL] == submittedEmail || row[SIGNUPS_COL.SUBMITTED_BY] == submittedEmail);
 
-  // creates an array to return
   const signups: Signup[] = [];
   filtered.forEach(row => {
     signups.push(parseSignupFromArray(row));
@@ -59,19 +80,27 @@ function getStudentAudit(submittedEmail: string) {
   return JSON.stringify(signups);
 }
 
+/**
+ * Finds a specific signup row matching the given row ID.
+ * 
+ * @param signupRows - Array of raw signup rows.
+ * @param rowId - Unique row identifier.
+ * @returns Parsed Signup object or null.
+ */
 function findSignupRow(signupRows: SSRow[], rowId: string): Signup | null {
-  // filters for data matching the row id
   const matched = signupRows.filter(su => su[SIGNUPS_COL.ROW_ID] === rowId);
 
   if (matched.length !== 1) return null;
 
-  // converts row to an object and returns a stringified version
   const signup = parseSignupFromArray(matched[0]);
   return signup;
 }
 
 /**
- * Converts a signup spreadsheet row into a javascript object 
+ * Converts a signup spreadsheet row into a JavaScript object.
+ * 
+ * @param row - Raw spreadsheet row array.
+ * @returns Hydrated Signup object.
  */
 function parseSignupFromArray(row: SSRow): Signup {
   return {
@@ -98,7 +127,10 @@ function parseSignupFromArray(row: SSRow): Signup {
 } 
 
 /**
- * Converts a javascript signup object to a spreadsheet row array
+ * Converts a JavaScript signup object to a spreadsheet row array.
+ * 
+ * @param obj - The Signup object.
+ * @returns Spreadsheet row array.
  */
 function makeSignupRow(obj: Signup): SSRow {
   var row = new Array(18);

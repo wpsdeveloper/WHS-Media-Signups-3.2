@@ -1,3 +1,8 @@
+/**
+ * @file admin-data-table.ts
+ * @description Manages admin audit data table rendering, sorting, and state observation subscriptions.
+ */
+
 import * as dom from '../common/dom';
 import { AdminState, store } from './admin-store';
 import { makeDataRowViewModel, AdminDataRow as DataRow } from './admin-data-row';
@@ -7,14 +12,10 @@ import { setPanelView } from './admin-panels';
 
 export { filterSignups, sortSignups };
 
-// =====================================================================
-// STATE SUBSCRIBERS (The "Sub" in Pub/Sub)
-// These functions automatically update the UI whenever the store changes.
-// Call initObservers() once when your app loads.
-// =====================================================================
-
+/**
+ * Initializes store observers for re-rendering the admin table on state changes.
+ */
 export const initObservers = () => {
-  // Rebuild the data table with date, signups or sort changes
   store.subscribe(
     (state) => {
       renderTable(state);
@@ -29,7 +30,9 @@ export const initObservers = () => {
 };
 
 /**
- * Re-renders student and staff tables based on current filter & sort state
+ * Re-renders student tables based on current filter & sort state.
+ * 
+ * @param state - The current AdminState.
  */
 export const renderTable = (state: AdminState) => {
   const studentTable = dom.qs('#student-table') as HTMLElement | null;
@@ -64,7 +67,7 @@ export const renderTable = (state: AdminState) => {
     if (!rowElement) return;
 
     studentTable?.append(rowElement);
-      studentCount++;
+    studentCount++;
 
     dataRow.render();
   });
@@ -76,12 +79,11 @@ export const renderTable = (state: AdminState) => {
   setPanelView(state.ui_currentView);
 };
 
-// =====================================================================
-// 2. DOM EVENT HANDLERS (The "Pub" in Pub/Sub)
-// These functions are called by user clicks/inputs.
-// Notice how they ONLY write to the store, and touch NO DOM elements.
-// =====================================================================
-
+/**
+ * Handles column header sorting by updating sort field and order in the store.
+ * 
+ * @param field - The field to sort by ("date" or "period").
+ */
 export const resort = (field: AdminState['ui_currentSortField']) => {
   const {
     ui_currentSortField: currentSortField,
@@ -94,19 +96,18 @@ export const resort = (field: AdminState['ui_currentSortField']) => {
   store.setState({ ui_currentSortField: field, ui_currentSortOrder: newOrder });
 };
 
-// =====================================================================
-// PURE UTILITIES & VISUAL TOGGLES
-// =====================================================================
-
 /**
- * Shows the attendance panel
- * */
+ * Shows the attendance panel view.
+ */
 export const showAttendance = () => {
   adminPanels.panelViewListener('attendance');
   const panels = dom.qsa('.panel') as HTMLElement[];
   panels.forEach((panel) => (panel.style.transform = 'translate(0, 0)'));
 };
 
+/**
+ * Shows the signup info details panel view.
+ */
 export const showSignupInfo = () => {
   adminPanels.panelViewListener('details');
   const sliderWrapper = dom.qs('.slider-wrapper') as HTMLElement;

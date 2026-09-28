@@ -1,3 +1,8 @@
+/**
+ * @file init.ts
+ * @description Orchestrates initialization, data fetching, server parsing, and event binding for the attendance module.
+ */
+
 import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
@@ -12,7 +17,9 @@ import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { IS_DEBUG, getMockData } from '../common/debug';
 import * as attendancePanels from './attendance-panels';
 
-// builds page based on existing schedules and settings
+/**
+ * Initializes the attendance application by setting up observers, fetching data, binding events, and rendering UI.
+ */
 export const initializeApp = async () => {
   try {
     initObservers();
@@ -26,6 +33,9 @@ export const initializeApp = async () => {
   }
 };
 
+/**
+ * Initializes all state observers across attendance modules.
+ */
 export const initObservers = () => {
   dataTable.initObservers();
   attendancePanels.initObservers();
@@ -35,20 +45,29 @@ export const initObservers = () => {
   studySelect.setupStudyObservers();
 };
 
+/**
+ * Fetches attendance data from server or debug mock.
+ * 
+ * @returns A promise resolving to partial AttendanceState data.
+ */
 export async function fetchServerData(): Promise<Partial<AttendanceState>> {
   const rawServerData = await getServerData();
   return await parseServerData(rawServerData);
 }
 
+/**
+ * Retrieves raw attendance server data payload.
+ * 
+ * @returns A promise resolving to the raw data string.
+ */
 export const getServerData = async (): Promise<string> => {
   if (IS_DEBUG) {
     return await getMockData('attendance');
   } 
 
-  // Use pre-injected server payload from doGet if available
   if (typeof window !== 'undefined' && window.INITIAL_DATA) {
     const data = window.INITIAL_DATA;
-    window.INITIAL_DATA = null; // consume once so manual refreshes re-query
+    window.INITIAL_DATA = null;
     return typeof data === 'string' ? data : JSON.stringify(data);
   }
 
@@ -60,6 +79,12 @@ export const getServerData = async (): Promise<string> => {
   });
 };
 
+/**
+ * Parses and hydrates raw server attendance data.
+ * 
+ * @param data - Raw server data string.
+ * @returns A promise resolving to hydrated AttendanceState properties.
+ */
 export async function parseServerData(data: string): Promise<Partial<AttendanceState>> {
   const parsedData = parser.safeJsonParse(data);
   const signups = parser.parseSignups(parsedData.signups);
@@ -77,6 +102,9 @@ export async function parseServerData(data: string): Promise<Partial<AttendanceS
   };
 }
 
+/**
+ * Initializes initial UI state and permissions.
+ */
 export function initializeUi() {
   dateInput.initDateInput();
   periodSelect.periodChangeHandler();
@@ -89,6 +117,9 @@ export function initializeUi() {
   updateScriptLinks();
 }
 
+/**
+ * Binds DOM event listeners for inputs, dropdowns, and buttons.
+ */
 export function bindEvents() {
   dom.addEventListener("#date", "change", () => dateInput.dateChangeHandler());
   dom.addEventListener("#period", "change", () => periodSelect.periodChangeHandler());
@@ -99,6 +130,9 @@ export function bindEvents() {
   dom.addEventListener('#refresh-data-btn', 'click', () => refreshData());
 }
 
+/**
+ * Refreshes attendance data from the server and updates store state.
+ */
 export const refreshData = async () => {
   messaging.showLoadingModal('Retrieving data');
 

@@ -1,115 +1,105 @@
-/** 
- * This page of code contains spreadsheet management functions that are not
- * part of the web app. They control nightly archiving and syncing. 
+/**
+ * @file Spreadsheet Mgmt.js
+ * @description Spreadsheet management functions that run on nightly triggers for archiving old signups, syncing daily schedules from Google Calendar, and updating student directories.
  */
 
 /**
- * Moves old signup data to a different sheet. This saves on server processing time when a user is using the system.
- * Note: this function is on a nightly trigger.
+ * Moves old signup data to the archive sheet to save on server processing time when users access the system.
+ * Note: This function runs on a nightly trigger.
  */
 function archiveOldSignups() {
-  // gets a date two weeks ago
   const today = new Date();
   const twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate()-14);
 
-  // gets all current signup data
   const signupsSheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
   const archiveSheet = SPREADSHEET.getSheetByName(ARCHIVE_SHEET_NAME);
+  if (!signupsSheet || !archiveSheet) return;
+
   const values = signupsSheet.getDataRange().getValues();
 
-  // if there are no data row, return
-  if (values.length <=1) {
+  if (values.length <= 1) {
     return;
   }
 
-  // cycles through rows, cut/pasting into the archive sheet.
-  // counts DOWN so that deleting rows doesn't interfere with the row count
-  for (var i = values.length -1; i >= 1; i--) {
+  // Cycles through rows, cut/pasting into the archive sheet.
+  // Counts DOWN so that deleting rows doesn't interfere with the row count indices.
+  for (var i = values.length - 1; i >= 1; i--) {
     const row = values[i];
     
-    // gets the row's saved date
     let date = row[SIGNUPS_COL.DATE];
-    if (!date instanceof Date) {
+    if (!(date instanceof Date)) {
       date = new Date(date);
     }
 
     if (date.getTime() < twoWeeksAgo.getTime()) {
-      // add the row to the archive sheet
       archiveSheet.appendRow(row);
-
-      //delete the row from the "current" sheet
-      signupsSheet.deleteRow(i+1);
+      signupsSheet.deleteRow(i + 1);
     }
   }
-  // sorts the data latest first
-  archiveSheet.getRange(2, 1, archiveSheet.getLastRow() -1, archiveSheet.getLastColumn()).sort({column: 4, ascending: false});
+
+  // Sorts the archive data latest first
+  if (archiveSheet.getLastRow() > 1) {
+    archiveSheet.getRange(2, 1, archiveSheet.getLastRow() - 1, archiveSheet.getLastColumn()).sort({column: 4, ascending: false});
+  }
 }
 
 /**
- * Clears data from the Daily Schedules sheet and preps for new data
+ * Clears data from the Daily Schedules sheet and prepares headers for new data.
  */
 function clearDailySchedulesSheet() {
-  SPREADSHEET.getSheetByName(DAILY_SCHEDULES_SHEET_NAME).clear();
-  SPREADSHEET.getSheetByName(DAILY_SCHEDULES_SHEET_NAME).appendRow(["Date", "Day"]);
+  const sheet = SPREADSHEET.getSheetByName(DAILY_SCHEDULES_SHEET_NAME);
+  if (!sheet) return;
+  sheet.clear();
+  sheet.appendRow(["Date", "Day"]);
 }
 
 /**
- * Updates the daily schedules saved in the spreadsheet from the Google calendar
- * Note: this script runs on a nightly trigger
+ * Updates the daily schedules saved in the spreadsheet from the Google Calendar.
+ * Note: This function runs on a nightly trigger.
  */
 function updateDailySchedules() {
-  // calculates the start and end of the school year (July 1 to June 30, to be safe)
   const today = new Date();
-  const schoolYearStartYear = today.getMonth() <=5 ? today.getFullYear() - 1 : today.getFullYear();
-  const schoolYearEndYear = today.getMonth() <=5 ? today.getFullYear() : today.getFullYear() +1;
+  const schoolYearStartYear = today.getMonth() <= 5 ? today.getFullYear() - 1 : today.getFullYear();
+  const schoolYearEndYear = today.getMonth() <= 5 ? today.getFullYear() : today.getFullYear() + 1;
 
-  const schoolYearStartDate =  new Date(schoolYearStartYear, 6, 1, 0, 0, 0);
-  const schoolYearEndDate =  new Date(schoolYearEndYear, 5, 30, 0, 0, 0);
+  const schoolYearStartDate = new Date(schoolYearStartYear, 6, 1, 0, 0, 0);
+  const schoolYearEndDate = new Date(schoolYearEndYear, 5, 30, 0, 0, 0);
   
-  // gets all events between these dates from the Google Calendar
   const events = CalendarApp.getCalendarById(CALENDAR_ID).getEvents(schoolYearStartDate, schoolYearEndDate);
+  const newSchedules: any[][] = [];
 
-  // creates an array to insert into the spreadsheet
-  const newSchedules = [];
-
-  // cycles through each calendar event, adding only those that match "Day 1", "Day 2" etc
   events.forEach(event => {
     const eventTitle = event.getTitle().trim();
-    if (!SCHEDULE_DAYS.includes(eventTitle)) {
+    if (!SCHEDULE_DAYS.includes(eventTitle as Day)) {
       return;
     }
 
-    const newRow = [];
+    const newRow: any[] = [];
     const eventDate = formatDateSlashes(new Date(event.getStartTime()));
 
     newRow[DAILY_SCHED_COL.DATE] = new Date(eventDate);
     newRow[DAILY_SCHED_COL.DAY] = eventTitle;
     
-    // add the date and day to the array.
     newSchedules.push(newRow);
-
   });
 
-  // clears the old data
   clearDailySchedulesSheet();
 
-  // adds the new data
-  SPREADSHEET.getSheetByName(DAILY_SCHEDULES_SHEET_NAME).getRange(2,1, newSchedules.length, 2).setValues(newSchedules);
+  if (newSchedules.length > 0) {
+    SPREADSHEET.getSheetByName(DAILY_SCHEDULES_SHEET_NAME)?.getRange(2, 1, newSchedules.length, 2).setValues(newSchedules);
+  }
 }
 
 /**
- * Updates the list of student names in the spreadsheet.
- * Note: this function runs on a nightly trigger
+ * Updates the list of student names in the spreadsheet from Google Workspace Admin Directory.
+ * Note: This function runs on a nightly trigger.
  */
 function updateStudentNames() {
-  const allUsers = [['Email', 'LastName', 'FirstName']];
+  const allUsers: string[][] = [['Email', 'LastName', 'FirstName']];
   
-  // cycle through pages of data
-  let pageToken;
-  let page;
+  let pageToken: string | undefined = undefined;
   do {
-    // gets 100 users from the directory
-    page = AdminDirectory.Users.list({
+    const page = AdminDirectory.Users.list({
       domain: 'wpsma.org',
       orderBy: 'givenName',
       maxResults: 100,
@@ -117,34 +107,32 @@ function updateStudentNames() {
     });
     const users = page.users;
     
-    // if no more users, cycling is done
     if (!users) {
       console.warn('No users found.');
       return;
     }
 
-    // Add the user's names and email to the array
     for (const user of users) {
       const orgPath = user.orgUnitPath;
-      // must be in one of the WHS organizational units
-      if (orgPath.indexOf("WHS") >= 0) {
-        allUsers.push([user.primaryEmail, user.name.familyName, user.name.givenName]);
+      if (orgPath && orgPath.indexOf("WHS") >= 0) {
+        if (user.primaryEmail && user.name?.familyName && user.name?.givenName) {
+          allUsers.push([user.primaryEmail, user.name.familyName, user.name.givenName]);
+        }
       }
     }
     pageToken = page.nextPageToken;
   } while (pageToken);
 
-  // gets the sheet with student names
   const sheet = SPREADSHEET.getSheetByName(STUDENTS_SHEET_NAME);
+  if (!sheet) return;
 
-  // clears the sheet
   sheet.clear();
   
-  // saves all student data
-  sheet.getRange(1, 1, allUsers.length, 3).setValues(allUsers);
+  if (allUsers.length > 0) {
+    sheet.getRange(1, 1, allUsers.length, 3).setValues(allUsers);
+  }
 
-  // sorts by email address (same as last then first)
-  sheet.getRange(2, 1, allUsers.length-1, 3).sort(1);
+  if (allUsers.length > 1) {
+    sheet.getRange(2, 1, allUsers.length - 1, 3).sort(1);
+  }
 }
-
-

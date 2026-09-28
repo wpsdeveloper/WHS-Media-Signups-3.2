@@ -3,6 +3,10 @@ import { SignupState, store } from './signup-store';
 
 /**
  * Pure calculation: Extracts available intervention teachers/subjects from the current schedule block.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block containing intervention teachers, or null.
+ * @param currentSubject - Optional currently selected subject/teacher to ensure it remains available in the list.
+ * @returns An array of available intervention teacher/subject names.
  */
 export function getAvailableInterventionTeachers(
   currentScheduleBlock: DailyBlock | null,
@@ -24,6 +28,8 @@ export function getAvailableInterventionTeachers(
 /**
  * Event Handler: Responds to user subject selection/input changes.
  * Updates store state only.
+ * 
+ * @param event - Optional DOM change/input event triggered by the user.
  */
 export const subjectChangeHandler = (event?: Event) => {
   const target = event?.target as HTMLSelectElement | HTMLInputElement | undefined;
@@ -38,6 +44,9 @@ export const subjectChangeHandler = (event?: Event) => {
 
 /**
  * Pure UI View: Updates the intervention subject select box options based on available teachers.
+ * 
+ * @param teachersAvailable - List of available teacher/subject strings to populate.
+ * @param currentSubject - Currently selected subject value to highlight in the select element.
  */
 export const updateSubjectUi = (
   teachersAvailable: string[],
@@ -59,6 +68,9 @@ export const updateSubjectUi = (
 
 /**
  * Orchestrator: Updates options for intervention teachers based on current block and selection.
+ * 
+ * @param currentScheduleBlock - The active daily schedule block, or null.
+ * @param currentSubject - Currently selected subject string.
  */
 export const updateSubjectOptions = (
   currentScheduleBlock: DailyBlock | null,
@@ -70,6 +82,7 @@ export const updateSubjectOptions = (
 
 /**
  * Subscriber: Re-calculates and populates subject options when dependencies change.
+ * Registers store observers for subject state management and DOM synchronization.
  */
 export const setupSubjectObservers = () => {
   // Updates subject selectbox options based on schedule block

@@ -1,3 +1,8 @@
+/**
+ * @file init.ts
+ * @description Orchestrates initialization, data fetching, server parsing, and event binding for the admin module.
+ */
+
 import * as dom from '../common/dom';
 import * as messaging from '../common/messaging';
 import * as parser from '../common/parsers';
@@ -9,9 +14,10 @@ import * as studentInput from './student-input';
 import { AdminState, store } from './admin-store';
 import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { IS_DEBUG, getMockData } from "../common/debug";
-import { AttendanceState } from '../attendance/attendance-store';
 
-// builds page based on existing schedules and settings
+/**
+ * Initializes the admin application by setting up observers, fetching initial data, binding events, and rendering UI.
+ */
 export const initializeApp = async () => {
   try {
     initObservers();
@@ -36,11 +42,21 @@ export const initObservers = () => {
   adminPanels.initObservers();
 };
 
+/**
+ * Fetches admin data from server or debug mock.
+ * 
+ * @returns A promise resolving to AdminState.
+ */
 async function fetchServerData(): Promise<AdminState> {
   const rawServerData = await getServerData();
   return await parseServerData(rawServerData);
 }
 
+/**
+ * Retrieves raw admin server data payload.
+ * 
+ * @returns A promise resolving to the raw data string.
+ */
 const getServerData = async (): Promise<string> => {
   if (IS_DEBUG) {
     return await getMockData('admin');
@@ -61,6 +77,12 @@ const getServerData = async (): Promise<string> => {
   });
 };
 
+/**
+ * Parses and hydrates raw server admin data.
+ * 
+ * @param data - Raw server data string.
+ * @returns A promise resolving to the hydrated AdminState.
+ */
 async function parseServerData(data: string): Promise<AdminState> {
   const parsedData = parser.safeJsonParse(data);
   const students = parser.parseStudents(parsedData?.students);
@@ -84,14 +106,19 @@ async function parseServerData(data: string): Promise<AdminState> {
   };
 }
 
+/**
+ * Initializes initial UI state and permissions.
+ */
 export const initializeUi = () => {
   const state = store.getState();
   dom.toggleEditorOnlyViews(state.isEditor);
   initializeTabs();
   updateScriptLinks();
-  
 }
 
+/**
+ * Binds DOM event listeners for inputs, buttons, and table headers.
+ */
 function bindEvents() {
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
   dom.addEventListener(".student-autocomplete", "change", (e) => studentInput.studentInputChangeHandler(e));
@@ -107,6 +134,9 @@ function bindEvents() {
   dom.addEventListener('#refresh-audit-btn', 'click', () => refreshData());
 }
 
+/**
+ * Refreshes admin data from the server and updates store state.
+ */
 export const refreshData = async () => {
   messaging.showLoadingModal('Retrieving data');
 
@@ -121,8 +151,8 @@ export const refreshData = async () => {
 }
 
 /**
- * Sets up the tabs and panels display
- */ 
+ * Sets up tab switching logic between panels.
+ */
  function initializeTabs() {
   const tabContainer = document.querySelector(".nav-tabs");
   const tabs = document.querySelectorAll(".nav-link");
@@ -133,11 +163,9 @@ export const refreshData = async () => {
     const target = (e.target as HTMLElement).closest('.nav-link') as HTMLElement;
     if (!target) return;
     
-    // 1. Remove 'active' class from all buttons and panels
     tabs.forEach(tab => tab.classList.remove('active'));
     panels.forEach(content => content.classList.remove('active'));
 
-    // 2. Add 'active' class to clicked button and target panel
     target.classList.add('active');
     const targetPanelId = target.getAttribute('data-target');
     if (targetPanelId) {
@@ -149,9 +177,12 @@ export const refreshData = async () => {
   });
 }
 
+/**
+ * Initializes Bootstrap tooltips matching the given selector.
+ * 
+ * @param selector - CSS selector for tooltip elements.
+ */
 export const setTooltips = (selector: string) => {
   const tooltipTriggerList = dom.qsa(selector);
   [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 };
-
-

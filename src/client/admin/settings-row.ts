@@ -1,17 +1,31 @@
+/**
+ * @file settings-row.ts
+ * @description Manages rendering and value population for individual App Setting rows in the admin settings table.
+ */
+
 import * as dates from '../common/dates';
 import * as dom from '../common/dom';
 
+/**
+ * Class representing an individual settings table row.
+ */
 export class SettingsRow {
   element: HTMLElement;
   key: string;
   setting: Setting;
   
+  /**
+   * Constructs a new SettingsRow instance.
+   * 
+   * @param key - The setting key.
+   * @param setting - The Setting object.
+   */
   constructor(key: string, setting: Setting) {
     this.key = key;
     this.setting = setting;
     
     const templateSelector = '#settings-row-template';
-    const template = dom.qs(templateSelector) as HTMLTemplateElement; // clone the template
+    const template = dom.qs(templateSelector) as HTMLTemplateElement;
     const clonedElement = template.content.cloneNode(true) as HTMLElement;
     const child = clonedElement.firstElementChild as HTMLElement;
     if (!child) throw new Error('Missing settings template');
@@ -23,6 +37,9 @@ export class SettingsRow {
     dom.setAttribute(this.element, 'dataset.key', this.key);
   }
 
+  /**
+   * Populates the row with setting details, descriptions, and dynamic input controls (switches, inputs).
+   */
   populate() {
     const { element, setting } = this;
     const { key, value, description, comments } = setting;
@@ -95,16 +112,4 @@ export class SettingsRow {
       input.value = value !== undefined && value !== null ? String(value) : '';
     }
   }
-
-  handleEditClick() {
-
-  }
-
-  handleSaveClick(){
-
-  }
-
-  handleCancelClick(){}
-
-  handleDeleteClick(){}
 }

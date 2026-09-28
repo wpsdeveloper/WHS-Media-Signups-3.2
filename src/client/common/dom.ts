@@ -1,7 +1,26 @@
+/**
+ * @file dom.ts
+ * @description Provides robust DOM manipulation, query selectors, visibility toggles, form value getters/setters, and Bootstrap modal/toast wrappers.
+ */
+
 type domParam = HTMLElement | string | null | undefined;
 
+/**
+ * Selects the first element matching the CSS selector.
+ * 
+ * @param selector - CSS selector string.
+ * @returns The matched Element or null.
+ */
 export const qs = <T extends Element = Element>(selector: string): T | null => document.querySelector<T>(selector);
+
+/**
+ * Selects all elements matching the CSS selector as an array.
+ * 
+ * @param selector - CSS selector string.
+ * @returns Array of matched Elements.
+ */
 export const qsa  = <T extends Element = Element>(selector: string): T[] => [...document.querySelectorAll<T>(selector)];
+
 
 export const isVisible = (selector: string): boolean => {
   const element = qs<HTMLElement>(selector);
@@ -13,11 +32,9 @@ export const isChecked = (selector:string): boolean => {
   return !!(element && element.checked);
 }
 
-export const getAttribute = (selector: string, attrName: string): string => {
+export const getAttribute = (selector: string, attrName: string): string | null | undefined => {
   const element = qs<HTMLElement>(selector);
-  if (!element) return "";
-
-  return element.getAttribute(attrName) ?? "";
+  return element?.getAttribute(attrName);
 }
 
 export const valueOf = (param: domParam): string => {

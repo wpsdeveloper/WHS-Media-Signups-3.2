@@ -1,6 +1,12 @@
-/* ==========================================================================
-   WHS Intervention & Media Center - Brand Theme & Stylesheet
-   ========================================================================== */
+/**
+ * ==========================================================================
+ * WHS Intervention & Media Center - Brand Theme & Stylesheet
+ * 
+ * Contains custom design tokens, color variables, typography rules,
+ * component styles for attendance rows, check-in boxes, admin settings,
+ * sliders, typeahead menus, and Bootstrap overrides.
+ * ==========================================================================
+ */
 
 :root {
   /* Brand Core Colors */
@@ -39,8 +45,10 @@
 }
 
 /* ==========================================================================
-   Bootstrap Global Overrides (Replace Default #0d6efd)
+   Bootstrap Global Overrides
    ========================================================================== */
+
+/* Anchor link color and hover transition */
 a {
   color: var(--wps-blue-primary);
   text-decoration: none;
@@ -81,6 +89,7 @@ a:hover, a:focus {
   border-color: var(--wps-border) !important;
 }
 
+/* Checkbox and toggle switch styling */
 .form-check-input:checked {
   background-color: var(--wps-blue-primary);
   border-color: var(--wps-blue-primary);
@@ -315,7 +324,7 @@ header .link-icons .btn:hover {
 }
 
 /* ==========================================================================
-   Buttons
+   Buttons (Primary, Accent, Outline, Subtle)
    ========================================================================== */
 .btn-primary,
 button.btn-primary,
@@ -542,7 +551,7 @@ a.btn-accent-subtle:focus {
 }
 
 /* ==========================================================================
-   Feature: Typeahead
+   Feature: Typeahead & Autocomplete Dropdowns
    ========================================================================== */
 span.twitter-typeahead {
   display: block !important;
@@ -560,7 +569,7 @@ span.twitter-typeahead {
   overflow-y: auto;
 }
 
-/* Student search input clear button and helper */
+/* Student search input clear button and helper text */
 .student-clear-btn {
   background: transparent;
   border: none;
@@ -592,7 +601,7 @@ span.twitter-typeahead {
 }
 
 /* ==========================================================================
-   Feature: Signup Page
+   Feature: Signup Page Styles
    ========================================================================== */
 .signup {
   background-color: var(--wps-bg);
@@ -619,7 +628,7 @@ span.twitter-typeahead {
 }
 
 /* ==========================================================================
-   Feature: Attendance Page
+   Feature: Attendance Page Styles
    ========================================================================== */
 .attendance {
   background-color: var(--wps-bg);
@@ -682,7 +691,7 @@ span.twitter-typeahead {
 }
 
 /* ==========================================================================
-   Shared Checkin Box Component (Attendance & Admin)
+   Shared Checkin Box Component (Attendance & Admin Views)
    ========================================================================== */
 .checkin-box-inner {
   display: inline-flex;
@@ -807,7 +816,9 @@ span.twitter-typeahead {
   color: var(--wps-blue-vibrant);
 }
 
-/* Segmented View Control (Attendance | Details | List) */
+/* ==========================================================================
+   Segmented View Control (Attendance | Details | List)
+   ========================================================================== */
 .panel-links-group,
 .admin .header-row .d-inline-flex {
   background: var(--wps-blue-tint);
@@ -939,7 +950,7 @@ span.twitter-typeahead {
   display: block;
 }
 
-/* In Details view or List view, remove the label spacer so the edit button vertically centers with the details text */
+/* In Details view or List view, remove the label spacer so the edit button vertically centers with details text */
 .data-row:has(.details-info:not(.d-none)) .edit-icons .checkin-box-label-wrapper,
 .data-row:not(:has(.attendance-info:not(.d-none))) .edit-icons .checkin-box-label-wrapper {
   display: none !important;
@@ -979,7 +990,7 @@ span.twitter-typeahead {
 }
 
 /* ==========================================================================
-   Feature: Admin Page
+   Feature: Admin Page Styles
    ========================================================================== */
 .admin {
   background-color: var(--wps-bg);

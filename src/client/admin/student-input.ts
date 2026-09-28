@@ -1,9 +1,21 @@
+/**
+ * @file student-input.ts
+ * @description Manages student autocomplete input, search debouncing, datalist rendering, and observer synchronization.
+ */
+
 import * as dom from '../common/dom';
 import { parseStudentDataList } from '../common/parsers';
 import { store } from './admin-store';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
+/**
+ * Updates helper text and visibility state below the student input field.
+ * 
+ * @param isSearching - Whether a search is currently in progress.
+ * @param noResults - Whether no matching students were found.
+ * @param isSelected - Whether a valid student was selected.
+ */
 const setHelperState = (isSearching: boolean, noResults = false, isSelected = false) => {
   const helper = dom.qs('#student-search-helper') as HTMLElement | null;
   if (!helper) return;
@@ -28,6 +40,12 @@ const setHelperState = (isSearching: boolean, noResults = false, isSelected = fa
   }
 };
 
+/**
+ * Updates clear button visibility based on input value and search state.
+ * 
+ * @param hasValue - Whether the input has text.
+ * @param isSearching - Whether search is active.
+ */
 const updateClearButtonState = (hasValue: boolean, isSearching: boolean) => {
   if (isSearching || !hasValue) {
     dom.setVisible('#student-clear-btn', false);
@@ -36,13 +54,17 @@ const updateClearButtonState = (hasValue: boolean, isSearching: boolean) => {
   }
 };
 
+/**
+ * Checks if the current query matches a valid selected student option.
+ * 
+ * @param query - Input query string.
+ * @returns True if a valid student option is selected.
+ */
 const isStudentSelected = (query: string): boolean => {
   if (!query) return false;
-  // If query contains '<' and '>' (standard datalist student format: "Lastname, Firstname <email>")
   if (/<[^>]+>/.test(query)) {
     return true;
   }
-  // Check against current datalist options in the DOM
   const datalist = dom.qs('#student-suggestions') as HTMLDataListElement | null;
   if (datalist && datalist.options && datalist.options.length > 0) {
     const queryLower = query.toLowerCase();
@@ -55,6 +77,9 @@ const isStudentSelected = (query: string): boolean => {
   return false;
 };
 
+/**
+ * Clears student input field and resets search states.
+ */
 export const clearStudentInput = () => {
   clearTimeout(debounceTimer);
   const input = dom.qs('.student-autocomplete') as HTMLInputElement | null;
@@ -70,7 +95,9 @@ export const clearStudentInput = () => {
 };
 
 /**
- * Publisher: Listens to input changes in the student text field and updates store state.
+ * Event Handler: Responds to user input in the student autocomplete field and queries suggestions.
+ * 
+ * @param event - Input Event object.
  */
 export const studentInputChangeHandler = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -86,7 +113,6 @@ export const studentInputChangeHandler = (event: Event) => {
     return;
   }
 
-  // If a full student was selected from the datalist, do not trigger a backend search
   if (isStudentSelected(query)) {
     dom.setVisible('#student-search-spinner', false);
     updateClearButtonState(true, false);
@@ -94,7 +120,6 @@ export const studentInputChangeHandler = (event: Event) => {
     return;
   }
 
-  // Show spinner and right-aligned Searching... immediately
   dom.setVisible('#student-search-spinner', true);
   dom.setVisible('#student-clear-btn', false);
   setHelperState(true);
@@ -103,13 +128,22 @@ export const studentInputChangeHandler = (event: Event) => {
     if (typeof google === 'undefined' || !google?.script?.run) {
       dom.setVisible('#student-search-spinner', false);
       updateClearButtonState(query.length > 0, false);
-      setHelperState(false);
+      const allStudents: Student[] = (store.getState().students as Student[]) || [];
+      const lower = query.toLowerCase();
+      const matchingStudents = allStudents.filter(s =>
+        (s.lastname && s.lastname.toLowerCase().includes(lower)) ||
+        (s.firstname && s.firstname.toLowerCase().includes(lower)) ||
+        (s.email && s.email.toLowerCase().includes(lower))
+      );
+      const hasNoResults = matchingStudents.length === 0;
+      setHelperState(false, hasNoResults);
+      const formattedNames = parseStudentDataList(matchingStudents);
+      renderStudentDatalist(formattedNames, query);
       return;
     }
 
     google.script.run
       .withSuccessHandler((matchingStudents: Student[]) => {
-        // Re-check if user selected a student in the meantime
         const currentVal = dom.valueOf(target).trim();
         if (isStudentSelected(currentVal)) {
           dom.setVisible('#student-search-spinner', false);
@@ -135,6 +169,12 @@ export const studentInputChangeHandler = (event: Event) => {
   }, 250);
 };
 
+/**
+ * Renders student suggestion datalist options.
+ * 
+ * @param studentNames - Array of formatted student name strings.
+ * @param currentQuery - Current search query string.
+ */
 export const renderStudentDatalist = (studentNames: string[] = [], currentQuery:string = '') => {
   const input = dom.qs(".student-autocomplete");
   if (!input) return;
@@ -147,13 +187,11 @@ export const renderStudentDatalist = (studentNames: string[] = [], currentQuery:
   }
   input.setAttribute("list", list.id);
 
-  // Clear suggestions if query is under threshold
   if (!currentQuery || currentQuery.trim().length < 2) {
     list.replaceChildren();
     return;
   }
 
-  // Populate suggestion options from student names list
   list.replaceChildren(...(studentNames || []).map(name => {
     const option = document.createElement("option");
     option.value = name;
@@ -162,7 +200,7 @@ export const renderStudentDatalist = (studentNames: string[] = [], currentQuery:
 };
 
 /**
- * Subscriber: Updates suggestions when studentNames or current query change in store.
+ * Subscriber: Updates suggestions when studentNames change in store.
  */
 export const setupStudentInputObserver = () => {
   store.subscribe((state) => {
@@ -173,4 +211,3 @@ export const setupStudentInputObserver = () => {
     }
   }, ['studentNames', 'ui_currentStudentName']);
 };
-

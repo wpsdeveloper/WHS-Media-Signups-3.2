@@ -1,21 +1,24 @@
 /**
- * Gets apps settings from the spreadsheet
+ * @file settings.ts
+ * @description Manages retrieval, parsing, and persistence of application settings and configuration switches.
+ */
+
+/**
+ * Gets app settings from the spreadsheet.
  * 
- * @returns An array of Setting objects containing the application configuration
- * @throws Error if there's an issue retrieving the settings sheet
+ * @returns An array of Setting objects containing the application configuration.
+ * @throws Error if there's an issue retrieving the settings sheet.
  */
 function getAppSettings(): Setting[] {
   const sheet = SPREADSHEET.getSheetByName(SETTINGS_SHEET_NAME);
-  if (!sheet) throw new Error("Error retreiveing app settings");
+  if (!sheet) throw new Error("Error retrieving app settings");
 
   const settingsData = sheet.getRange(1, 1, sheet.getLastRow(), 5).getValues();
   settingsData.shift(); // removes header row
   
   const settingsArray: SSRow[] = [];
   settingsData.forEach(row => {
-    // Only process rows with a non-empty key
     if (row[0].length > 0) {
-      // Ensure the value is converted to a string
       if (typeof row[1] !== "string") {
         row[1] = row[1].toString();
       }
@@ -26,11 +29,11 @@ function getAppSettings(): Setting[] {
 }
 
 /**
- * Saves apps settings to the spreadsheet
+ * Saves app settings to the spreadsheet.
  * 
- * @param settingsJson A JSON string representing the new settings to save
- * @returns "Success" upon successful save
- * @throws Error if connecting to the database fails, or if the submitted data is invalid
+ * @param settingsJson - A JSON string representing the new settings to save.
+ * @returns "Success" upon successful save.
+ * @throws Error if connecting to the database fails, or if submitted data is invalid.
  */
 function saveAppSettings(settingsJson: string) {
   const sheet = SPREADSHEET.getSheetByName(SETTINGS_SHEET_NAME);
@@ -41,13 +44,11 @@ function saveAppSettings(settingsJson: string) {
     throw new Error("Invalid data submission");
   }
 
-  // Prepend headers before writing to the sheet
   const headers = [
     ["Key", "Value", "Description", "Comments", "Type"]
   ];
   const newSheetRows = headers.concat(newSettings);
 
-  // Clear existing data and write the new settings matrix
   sheet.getDataRange().clear();
   sheet.getRange(1, 1, newSheetRows.length, headers[0].length)
     .setValues(newSheetRows);
@@ -56,15 +57,14 @@ function saveAppSettings(settingsJson: string) {
 }
 
 /**
- * Parses raw spreadsheet rows into structured Setting objects
+ * Parses raw spreadsheet rows into structured Setting objects.
  * 
- * @param rows The raw data rows from the settings sheet
- * @returns An array of structured Setting objects
+ * @param rows - The raw data rows from the settings sheet.
+ * @returns An array of structured Setting objects.
  */
 function parseSettingsFromRows(rows: SSRow[]): Setting[] {
   const settings: Setting[] = [];
   rows.forEach(row => {
-    // Ensure the row is an array and has the correct number of columns
     if (Array.isArray(row) && row.length >= 5) {
       settings.push({
         key: row[0],
@@ -79,9 +79,9 @@ function parseSettingsFromRows(rows: SSRow[]): Setting[] {
 }
 
 /**
- * Gets the value of Wednesday Interventions (on/off)
+ * Gets the value of Wednesday Interventions (on/off).
  * 
- * @returns True if Wednesday Interventions are active, or if the user is a data editor; false otherwise
+ * @returns True if Wednesday Interventions are active, or if user is a data editor; false otherwise.
  */
 function isWednesdayInterventionsActive(): boolean {
   const range = SPREADSHEET.getRangeByName(WED_INTERVENTIONS_RANGE_NAME);
@@ -89,7 +89,6 @@ function isWednesdayInterventionsActive(): boolean {
 
   const wedInt = range.getValue() === "On";
   
-  // Data editors always see the active state to manage forms
   const editors = getDataEditors();
   const email = getEmail();
   const userIsEditor = editors.includes(email);
@@ -98,9 +97,9 @@ function isWednesdayInterventionsActive(): boolean {
 }
 
 /**
- * Gets the docId for the published Tutoring schedule, for linking within the form
+ * Gets the docId for the published Tutoring schedule, for linking within the form.
  * 
- * @returns The document ID string, or an empty string if not found
+ * @returns The document ID string, or an empty string if not found.
  */ 
 function getTutoringDocId(): string {
   const range = SPREADSHEET.getRangeByName(TUTORING_DOCID_RANGE_NAME);
@@ -109,9 +108,9 @@ function getTutoringDocId(): string {
 }
 
 /**
- * Gets the boolean for whether NHS tutoring should be shown
+ * Gets the boolean for whether NHS tutoring should be shown.
  * 
- * @returns True if tutoring should be shown, false otherwise
+ * @returns True if tutoring should be shown, false otherwise.
  */ 
 function getTutoringStatus(): boolean {
   const range = SPREADSHEET.getRangeByName(TUTORING_TOGGLE_RANGE_NAME);
@@ -120,9 +119,9 @@ function getTutoringStatus(): boolean {
 }
 
 /**
- * Gets the docId for the published Interventions schedule, for linking within the form
+ * Gets the docId for the published Interventions schedule, for linking within the form.
  * 
- * @returns The document ID string, or an empty string if not found
+ * @returns The document ID string, or an empty string if not found.
  */
 function getInterventionsDocId(): string {
   const range = SPREADSHEET.getRangeByName(INTERVENTIONS_DOCID_RANGE_NAME);
@@ -131,10 +130,9 @@ function getInterventionsDocId(): string {
 }
 
 /**
- * Returns an array of email addresses for people allowed to edit. 
- * These values are stored in the settings page of the spreadsheet.
+ * Returns an array of email addresses for people allowed to edit.
  * 
- * @returns Array of email addresses that have editor privileges
+ * @returns Array of email addresses that have editor privileges.
  */
 function getDataEditors(): string[] {
   const cache = CacheService.getScriptCache();
@@ -148,19 +146,17 @@ function getDataEditors(): string[] {
   if (!range) return [];
   
   const values = range.getValue();
-  // Data is stored as comma-separated values in the named range
   const editors = parseDataEditors(values);
   
-  // Cache for 6 hours (21600 seconds)
   cache.put("data-editors", JSON.stringify(editors), 21600);
   return editors;
 }
 
 /**
- * Parses a comma-separated string of email addresses into an array
+ * Parses a comma-separated string of email addresses into an array.
  * 
- * @param csvString The comma-separated list of emails
- * @returns An array of trimmed email strings
+ * @param csvString - The comma-separated list of emails.
+ * @returns An array of trimmed email strings.
  */
 function parseDataEditors(csvString: string): string[] {
   let editors = csvString.split(",");
@@ -169,19 +165,17 @@ function parseDataEditors(csvString: string): string[] {
 }
 
 /**
- * Retrieves the default maximum number of signups allowed
+ * Retrieves the default maximum number of signups allowed.
  * 
- * @returns The max signup limit as a number
+ * @returns The max signup limit as a number.
  */
 function getDefaultMaxSignups(): number {
   const range = SPREADSHEET.getRangeByName(DEFAULT_MAX_SIGNUPS_RANGE_NAME);
   if (!range) return DEFAULT_MAX_SIGNUPS;
   let value = range.getValue();
 
-  // If the value is somehow stored as a string, attempt to parse it
   if (Number.isNaN(value)) {
     value = parseInt(value);
   }
   return value;
 }
-

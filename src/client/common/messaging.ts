@@ -1,3 +1,8 @@
+/**
+ * @file messaging.ts
+ * @description Provides toast notifications, loading modals, and centralized error handling.
+ */
+
 import * as dom from "./dom"
 
 /**
