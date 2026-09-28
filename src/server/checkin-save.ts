@@ -1,6 +1,7 @@
 /**
  * @file checkin-save.ts
  * @description Handles server-side persistence of student check-in and check-out time stamps.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

@@ -1,6 +1,7 @@
 /**
  * @file page-server.ts
  * @description Serves HTML pages, handles doGet entry points, and packages initial JSON data payloads for client apps.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 let email: string;

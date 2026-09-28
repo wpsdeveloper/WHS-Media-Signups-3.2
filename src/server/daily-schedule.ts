@@ -1,6 +1,7 @@
 /**
  * @file daily-schedule.ts
  * @description Builds and caches calendar blocks, rotation grids, intervention schedules, and special schedule limitations.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

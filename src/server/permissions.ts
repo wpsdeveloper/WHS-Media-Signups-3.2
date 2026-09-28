@@ -1,6 +1,7 @@
 /**
  * @file permissions.ts
  * @description Manages user role authorization checks for editing records, submitting forms, viewing admin panels, and accessing attendance.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

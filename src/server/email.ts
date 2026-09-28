@@ -1,6 +1,7 @@
 /**
  * @file email.ts
  * @description Handles composing and sending confirmation emails to students and teachers via GmailApp.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

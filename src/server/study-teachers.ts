@@ -1,6 +1,7 @@
 /**
  * @file study-teachers.ts
  * @description Parses study hall teacher schedules from external Google Sheets documents.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

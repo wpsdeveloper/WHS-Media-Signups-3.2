@@ -1,6 +1,7 @@
 /**
  * @file signups.ts
  * @description Retrieves signups within active date windows, executes student audit lookups, and handles array-to-object parsing for spreadsheet rows.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

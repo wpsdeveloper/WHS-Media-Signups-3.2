@@ -1,6 +1,7 @@
 /**
  * @file settings.ts
  * @description Manages retrieval, parsing, and persistence of application settings and configuration switches.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**

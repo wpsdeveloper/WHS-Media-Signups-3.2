@@ -1,6 +1,7 @@
 /**
  * @file Spreadsheet Mgmt.js
  * @description Spreadsheet management functions that run on nightly triggers for archiving old signups, syncing daily schedules from Google Calendar, and updating student directories.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
  */
 
 /**
