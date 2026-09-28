@@ -1,4 +1,4 @@
-# WHS Intervention & Media Center 3.0
+# WHS Intervention & Media Center 3.2
 
 ## Executive Summary
 The **WHS Intervention & Media Center 3.0** application is a comprehensive web-based management system built for Walpole High School (WHS) to streamline student academic interventions, library/media center reservations, glass room bookings, attendance tracking, and administrative audits.
@@ -17,3 +17,4 @@ The **WHS Intervention & Media Center 3.0** application is a comprehensive web-b
 ## Deployment & Environment
 - **Deployed Google Workspace Account / Script ID**: Bound to the Google Apps Script project specified in `.clasp.json` (`1LoW9U2OGsG_aI0fQ8OoZbu8FHdjR8bNBPLAudCYvK9b4nAVle0Z58xHJ`).
 - **Database**: Google Sheets instance acting as the backing relational store (`SPREADSHEET_ID`).
+- **Priamry account holder**: Apps Script files, Google Sheets files, and GitHub repo are all owned by wpsdeveloper@walpole.k12.ma.us

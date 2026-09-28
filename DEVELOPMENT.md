@@ -13,19 +13,12 @@ This guide provides step-by-step instructions for IT administrators and develope
 
 1. **Clone the repository** (if not already local):
    ```bash
-   git clone <repository-url>
-   cd whs-media-3-0
+   git clone https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
    ```
 
 2. **Install dependencies**:
    ```bash
    npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Copy `.env.example` to `.env` and fill in any required development variables or configuration placeholders:
-   ```bash
-   cp .env.example .env
    ```
 
 ---
@@ -34,13 +27,16 @@ This guide provides step-by-step instructions for IT administrators and develope
 
 To push code changes to the Google Apps Script project:
 
-1. **Login with Google via Clasp**:
+1. **Get Access to the Apps Script file**:
+   You must have edit access to the App Script file stored in the Google Drive.
+
+2. **Login with Google via Clasp**:
    ```bash
    npx clasp login
    ```
    *Follow the browser authentication prompt to log in with your authorized Google Workspace credentials.*
 
-2. **Understand `.clasp.json`**:
+3. **Understand `.clasp.json`**:
    The `.clasp.json` file in the root directory links your local workspace to the cloud Google Apps Script project:
    ```json
    {
