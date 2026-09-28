@@ -1,7 +1,7 @@
 # WHS Intervention & Media Center 3.2
 
 ## Executive Summary
-The **WHS Intervention & Media Center 3.0** application is a comprehensive web-based management system built for Walpole High School (WHS) to streamline student academic interventions, library/media center reservations, glass room bookings, attendance tracking, and administrative audits.
+The **WHS Intervention & Media Center 3.2** application is a comprehensive web-based management system built for Walpole High School (WHS) to streamline student academic interventions, library/media center reservations, glass room bookings, attendance tracking, and administrative audits.
 
 ## Key Features
 - **Student Sign-Up Portal**: Allows students or staff to book intervention periods, academic support, assessments, NHS tutoring, alt settings, and media center study sessions with real-time capacity validation and conflict checks.
