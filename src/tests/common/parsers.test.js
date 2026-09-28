@@ -11,8 +11,15 @@ import {
   parseUpdateStudent
 } from '../../client/common/parsers.js';
 
+/**
+ * Test suite for the Parsers Module.
+ * Validates formatting, extraction, and fallback mechanisms for data parsing.
+ */
 describe('Parsers Module', () => {
   
+  /**
+   * Tests for parseStudents function.
+   */
   describe('parseStudents', () => {
     it('should return the array if an array is provided', () => {
       const students = [{ firstname: 'John' }];
@@ -25,12 +32,16 @@ describe('Parsers Module', () => {
     });
   });
 
+  /**
+   * Tests for parseStudentNames function.
+   */
   describe('parseStudentNames', () => {
     it('should map student objects to formatted strings', () => {
       const students = [
         { firstname: 'John', lastname: 'Doe', email: 'john@test.com' },
         { firstname: 'Jane', lastname: 'Smith', email: 'jane@test.com' }
       ];
+      // Expecting Lastname, Firstname <email> format
       const expected = [
         'Doe, John <john@test.com>',
         'Smith, Jane <jane@test.com>'
@@ -43,6 +54,9 @@ describe('Parsers Module', () => {
     });
   });
 
+  /**
+   * Tests for functions relying on safeJsonParse.
+   */
   describe('safeJsonParse wrappers (DailyBlocks, InterventionTeachers, Signups, StudyTeachers)', () => {
     const parsersToTest = [
       parseDailyBlocks,
@@ -75,6 +89,9 @@ describe('Parsers Module', () => {
     });
   });
 
+  /**
+   * Tests for parseNoFlyList function.
+   */
   describe('parseNoFlyList', () => {
     it('should return the array if provided', () => {
       const emails = ['bad@test.com'];
@@ -86,6 +103,9 @@ describe('Parsers Module', () => {
     });
   });
 
+  /**
+   * Tests for parseMaxSignups function.
+   */
   describe('parseMaxSignups', () => {
     it('should parse a valid number string', () => {
       expect(parseMaxSignups('20')).toBe(20);
@@ -95,12 +115,15 @@ describe('Parsers Module', () => {
       expect(parseMaxSignups(25)).toBe(25);
     });
 
-    it('should return 15 as a fallback for invalid numbers', () => {
+    it('should return 10 as a fallback for invalid numbers', () => {
       expect(parseMaxSignups('invalid')).toBe(10);
       expect(parseMaxSignups(null)).toBe(10);
     });
   });
 
+  /**
+   * Tests for parseUpdateStudent function.
+   */
   describe('parseUpdateStudent', () => {
     it('should parse a valid JSON string', () => {
       const jsonString = '{"id": 123}';

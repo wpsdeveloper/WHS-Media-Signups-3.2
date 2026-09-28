@@ -16,22 +16,32 @@ export const safeJsonParse = (data: string, fallback = []) => {
 };
 
 /**
- *  Receives student data from the server 
+ * Receives student data from the server and ensures it's an array.
+ * @param students The raw student data array.
+ * @returns The parsed student data array, or an empty array if invalid.
  */
 export const parseStudents = (students: Student[]) => {
   return Array.isArray(students) ? students : [];
 }
 
+/**
+ * Parses a list of students into an array of formatted name and email strings.
+ * @param students The array of student objects.
+ * @returns An array of formatted strings (e.g. "Lastname, Firstname <email>").
+ */
 export const parseStudentDataList = (students: Student[]) => {
   if (!Array.isArray(students)) return [];
   return students.map(student => `${student.lastname}, ${student.firstname} <${student.email}>`);
 };
 
+/** Alias for parseStudentDataList */
 export const parseStudentNames = parseStudentDataList;
 
 /**
- *  parses daily schedule data from the server 
- * */
+ * Parses daily schedule block data from the server.
+ * @param block The JSON string representing daily block data.
+ * @returns An array of hydrated DailyBlock objects.
+ */
 export const parseDailyBlocks = (block: string): DailyBlock[] => {
   const parsedRawBlocks: RawDailyBlock[] = safeJsonParse(block, []);
   const dailyBlocks: DailyBlock[] = hydrateDailyBlock(parsedRawBlocks); 
@@ -40,8 +50,10 @@ export const parseDailyBlocks = (block: string): DailyBlock[] => {
 }
 
 /**
- *  parses teacher intervention data from the server 
- * */
+ * Parses teacher intervention data from the server.
+ * @param schedulesJson The JSON string representing intervention teachers.
+ * @returns An array of intervention teachers.
+ */
 export const parseInterventionTeachers = (schedulesJson: string) => {
   // graceful fallback; if the intervention schedule can't be found, 
   // use an input box instead of a select box
@@ -49,15 +61,19 @@ export const parseInterventionTeachers = (schedulesJson: string) => {
 }
 
 /**
- *  parses no fly from the server 
- * */
+ * Parses no fly list data from the server.
+ * @param emails An array of emails.
+ * @returns The array of emails, or an empty array if invalid.
+ */
 export const parseNoFlyList = (emails: string[]) => {
   return Array.isArray(emails) ? emails : [];
 }
 
 /**
- *  parses max signups from the server 
- * */
+ * Parses the maximum number of signups allowed.
+ * @param maxValue The raw string value representing the maximum.
+ * @returns The parsed maximum value as a number, defaulting to 10.
+ */
 export const parseMaxSignups = (maxValue: string) => {
   try {
     const parsed = Number(maxValue);
@@ -68,8 +84,10 @@ export const parseMaxSignups = (maxValue: string) => {
 }
 
 /**
- *  parses signup data from the server 
- * */
+ * Parses signup data from the server.
+ * @param signups The raw signup data, either as a JSON string or object/array.
+ * @returns An array of hydrated Signup objects.
+ */
 export const parseSignups = (signups: any): Signup[] => {
   let rawData: RawSignup[] = [];
   if (typeof signups === 'string') {
@@ -83,24 +101,29 @@ export const parseSignups = (signups: any): Signup[] => {
   return hydrateSignups(rawData);
 }
 
-
 /**
- *  parses teacher intervention data from the server 
- * */
+ * Parses study teachers data from the server.
+ * @param studyTeachersJson The JSON string representing study teachers.
+ * @returns An array of study teachers.
+ */
 export const parseStudyTeachers = (studyTeachersJson: string) => {
   return safeJsonParse(studyTeachersJson, []);
 }
 
 /**
- *  parses signup data from the server (if updating instead of creating new) 
- * */
+ * Parses student data for updates from the server.
+ * @param signupJson The JSON string representing student update data.
+ * @returns An array of parsed update data.
+ */
 export const parseUpdateStudent = (signupJson: string) => {
   return safeJsonParse(signupJson, []);
 }
 
 /**
- *  parses settings from the server (if updating instead of creating new) 
- * */
+ * Parses settings from the server.
+ * @param settingsJson The JSON string representing settings.
+ * @returns An array of hydrated Setting objects.
+ */
 export const parseSettings = (settingsJson: string) => {
   const settings: Setting[] = [];
   try {
@@ -133,6 +156,12 @@ export const parseSettings = (settingsJson: string) => {
 
 }
 
+/**
+ * Normalizes a time string or Date object into a consistent format.
+ * Converts 24-hr and ISO strings to 12-hr format.
+ * @param val The time string or Date to normalize.
+ * @returns The normalized time string.
+ */
 export const normalizeTimeString = (val: any): string => {
   if (val === undefined || val === null) return "";
   if (typeof val !== "string") {
@@ -161,6 +190,11 @@ export const normalizeTimeString = (val: any): string => {
   return trimmed;
 };
 
+/**
+ * Hydrates raw daily block data by converting string dates and periods.
+ * @param rawData The raw daily block array.
+ * @returns An array of DailyBlock objects with properly typed date and period.
+ */
 function hydrateDailyBlock(rawData: RawDailyBlock[]): DailyBlock[] {
   return rawData.map((block: any) => ({
     ...block,
@@ -169,6 +203,11 @@ function hydrateDailyBlock(rawData: RawDailyBlock[]): DailyBlock[] {
   }));
 }
 
+/**
+ * Hydrates raw signup data by normalizing times and converting dates.
+ * @param rawData The raw signup array.
+ * @returns An array of Signup objects with properly formatted fields.
+ */
 function hydrateSignups(rawData: RawSignup[]): Signup[] {
   return rawData.map((block: any) => ({
     ...block,
@@ -182,6 +221,11 @@ function hydrateSignups(rawData: RawSignup[]): Signup[] {
   }));
 }
 
+/**
+ * Hydrates settings based on their data type.
+ * @param rawSettings The raw settings array.
+ * @returns An array of hydrated Setting objects with their values casted to the correct types.
+ */
 function hydrateSettings(rawSettings: Setting[]): Setting[] {
   return rawSettings.map(setting => {
     const dataType = setting.dataType || (setting as any).type;

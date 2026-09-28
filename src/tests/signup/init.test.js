@@ -68,10 +68,16 @@ vi.mock('../../client/signup/form-data.js', () => ({ preventFormSubmit: vi.fn(),
 vi.mock('../../client/common/dates.ts', () => ({ toDateInputValue: vi.fn(() => '2023-10-01') }));
 vi.mock('../../client/common/debug.js', () => ({ DEBUG: false }));
 
+/**
+ * Test suite for the Init Module.
+ * Contains tests for initialization logic, observer setup, and UI configuration.
+ */
 describe('Init Module', () => {
   beforeEach(() => {
+    // Clear all mock history to ensure test isolation
     vi.clearAllMocks();
     
+    // Mock global Google Apps Script API
     global.google = {
       script: {
         run: {
@@ -83,11 +89,16 @@ describe('Init Module', () => {
       }
     };
 
+    // Mock global Bootstrap API
     global.bootstrap = {
       Tooltip: vi.fn(),
     };
   });
 
+  /**
+   * Tests for the initObservers function.
+   * Ensures that all component observers are initialized correctly.
+   */
   describe('initObservers', () => {
     it('should call setup observers for all modules', () => {
       initObservers();
@@ -95,6 +106,10 @@ describe('Init Module', () => {
     });
   });
 
+  /**
+   * Tests for the initializeApp function.
+   * Verifies data loading, store initialization, and loading modal toggling.
+   */
   describe('initializeApp', () => {
     it('should initialize the app, load data, and bind events', async () => {
       dom.qsa.mockReturnValue([]);
@@ -112,6 +127,10 @@ describe('Init Module', () => {
     });
   });
 
+  /**
+   * Tests for the setUpdateStatus function.
+   * Ensures correct UI configuration when a signup is being updated.
+   */
   describe('setUpdateStatus', () => {
     it('should abort if user is not an editor', async () => {
       store.getState.mockReturnValueOnce({ isEditor: false });
@@ -137,6 +156,10 @@ describe('Init Module', () => {
     });
   });
 
+  /**
+   * Tests for the setTooltips function.
+   * Verifies that Bootstrap Tooltips are initialized for the selected elements.
+   */
   describe('setTooltips', () => {
     it('should map over tooltip elements and instantiate Bootstrap Tooltips', () => {
       const mockElements = [{}, {}];

@@ -10,29 +10,38 @@ vi.mock('../../client/common/checkin.js');
 vi.mock('../../client/common/dates.ts');
 vi.mock('../../client/common/store.js');
 
+/**
+ * Test suite for the CheckinBox component.
+ * Verifies initialization, state rendering, and event handling logic.
+ */
 describe('CheckinBox', () => {
   let mockTemplate;
   let mockElement;
 
   beforeEach(() => {
+    // Clear mocks to ensure a clean state before each test
     vi.clearAllMocks();
 
+    // Create a mock element representing a cloned template
     mockElement = {
       querySelector: vi.fn().mockReturnValue({}),
       append: vi.fn(),
     };
 
+    // Create a mock template with a content property containing the mock element
     mockTemplate = {
       content: {
         cloneNode: vi.fn().mockReturnValue(mockElement),
       },
     };
 
+    // Intercept DOM querySelector calls to return the mock template when queried
     dom.qs.mockImplementation((selector) => {
       if (selector === 'template#checkin-box') return mockTemplate;
       return null;
     });
 
+    // Mock store to return initial state data
     store.getState.mockReturnValue({ signups: [{ rowId: 1 }] });
   });
 

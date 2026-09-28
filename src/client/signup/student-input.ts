@@ -4,7 +4,16 @@ import { parseStudentDataList } from '../common/parsers';
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 
-const setHelperState = (isSearching: boolean, noResults = false, isSelected = false) => {
+/**
+ * Updates the helper text element below the student search input to provide
+ * feedback to the user on search progress or formatting instructions.
+ * 
+ * @param {boolean} isSearching - True if a search is currently in progress.
+ * @param {boolean} [noResults=false] - True if the search completed but found no matches.
+ * @param {boolean} [isSelected=false] - True if a student was successfully selected.
+ * @returns {void}
+ */
+const setHelperState = (isSearching: boolean, noResults = false, isSelected = false): void => {
   const helper = dom.qs('#student-search-helper') as HTMLElement | null;
   if (!helper) return;
 
@@ -28,7 +37,14 @@ const setHelperState = (isSearching: boolean, noResults = false, isSelected = fa
   }
 };
 
-const updateClearButtonState = (hasValue: boolean, isSearching: boolean) => {
+/**
+ * Updates the visibility of the "Clear" button within the student search input.
+ * 
+ * @param {boolean} hasValue - True if the input field is not empty.
+ * @param {boolean} isSearching - True if a search is currently in progress.
+ * @returns {void}
+ */
+const updateClearButtonState = (hasValue: boolean, isSearching: boolean): void => {
   if (isSearching || !hasValue) {
     dom.setVisible('#student-clear-btn', false);
   } else {
@@ -36,6 +52,13 @@ const updateClearButtonState = (hasValue: boolean, isSearching: boolean) => {
   }
 };
 
+/**
+ * Determines whether the user has successfully selected a complete student record.
+ * Checks for the presence of email brackets or an exact match against datalist options.
+ * 
+ * @param {string} query - The current string in the input field.
+ * @returns {boolean} True if a student is considered selected.
+ */
 const isStudentSelected = (query: string): boolean => {
   if (!query) return false;
   // If query contains '<' and '>' (standard datalist student format: "Lastname, Firstname <email>")
@@ -55,7 +78,12 @@ const isStudentSelected = (query: string): boolean => {
   return false;
 };
 
-export const clearStudentInput = () => {
+/**
+ * Clears the student input field, resets suggestions, and updates UI state.
+ * 
+ * @returns {void}
+ */
+export const clearStudentInput = (): void => {
   clearTimeout(debounceTimer);
   const input = dom.qs('.student-autocomplete') as HTMLInputElement | null;
   if (input) {
@@ -71,8 +99,12 @@ export const clearStudentInput = () => {
 
 /**
  * Publisher: Listens to input changes in the student text field and updates store state.
+ * Triggers backend searches for student matching after a brief debounce period.
+ * 
+ * @param {Event} event - The DOM input/change event.
+ * @returns {void}
  */
-export const studentInputChangeHandler = (event: Event) => {
+export const studentInputChangeHandler = (event: Event): void => {
   const target = event.target as HTMLInputElement;
   const query = dom.valueOf(target).trim();
   store.setState({ ui_currentStudentName: query });
@@ -139,7 +171,14 @@ export const studentInputChangeHandler = (event: Event) => {
   }, 250); // 250ms debounce
 };
 
-export const renderStudentDatalist = (studentNames: string[] = [], currentQuery: string = '') => {
+/**
+ * Updates the datalist with the retrieved student names to display as autocomplete suggestions.
+ * 
+ * @param {string[]} [studentNames=[]] - A list of formatted student strings.
+ * @param {string} [currentQuery=''] - The current search query string.
+ * @returns {void}
+ */
+export const renderStudentDatalist = (studentNames: string[] = [], currentQuery: string = ''): void => {
   const input = dom.qs(".student-autocomplete");
   if (!input) return;
 

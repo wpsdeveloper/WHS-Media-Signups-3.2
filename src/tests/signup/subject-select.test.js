@@ -10,6 +10,9 @@ import * as dates from '../../client/common/dates.ts';
 import { store } from '../../client/common/store.js';
 
 // Mock dependencies
+/**
+ * Mocks DOM manipulation utilities.
+ */
 vi.mock('../../client/common/dom.js', () => ({
   clearOptions: vi.fn(),
   appendOption: vi.fn(),
@@ -17,11 +20,26 @@ vi.mock('../../client/common/dom.js', () => ({
   setValue: vi.fn(),
 }));
 
+/**
+ * Mocks date utilities for predictable parsing and comparison.
+ */
 vi.mock('../../client/common/dates.ts', () => ({
+  /**
+   * @param {string} d - The date to parse
+   * @returns {Date} Parsed Date object
+   */
   parseDateInput: vi.fn(d => new Date(d)),
+  /**
+   * @param {Date} d1 - First date
+   * @param {Date} d2 - Second date
+   * @returns {boolean} True if dates share the same calendar day
+   */
   isSameDate: vi.fn((d1, d2) => d1.toDateString() === d2.toDateString()),
 }));
 
+/**
+ * Mocks the central state store to track state updates and subscriptions.
+ */
 vi.mock('../../client/common/store.js', () => ({
   store: { 
     setState: vi.fn(),
@@ -41,16 +59,24 @@ describe('Subject Select Module', () => {
     vi.useRealTimers();
   });
 
+  /**
+   * Tests for the subject selection change handler.
+   */
   describe('subjectChangeHandler', () => {
     it('should update store state with the selected subject', () => {
+      // Simulate user changing the subject in the dropdown
       const mockEvent = { target: { value: 'Math' } };
       subjectChangeHandler(mockEvent);
       expect(store.setState).toHaveBeenCalledWith({ currentSubject: 'Math' });
     });
   });
 
+  /**
+   * Tests for updating the available subject options in the select dropdown based on the active semester and schedules.
+   */
   describe('updateSubjectOptions', () => {
     it('should clear options and return early if required arguments are missing', () => {
+      // Verifies early returns for invalid or incomplete data
       updateSubjectOptions(null, '1', {}, []);
       expect(dom.clearOptions).toHaveBeenCalledWith('#subject-int-select');
       expect(dom.appendOption).not.toHaveBeenCalled();
@@ -102,6 +128,7 @@ describe('Subject Select Module', () => {
     it('should safely return and not append if schedules or days are undefined', () => {
       dates.isSameDate.mockReturnValue(true);
 
+      // Incomplete data structure for testing robustness
       const interventionTeachers = {
         s2Date: '2024-01-01',
         s1: {} // Missing day 'A'
@@ -115,6 +142,9 @@ describe('Subject Select Module', () => {
     });
   });
 
+  /**
+   * Tests for setting up the store observer for subject options.
+   */
   describe('setupSubjectOptionsObserver', () => {
     it('should subscribe to the store and trigger option updates on state change', () => {
       setupSubjectOptionsObserver();
@@ -136,11 +166,15 @@ describe('Subject Select Module', () => {
     });
   });
 
+  /**
+   * Tests for synchronizing the subject dropdown value with store state.
+   */
   describe('setupSubjectValueObserver', () => {
     it('should synchronize DOM element selection when state.currentSubject changes', () => {
       setupSubjectValueObserver();
       const subscriberCallback = store.subscribe.mock.calls[0][0];
 
+      // Simulate the UI initially having a different value
       dom.qs.mockReturnValue({ value: 'Old Subject' });
       subscriberCallback({ currentSubject: 'New Subject' });
 
@@ -151,6 +185,7 @@ describe('Subject Select Module', () => {
       setupSubjectValueObserver();
       const subscriberCallback = store.subscribe.mock.calls[0][0];
 
+      // If the UI is already in sync with state, we shouldn't attempt to rewrite the DOM
       dom.qs.mockReturnValue({ value: 'Same Subject' });
       subscriberCallback({ currentSubject: 'Same Subject' });
 

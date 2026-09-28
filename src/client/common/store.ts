@@ -1,21 +1,43 @@
+/**
+ * Interface representing a listener in the Store.
+ * @template T The type of the state object.
+ */
 export interface StoreListener<T> {
+  /** The callback function to execute when state changes. */
   callback: (state: T) => void;
+  /** Array of state keys that this listener depends on, or null to listen to all changes. */
   dependencies: (keyof T)[] | null;
 }
 
 // Store.js
+/**
+ * A generic state management store that allows subscribing to state changes.
+ * @template T The type of the state object.
+ */
 export class Store<T> {
   state: T;
   listeners: StoreListener<T>[] = [];
 
+  /**
+   * Constructs a new Store instance with the initial state.
+   * @param state The initial state.
+   */
   constructor(state: T) {
     this.state = state;
   }
 
+  /**
+   * Gets the current state.
+   * @returns A shallow copy of the current state.
+   */
   getState(): T {
     return { ...this.state } as T;
   }
 
+  /**
+   * Updates the state with new values and notifies listeners of changes.
+   * @param newState A partial object containing the state properties to update.
+   */
   setState(newState: Partial<T>): void {
     if (!newState) return;
     const changedKeys: (keyof T)[] = [];
@@ -35,6 +57,12 @@ export class Store<T> {
     this.notify(changedKeys);
   }
 
+  /**
+   * Subscribes a listener to state changes.
+   * @param callback The function to call when the state changes.
+   * @param dependencies Optional array of state keys to listen for. If null, listens to all changes.
+   * @returns A function that unsubscribes the listener when called.
+   */
   subscribe(
     callback: StoreListener<T>['callback'], 
     dependencies: (keyof T)[] | null = null
@@ -46,6 +74,10 @@ export class Store<T> {
     };
   }
 
+  /**
+   * Notifies listeners that specific keys in the state have changed.
+   * @param changedKeys An array of state keys that have changed.
+   */
   notify(changedKeys: (keyof T)[]) {
     this.listeners.forEach(({ callback, dependencies }) => {
       if (!dependencies || dependencies.some(dep => changedKeys.includes(dep))) {
@@ -55,6 +87,12 @@ export class Store<T> {
   }
 }
 
+/**
+ * Deeply compares two values to determine if they are equivalent.
+ * @param obj1 The first value to compare.
+ * @param obj2 The second value to compare.
+ * @returns True if the values are deeply equal, false otherwise.
+ */
 function isDeepEqual(obj1: any, obj2: any): boolean {
   if (obj1 === obj2) return true;
   if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {

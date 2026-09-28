@@ -2,22 +2,36 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { store, Store } from '../../client/common/store.js';
 
 
+/**
+ * Test suite for the Store Module.
+ * Validates the state management singleton, including initialization, state updates, deep equality checks, and subscriber notifications.
+ */
 describe('Store Module', () => {
   // Store a copy of the default state to reset the singleton between tests
   const defaultState = JSON.parse(JSON.stringify(store.getState()));
   
+  /**
+   * Runs before each test to manually reset the singleton state and listeners,
+   * ensuring test isolation.
+   */
   beforeEach(() => {
     // Manually reset the singleton state and listeners to ensure test isolation
     store.state = JSON.parse(JSON.stringify(defaultState));
     store.listeners = [];
   });
 
+  /**
+   * Tests for the exported store instance.
+   */
   describe('store instance', () => {
     it('should return an instance of Store', () => {
       expect(store instanceof Store).toBe(true);
     })
   });
 
+  /**
+   * Tests for the initialize method.
+   */
   describe('initialize', () => {
     it('should put initial data into the store', () => {
       store.initialize({signups: [{student: "student1"}], schedules: [{date: "2025-10-05"}]});
@@ -27,6 +41,9 @@ describe('Store Module', () => {
     })
   });
   
+  /**
+   * Tests for the getState method.
+   */
   describe('getState', () => {
     it('should return the complete current state object', () => {
       store.initialize({signups: [{student: "student1"}], schedules: [{date: "2025-10-05"}]});
@@ -37,6 +54,9 @@ describe('Store Module', () => {
     });
   });
   
+  /**
+   * Tests for the setState method.
+   */
   describe('setState', () => {
     it('should update the state with new primitive values', () => {
       store.initialize({signups: [{student: "student1"}], schedules: [{date: "2025-10-05"}]});
@@ -58,6 +78,9 @@ describe('Store Module', () => {
     });
   });
   
+  /**
+   * Tests for isDeepEqual functionality utilized by setState.
+   */
   describe('isDeepEqual functionality (via setState)', () => {
     it('should not trigger notification if the new state deeply matches the old state', () => {
       const mockCallback = vi.fn();
@@ -87,6 +110,9 @@ describe('Store Module', () => {
     });
   });
 
+  /**
+   * Tests for the subscribe and notify mechanisms.
+   */
   describe('subscribe and notify', () => {
     it('should notify subscribers without dependencies on any state change', () => {
       const mockCallback = vi.fn();

@@ -23,6 +23,11 @@ import {
   showBootstrapToast,
 } from '../../client/common/dom.js';
 
+/**
+ * Test suite for DOM utilities.
+ * Validates query helpers, element manipulators, attribute setters,
+ * and custom event listeners on mocked HTML structures.
+ */
 describe('Dom Utilities', () => {
   // --- Query and Visibility Tests ---
 

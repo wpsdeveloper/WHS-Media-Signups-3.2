@@ -1,6 +1,14 @@
+/**
+ * Flag indicating whether the application is running in development/debug mode.
+ */
 export const IS_DEBUG: boolean = import.meta.env.DEV;
 const mockPath = `./sampledata.ts`;
 
+/**
+ * Retrieves mock data for the specified data type for development purposes.
+ * @param type The type of data to retrieve ('signup', 'attendance', 'admin', or 'audit').
+ * @returns A promise that resolves to the mock data string.
+ */
 export const getMockData = async(type: 'signup' | 'attendance' | 'admin' | 'audit'): Promise<string> => {
   if (!import.meta.env.DEV) return "";
   
@@ -28,6 +36,10 @@ export const getMockData = async(type: 'signup' | 'attendance' | 'admin' | 'audi
   return sampleData;
 }
 
+/**
+ * Retrieves the mock application configuration.
+ * @returns A promise that resolves to the mock AppConfig.
+ */
 export const getMockAppConfig = async(): Promise<AppConfig> => {
   const sampleDataImport = await import(/* @vite-ignore */ mockPath);
   return sampleDataImport.appConfig;

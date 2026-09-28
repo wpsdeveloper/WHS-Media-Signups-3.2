@@ -16,15 +16,25 @@ vi.mock('../../client/common/dom.js', () => ({
   setText: vi.fn(),
 }));
 
+/**
+ * Test suite for Messaging Utilities.
+ * Validates the behavior of UI messaging functions including errors, success toasts, and loading modals.
+ */
 describe('Messaging Utilities', () => {
   const mockError = { message: 'Sample error message' };
 
+  /**
+   * Runs before each test to reset mocks and suppress console errors.
+   */
   beforeEach(() => {
     vi.clearAllMocks();
     // Silence and track console.error during tests
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
+  /**
+   * Tests for the processError function.
+   */
   describe('processError', () => {
     test('shows error toast, hides loading modal, and calls console.error with error object', () => {
       processError(mockError, undefined);
@@ -58,6 +68,9 @@ describe('Messaging Utilities', () => {
     });
   });
 
+  /**
+   * Tests for the showErrorToast function.
+   */
   describe('showErrorToast', () => {
     test('shows error toast with provided message', () => {
       showErrorToast('An error occurred');
@@ -74,6 +87,9 @@ describe('Messaging Utilities', () => {
     });
   });
 
+  /**
+   * Tests for the showLoadingModal function.
+   */
   describe('showLoadingModal', () => {
     test('shows loading modal with default text (undefined)', () => {
       showLoadingModal();
@@ -97,6 +113,9 @@ describe('Messaging Utilities', () => {
     });
   });
 
+  /**
+   * Tests for the hideLoadingModal function.
+   */
   describe('hideLoadingModal', () => {
     test('hides the loading modal', () => {
       hideLoadingModal();
@@ -105,6 +124,9 @@ describe('Messaging Utilities', () => {
     });
   });
 
+  /**
+   * Tests for the showSuccessToast function.
+   */
   describe('showSuccessToast', () => {
     test('shows success toast with provided message', () => {
       showSuccessToast('Operation completed successfully');

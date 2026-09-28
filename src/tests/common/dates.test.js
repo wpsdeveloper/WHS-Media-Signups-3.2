@@ -9,6 +9,11 @@ import {
   convert24HrTo12Hr,
 } from '../../client/common/dates.ts';
 
+/**
+ * Test suite for date and time utilities.
+ * Validates formatting, parsing, and logical checks for date strings and Date objects.
+ */
+
 /* toDateInputValue(date) */
 test('toDateInputValue', () => {
   // Standard cases

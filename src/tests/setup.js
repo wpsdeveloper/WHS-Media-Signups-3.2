@@ -7,6 +7,7 @@
 import { vi, beforeEach } from 'vitest';
 
 // 1. Mock GAS Server Data Injection
+/** @type {string} Serialized server data for view state and globals */
 window.__SERVER_DATA__ = JSON.stringify({
   viewState: { view: 'attendance', data: {} },
   globals: {
@@ -17,20 +18,26 @@ window.__SERVER_DATA__ = JSON.stringify({
 });
 
 // 2. Mock Google Apps Script APIs (for business logic tests)
+/** @type {import('vitest').Mock} Mock drive API */
 const mockDrive = vi.fn();
+/** @type {import('vitest').Mock} Mock sheets API */
 const mockSheets = vi.fn();
+/** @type {import('vitest').Mock} Mock apps script API */
 const mockAppsScript = vi.fn();
 
+/** @type {Object} Global googleapis mock */
 global.googleapis = {
   drive: mockDrive,
   sheets: mockSheets
 };
 
+/** @type {Object} Global appsscript mock */
 global.appsscript = {
   AppsScript: mockAppsScript
 };
 
 // 3. Mock fetch/axios for API calls
+/** @type {import('vitest').Mock} Mock global fetch */
 window.fetch = vi.fn(() => 
   Promise.resolve({
     ok: true,
@@ -44,9 +51,11 @@ process.env.LOGO_ID = '';
 process.env.SCRIPT_URL = '';
 
 // 5. Enable test-specific console behavior
-console.error = console.warn; // Reduce noise during tests
+/** Use console.warn instead of console.error to reduce noise during tests */
+console.error = console.warn; 
 
 // 6. Mock localStorage (GAS doesn't support it natively)
+/** @type {Object} Global localStorage mock */
 global.localStorage = {
   getItem: vi.fn(() => null),
   setItem: vi.fn(),
@@ -55,6 +64,7 @@ global.localStorage = {
 };
 
 // 7. Mock navigator for browser APIs
+/** @type {Object} Global navigator mock */
 window.navigator = {
   userAgent: 'Mozilla/5.0'
 };

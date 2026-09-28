@@ -4,9 +4,13 @@ import { store } from './signup-store';
 import { IS_DEBUG } from "../common/debug";
 
 /**
- *  Sends the form data to the server for submission 
+ *  Sends the form data to the server for submission.
+ *  It handles both new submissions and updates to existing records.
+ *  Displays loading and completion modals during the process.
+ * 
+ *  @returns {Promise<void>} Resolves when the submission is complete.
  * */
-export const submitForm = async () => {
+export const submitForm = async (): Promise<void> => {
   const unvalidatedFormData = collectData();
   const formData = validateForm(unvalidatedFormData);
   
@@ -39,6 +43,12 @@ export const submitForm = async () => {
   }
 }
 
+/**
+ * Submits new signup data to the server-side Google Apps Script function.
+ * 
+ * @param {Signup} formData - The validated signup data to submit.
+ * @returns {Promise<unknown>} A promise that resolves when the server successfully processes the form.
+ */
 async function submitNewFormData(formData: Signup) {
   return new Promise((resolve, reject) => {
     google.script.run
@@ -48,6 +58,12 @@ async function submitNewFormData(formData: Signup) {
     });
 }
 
+/**
+ * Submits updated signup data to the server-side Google Apps Script function.
+ * 
+ * @param {Signup} formData - The validated signup data including the rowId to update.
+ * @returns {Promise<unknown>} A promise that resolves when the server successfully updates the record.
+ */
 async function submitUpdatedFormData(formData: Signup) {
   return new Promise((resolve, reject) => {
     google.script.run
@@ -58,9 +74,12 @@ async function submitUpdatedFormData(formData: Signup) {
 };
 
 /**
- * Gathers all entered form data in prep for validation and submission 
+ * Gathers all entered form data from the DOM and current store state 
+ * in preparation for validation and submission.
+ * 
+ * @returns {Partial<Signup>} The raw, unvalidated form data collected from the UI.
  * */
-function collectData() {
+function collectData(): Partial<Signup> {
   const state = store.getState();
   const data: Partial<Signup> = {};
   
@@ -104,9 +123,13 @@ function collectData() {
 
 
 /**
- *  Checks fields to make sure not required data is missing 
+ *  Checks fields to make sure no required data is missing.
+ *  Updates the DOM to visually indicate invalid fields.
+ * 
+ *  @param {Partial<Signup>} formData - The unvalidated form data.
+ *  @returns {Signup | false} The validated form data object, or false if validation failed.
  * */
-function validateForm(formData: Partial<Signup>) {
+function validateForm(formData: Partial<Signup>): Signup | false {
   dom.setInvalid("input, select, textarea, div", false);
   const invalidFields = getInvalidFields(formData); 
 
@@ -119,11 +142,12 @@ function validateForm(formData: Partial<Signup>) {
 }
 
 /**
- *  Logic for each field to determine if valid or not 
+ *  Logic for each field to determine if valid or not based on the selected signup type and visibility.
  * 
- * @return {string[]} Array of class names to mark aas invalid
+ *  @param {Partial<Signup>} data - The unvalidated form data.
+ *  @returns {string[]} Array of CSS selectors (IDs/classes) to mark as invalid.
  * */
-function getInvalidFields(data: Partial<Signup>) {
+function getInvalidFields(data: Partial<Signup>): string[] {
   const invalidFields = [];
 
   // requires student names if student is visible (teacher submission)
@@ -160,9 +184,12 @@ function getInvalidFields(data: Partial<Signup>) {
 }
 
 /**
- *  Responds to a successful submission notice from the server 
+ *  Responds to a successful submission notice from the server.
+ *  Hides the loading modal and shows the success panel.
+ * 
+ *  @returns {void}
  * */
-function submitComplete() {
+function submitComplete(): void {
   messaging.showSuccessToast("Submission complete");
   messaging.hideLoadingModal();
 
@@ -172,9 +199,12 @@ function submitComplete() {
 }
 
 /**
- *  Responds to a successful update notice from the server 
+ *  Responds to a successful update notice from the server.
+ *  Hides the loading modal and shows the update success panel.
+ * 
+ *  @returns {void}
  * */
-function updateComplete() {
+function updateComplete(): void {
   messaging.showSuccessToast("Update complete.");
   messaging.hideLoadingModal();
 
@@ -184,9 +214,12 @@ function updateComplete() {
 }
 
 /**
- * Resets the page for another submission 
+ * Resets the page state and UI for another new submission.
+ * Clears form fields and shows the main form.
+ * 
+ * @returns {void}
  * */
- export const startOver = () => {
+ export const startOver = (): void => {
   store.setState({
     ui_currentType: null,
     ui_currentStudyTeacher: null,
@@ -205,7 +238,13 @@ function updateComplete() {
  }
 
 
-async function mockSubmit(data: Signup) {
+/**
+ * Simulates form submission for debugging and local testing without a server.
+ * 
+ * @param {Signup} data - The validated form data to mock submit.
+ * @returns {Promise<void>} Resolves after a short simulated delay.
+ */
+async function mockSubmit(data: Signup): Promise<void> {
   console.warn("Debug mode: Form data to submit:", data);
   const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   await delay(2000);

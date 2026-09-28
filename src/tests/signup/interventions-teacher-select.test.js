@@ -12,11 +12,21 @@ vi.mock('../../client/common/store.js', () => ({
   store: { subscribe: vi.fn() }
 }));
 
+/**
+ * Test suite for the Interventions Teacher Select Module.
+ * Contains tests for UI toggling and state observation logic.
+ */
 describe('Interventions Teacher Select Module', () => {
   beforeEach(() => {
+    // Clear all mock history before each test to ensure test isolation
     vi.clearAllMocks();
   });
 
+  /**
+   * Tests for the toggleIntTeacherAltInput function.
+   * This function determines whether to show a select dropdown or a text input
+   * for intervention teachers based on the current period and available teachers.
+   */
   describe('toggleIntTeacherAltInput', () => {
     it('should show text input and hide select when period is "Wed. PM"', () => {
       toggleIntTeacherAltInput(['Teacher A'], 'Wed. PM');
@@ -26,6 +36,7 @@ describe('Interventions Teacher Select Module', () => {
     });
 
     it('should show text input when interventionTeachers is null or undefined', () => {
+      // Simulate missing teacher data
       toggleIntTeacherAltInput(null, '1');
       
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-select', false);
@@ -33,6 +44,7 @@ describe('Interventions Teacher Select Module', () => {
     });
 
     it('should show text input when interventionTeachers array is empty', () => {
+      // Simulate empty teacher data
       toggleIntTeacherAltInput([], '2');
       
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-select', false);
@@ -47,6 +59,11 @@ describe('Interventions Teacher Select Module', () => {
     });
   });
 
+  /**
+   * Tests for the setupInterventionTeacherObserver function.
+   * Ensures the observer is properly registered with the store and triggers
+   * the appropriate UI updates when state changes.
+   */
   describe('setupInterventionTeacherObserver', () => {
     it('should subscribe to the store with the correct dependency array', () => {
       setupInterventionTeacherObserver();

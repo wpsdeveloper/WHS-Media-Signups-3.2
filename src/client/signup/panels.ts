@@ -26,15 +26,20 @@ export function getPanelSelectorForType(type: SignupType | null | undefined): st
 
 /**
  * Hides all type-specific detail panel containers.
+ * 
+ * @returns {void}
  */
-export const hideTypes = () => {
+export const hideTypes = (): void => {
   dom.setVisible(ALL_TYPE_PANELS_SELECTOR, false);
 };
 
 /**
  * UI View: Shows the appropriate panel for a given type while ensuring all others are hidden.
+ * 
+ * @param {SignupType | null | undefined} currentType - The currently selected signup type.
+ * @returns {void}
  */
-export const showPanelForType = (currentType: SignupType | null | undefined) => {
+export const showPanelForType = (currentType: SignupType | null | undefined): void => {
   hideTypes();
 
   const targetSelector = getPanelSelectorForType(currentType);
@@ -45,15 +50,20 @@ export const showPanelForType = (currentType: SignupType | null | undefined) => 
 
 /**
  * Orchestrator: Updates the Details section of the form based on which Type is selected.
+ * 
+ * @param {SignupType | null | undefined} currentType - The currently selected signup type.
+ * @returns {void}
  */
-export const updateDetailsPanel = (currentType: SignupType | null | undefined) => {
+export const updateDetailsPanel = (currentType: SignupType | null | undefined): void => {
   showPanelForType(currentType);
 };
 
 /**
  * Subscriber: Automatically updates panel visibilities when state.ui_currentType changes.
+ * 
+ * @returns {void}
  */
-export const setupPanelsObserver = () => {
+export const setupPanelsObserver = (): void => {
   store.subscribe((state: SignupState) => {
     updateDetailsPanel(state.ui_currentType);
   }, ['ui_currentType']);

@@ -20,10 +20,16 @@ vi.mock('../../client/common/debug.js', () => ({
   DEBUG: false,
 }));
 
+/**
+ * Test suite for the checkin.js utilities.
+ * Tests UI functions and interactions with google.script.run for checkin operations.
+ */
 describe('checkin.js', () => {
   beforeEach(() => {
+    // Clear mocks before each test execution
     vi.clearAllMocks();
 
+    // Mock global google.script.run for GAS API testing
     global.google = {
       script: {
         run: {

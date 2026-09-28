@@ -20,21 +20,35 @@ vi.mock('../../client/common/store.js', () => ({
   }
 }));
 
+/**
+ * Test suite for the Date Select Module.
+ * Tests functionalities related to handling date selections, configuring date inputs, and managing semesters.
+ */
 describe('Date Select Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  /**
+   * Tests for `dateChangeHandler`.
+   * Ensures that date change events correctly update the global state.
+   */
   describe('dateChangeHandler', () => {
     it('should update the store with the newly selected date', () => {
+      // Mock an event object from an input element
       const mockEvent = { target: { value: '2023-11-01' } };
       
       dateChangeHandler(mockEvent);
       
+      // Verify that the global state is updated with the new date
       expect(store.setState).toHaveBeenCalledWith({ currentDate: '2023-11-01' });
     });
   });
 
+  /**
+   * Tests for `configureDateSelect`.
+   * Checks if date input fields are correctly initialized with min, max, and initial values.
+   */
   describe('configureDateSelect', () => {
     it('should configure the date input properties correctly', () => {
       const mockInput = {};
@@ -55,15 +69,22 @@ describe('Date Select Module', () => {
       
       configureDateSelect('#date-picker', '2023-01-01', '2023-12-31');
       
+      // The value property should not be set
       expect(mockInput.value).toBeUndefined();
     });
 
     it('should fail silently if the DOM element is not found', () => {
+      // Simulate DOM element not found
       dom.qs.mockReturnValue(null);
+      // Ensure the function handles null gracefully without throwing an error
       expect(() => configureDateSelect('#bad-selector')).not.toThrow();
     });
   });
 
+  /**
+   * Tests for `setupDateSelectObserver`.
+   * Validates that the date input element responds accurately to state changes in the store.
+   */
   describe('setupDateSelectObserver', () => {
     it('should subscribe to the store looking for currentDate changes', () => {
       setupDateSelectObserver('#date-picker');
@@ -81,6 +102,7 @@ describe('Date Select Module', () => {
       // Trigger callback with new state
       subscriberCallback({ currentDate: '2023-10-15' });
       
+      // The DOM element's value should be updated
       expect(mockInput.value).toBe('2023-10-15');
     });
 
@@ -98,12 +120,18 @@ describe('Date Select Module', () => {
             set: () => { wasReassigned = true; }
         });
 
+        // Trigger with the same value
         subscriberCallback({ currentDate: '2023-10-15' });
+        // The setter should not have been called
         expect(wasReassigned).toBe(false);
       });
   });
 
-    describe('chooseSemester', () => {
+  /**
+   * Tests for `chooseSemester`.
+   * Evaluates logic determining the current semester based on dates and rollover cutoffs.
+   */
+  describe('chooseSemester', () => {
     it('should return the correct semester based on the given dates', () => {
       const rolloverDate = new Date(2027, 0, 26, 0, 0, 0);
 
@@ -123,10 +151,11 @@ describe('Date Select Module', () => {
       // different times
       expect(chooseSemester(new Date(2027, 0, 26, 0, 0, 1), rolloverDate)).toBe('2');
 
-      //invalid dates
+      // invalid dates
       const mock = vi.fn();
       mock(undefined);
 
+      // Should return null for invalid inputs
       expect(chooseSemester('2027-01-01', rolloverDate)).toBe(null);
       expect(chooseSemester(null, rolloverDate)).toBe(null);
       expect(chooseSemester(mock, rolloverDate)).toBe(null);

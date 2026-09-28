@@ -15,11 +15,18 @@ vi.mock('../../client/common/store.js', () => ({
   }
 }));
 
+/**
+ * Test suite for the Student Input Module.
+ * Tests input handling, datalist rendering, and observer setup for student search fields.
+ */
 describe('Student Input Module', () => {
   let mockInput;
   let mockList;
   let mockOption;
 
+  /**
+   * Runs before each test to clear mocks and set up DOM element mocks.
+   */
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -27,6 +34,7 @@ describe('Student Input Module', () => {
     mockList = { id: 'student-suggestions', replaceChildren: vi.fn() };
     mockOption = { value: '' };
 
+    // Mock document.createElement to return controlled mock objects
     vi.spyOn(document, 'createElement').mockImplementation((tag) => {
       if (tag === 'datalist') return mockList;
       if (tag === 'option') return mockOption;
@@ -34,6 +42,9 @@ describe('Student Input Module', () => {
     vi.spyOn(document.body, 'append').mockImplementation(() => {});
   });
 
+  /**
+   * Tests for the studentInputChangeHandler function.
+   */
   describe('studentInputChangeHandler', () => {
     it('should update the store with the current student name query', () => {
       const mockEvent = { target: { value: 'Smi' } };
@@ -43,6 +54,9 @@ describe('Student Input Module', () => {
     });
   });
 
+  /**
+   * Tests for the renderStudentDatalist function.
+   */
   describe('renderStudentDatalist', () => {
     it('should return early if the input element is not found', () => {
       dom.qs.mockReturnValue(null);
@@ -66,6 +80,7 @@ describe('Student Input Module', () => {
       
       renderStudentDatalist(['Smith, John'], 'Sm');
       
+      // If query is < 3 characters, suggestions are cleared via replaceChildren()
       expect(mockList.replaceChildren).toHaveBeenCalledWith(); // Called with no args
     });
 
@@ -80,6 +95,9 @@ describe('Student Input Module', () => {
     });
   });
 
+  /**
+   * Tests for the setupStudentInputObserver function.
+   */
   describe('setupStudentInputObserver', () => {
     it('should subscribe to the store looking for studentNames and currentStudentName', () => {
       setupStudentInputObserver();

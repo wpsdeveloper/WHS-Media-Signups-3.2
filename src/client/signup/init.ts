@@ -17,8 +17,14 @@ import { getAppConfig, updateScriptLinks } from '../common/app-config';
 import { SignupState, store, registerUpdateData } from './signup-store';
 import { IS_DEBUG, getMockData } from "../common/debug";
 
-// builds page based on existing schedules and settings
-export const initializeApp = async () => {
+/**
+ * Initializes the signup application. 
+ * Sets up state observers, fetches initial data from the server, 
+ * binds DOM events, and configures the UI based on user permissions.
+ * 
+ * @returns {Promise<void>} Resolves when initialization is complete.
+ */
+export const initializeApp = async (): Promise<void> => {
   try {
     initObservers();
     await refreshData();
@@ -31,8 +37,13 @@ export const initializeApp = async () => {
   }
 }
 
-// Registers all UI observers/subscribers to listen to store updates.
-export const initObservers = () => {
+/**
+ * Registers all UI observers/subscribers to listen to store updates.
+ * These observers automatically update the DOM when the corresponding state changes.
+ * 
+ * @returns {void}
+ */
+export const initObservers = (): void => {
   setupDailyScheduleBlocksObserver();
   dateSelect.setupDateObserver();
   periodSelect.setupPeriodObservers();
@@ -48,11 +59,22 @@ export const initObservers = () => {
   capacity.setupCapacityValidationObserver();
 };
 
+/**
+ * Fetches and parses the initial signup data from the server.
+ * 
+ * @returns {Promise<SignupState>} A promise resolving to the parsed application state.
+ */
 async function fetchServerData(): Promise<SignupState> {
   const rawServerData = await getServerData();
   return await parseServerData(rawServerData);
 }
 
+/**
+ * Retrieves the raw JSON string of the application data from the server environment.
+ * If in debug mode, retrieves mock data. If data is pre-injected in the DOM, uses that instead.
+ * 
+ * @returns {Promise<string>} A promise resolving to the raw JSON data string.
+ */
 const getServerData = async (): Promise<string> => {
   if (IS_DEBUG) {
     return await getMockData('signup');

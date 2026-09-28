@@ -30,11 +30,20 @@ vi.mock('../../client/common/store.js', () => ({
   }
 }));
 
+/**
+ * Test suite for the Period Select Module.
+ * Contains tests for period options generation and state observation.
+ */
 describe('Period Select Module', () => {
   beforeEach(() => {
+    // Clear all mock history to ensure test isolation
     vi.clearAllMocks();
   });
 
+  /**
+   * Tests for the periodChangeHandler function.
+   * Verifies that period changes are properly dispatched to the store.
+   */
   describe('periodChangeHandler', () => {
     afterEach(() => {
       delete global.event;
@@ -50,6 +59,10 @@ describe('Period Select Module', () => {
     });
   });
 
+  /**
+   * Tests for the updatePeriodOptions function.
+   * Ensures the correct period options are available based on the selected date.
+   */
   describe('updatePeriodOptions', () => {
     it('should return early if currentDateStr is missing', () => {
       updatePeriodOptions(null, []);
@@ -94,6 +107,10 @@ describe('Period Select Module', () => {
     });
   });
 
+  /**
+   * Tests for the setupPeriodOptionsObserver function.
+   * Ensures the observer is properly registered to track date and schedule changes.
+   */
   describe('setupPeriodOptionsObserver', () => {
     it('should subscribe to currentDate and dailySchedules', () => {
       setupPeriodOptionsObserver();
@@ -104,12 +121,18 @@ describe('Period Select Module', () => {
     });
   });
 
+  /**
+   * Tests for the setupPeriodValueObserver function.
+   * Verifies that store changes to currentPeriod update the DOM appropriately.
+   */
   describe('setupPeriodValueObserver', () => {
     it('should subscribe to currentPeriod and update DOM if values differ', () => {
       setupPeriodValueObserver();
       const subscriberCallback = store.subscribe.mock.calls[0][0];
 
       dom.qs.mockReturnValue({ value: '1' });
+      
+      // Simulate state update
       subscriberCallback({ currentPeriod: '2' });
 
       expect(dom.setValue).toHaveBeenCalledWith('#period', '2');
@@ -120,6 +143,8 @@ describe('Period Select Module', () => {
       const subscriberCallback = store.subscribe.mock.calls[0][0];
 
       dom.qs.mockReturnValue({ value: '3' });
+      
+      // Simulate state update
       subscriberCallback({ currentPeriod: '3' });
 
       expect(dom.setValue).not.toHaveBeenCalled();

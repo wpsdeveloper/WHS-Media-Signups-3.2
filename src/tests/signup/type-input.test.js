@@ -16,6 +16,9 @@ import * as dom from '../../client/common/dom.js';
 import { store } from '../../client/common/store.js';
 
 // Mock dependencies
+/**
+ * Mocks DOM elements and manipulations.
+ */
 vi.mock('../../client/common/dom.js', () => ({
   setDisabled: vi.fn(),
   setVisible: vi.fn(),
@@ -25,6 +28,9 @@ vi.mock('../../client/common/dom.js', () => ({
   qs: vi.fn(),
 }));
 
+/**
+ * Mocks the central state management store.
+ */
 vi.mock('../../client/common/store.js', () => ({
   store: { 
     setState: vi.fn(),
@@ -37,14 +43,21 @@ describe('Type Input Module', () => {
     vi.clearAllMocks();
   });
 
+  /**
+   * Tests for the type selection change handler.
+   */
   describe('typeChangeHandler', () => {
     it('should update store state with the selected type', () => {
+      // Simulates user clicking a different signup type radio button
       const mockEvent = { target: { value: 'Tutoring' } };
       typeChangeHandler(mockEvent);
       expect(store.setState).toHaveBeenCalledWith({ currentType: 'Tutoring' });
     });
   });
 
+  /**
+   * Tests for UI reset and dynamic disabling utilities for signup types.
+   */
   describe('UI Reset and Disable Utilities', () => {
     it('resetAllTypes should re-enable inputs and hide warnings', () => {
       resetAllTypes();
@@ -84,8 +97,12 @@ describe('Type Input Module', () => {
     });
   });
 
+  /**
+   * Tests for toggling visibility of help links based on their href attributes.
+   */
   describe('Link Toggles', () => {
     it('toggleInterventionsLink should set visibility based on href length', () => {
+      // Long URLs indicate a valid link is present, short URLs indicate missing or placeholder links
       dom.getAttribute.mockReturnValue('https://example.com/very/long/url/that/exceeds/the/fifty-eight/char/limit');
       toggleInterventionsLink();
       expect(dom.getAttribute).toHaveBeenCalledWith('.int-link', 'href');
@@ -104,6 +121,9 @@ describe('Type Input Module', () => {
     });
   });
 
+  /**
+   * Tests for the store observer that syncs the UI radio buttons with state.
+   */
   describe('setupTypeInputObserver', () => {
     it('should subscribe to currentType and check the corresponding radio button', () => {
       setupTypeInputObserver();
@@ -127,6 +147,7 @@ describe('Type Input Module', () => {
       setupTypeInputObserver();
       const subscriberCallback = store.subscribe.mock.calls[0][0];
 
+      // Missing radio button from DOM should be handled gracefully
       dom.qs.mockReturnValue(null);
       
       expect(() => subscriberCallback({ currentType: null })).not.toThrow();

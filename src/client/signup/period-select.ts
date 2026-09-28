@@ -4,22 +4,31 @@ import { getAppConfig } from '../common/app-config';
 import { SignupState, store } from './signup-store';
 
 /**
-*  Responds to a change in the Period field 
-* */
-export const periodChangeHandler = (event: MouseEvent) => {
+ * Responds to a change in the Period field drop-down.
+ * Updates the global store state with the selected period.
+ * 
+ * @param {MouseEvent} event - The mouse event triggered by changing the select input.
+ * @returns {void}
+ * */
+export const periodChangeHandler = (event: MouseEvent): void => {
   const target = event.target as HTMLSelectElement;
   if (!target) return;
   const selectedPeriod = target.value as Period;
   store.setState({ ui_currentPeriod: selectedPeriod });
 }
 
- /**
-  * Updates the Periods select box based on the date 
+/**
+  * Updates the Periods select box options based on the currently selected date.
+  * Preserves the previously selected period if it is still available.
+  * 
+  * @param {Date | null} currentDate - The currently selected date.
+  * @param {DailyBlock[]} dailySchedules - The list of all daily schedule blocks.
+  * @returns {void}
   * */
 export const updatePeriodOptions = (
   currentDate: Date | null, 
   dailySchedules: DailyBlock[]
-) => {
+): void => {
   if (!currentDate || !dailySchedules) return;
   // remembers current selection. If this period is available in the new list,
   const oldPeriodVal = store.getState().ui_currentPeriod;
@@ -51,8 +60,11 @@ export const updatePeriodOptions = (
 
  /**
  * Subscriber: Re-renders available options when date or schedule data changes.
+ * Keeps the UI in sync if the period is changed externally.
+ * 
+ * @returns {void}
  */
-export const setupPeriodObservers = () => {
+export const setupPeriodObservers = (): void => {
   // updates the period selectbox options when date or schedule changes
   store.subscribe((state: SignupState) => {
     updatePeriodOptions(state.ui_currentDate, state.dailySchedules);
@@ -68,9 +80,12 @@ export const setupPeriodObservers = () => {
 };
 
 /**
- * Helper: Determines if Wednesday Interventions should be shown.
+ * Helper: Determines if Wednesday Interventions should be shown for a given date.
+ * 
+ * @param {Date} date - The selected date.
+ * @returns {boolean} True if the date is a Wednesday and Wednesday interventions are enabled.
  */
-function wednesdayInterventions(date: Date) {
+function wednesdayInterventions(date: Date): boolean {
   const wednesday = 3;
   const weekday = date.getDay();
   const dateIsWednesday = (weekday === wednesday);
