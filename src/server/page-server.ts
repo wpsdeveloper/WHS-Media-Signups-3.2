@@ -13,6 +13,18 @@ let email: string;
  * @returns The rendered HtmlOutput instance or permission denied template.
  */
 function doGet(event: GoogleAppsScript.Events.DoGet) {
+  const userEmail = getEmail();
+  if (userEmail) {
+    try {
+      const noFlyList = getNoFlyList().map(e => String(e).toLowerCase().trim());
+      if (noFlyList.includes(userEmail.toLowerCase().trim())) {
+        return getNotAllowedTemplate();
+      }
+    } catch (err) {
+      console.warn("Failed to check no-fly list:", err);
+    }
+  }
+
   const template = createIndexTemplate();
   const page = getUrlParameter(event, "page");
   const settings = getAppSettings();

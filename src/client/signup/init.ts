@@ -160,6 +160,7 @@ function bindEvents() {
   dom.addEventListener(".student-autocomplete", "input", (e) => studentInput.studentInputChangeHandler(e));
   dom.addEventListener(".student-autocomplete", "change", (e) => studentInput.studentInputChangeHandler(e));
   dom.addEventListener("#student-clear-btn", "click", () => studentInput.clearStudentInput());
+  dom.addEventListener("#student-nofly-override-btn", "click", () => studentInput.overrideStudentNoFly());
   dom.addEventListener('#btn-submit, #btn-update', 'click', () => formData.submitForm());
   dom.addEventListener('.success-box-start-over', 'click', () => formData.startOver());
 }
@@ -197,6 +198,7 @@ export const setUpdateStatus = () => {
   dom.setVisible('#btn-update', true);
 
   registerUpdateData(updateData);
+  studentInput.checkStudentNoFly();
 };
 
 

@@ -31,6 +31,7 @@ const initialState: SignupState = {
   ui_currentMax: 10,
   ui_currentEmail: "",
   ui_currentScheduleBlock: null,
+  ui_noFlyOverridden: false,
 };
 
 /**
@@ -98,6 +99,8 @@ export interface SignupState {
   ui_currentEmail: string,
   /** UI State: The schedule block corresponding to the current selection. */
   ui_currentScheduleBlock: DailyBlock | null;
+  /** UI State: Indicates if no-fly restriction has been overridden by staff. */
+  ui_noFlyOverridden: boolean;
 }
 
 /**

@@ -78,6 +78,8 @@ const isStudentSelected = (query: string): boolean => {
   return false;
 };
 
+let lastOverriddenQuery = '';
+
 /**
  * Clears the student input field, resets suggestions, and updates UI state.
  * 
@@ -89,12 +91,112 @@ export const clearStudentInput = (): void => {
   if (input) {
     input.value = '';
     input.focus();
+    input.classList.remove('is-invalid');
   }
   dom.setVisible('#student-search-spinner', false);
   dom.setVisible('#student-clear-btn', false);
+  const errorDiv = dom.qs('#student-nofly-error');
+  if (errorDiv) errorDiv.classList.add('d-none');
+  const overrideBtn = dom.qs('#student-nofly-override-btn');
+  if (overrideBtn) dom.setVisible(overrideBtn, false);
+  store.setState({ ui_noFlyOverridden: false });
+  lastOverriddenQuery = '';
   setHelperState(false);
   renderStudentDatalist([], '');
   store.setState({ ui_currentStudentName: '' });
+};
+
+/**
+ * Overrides the no-fly restriction for staff users.
+ */
+export const overrideStudentNoFly = (): void => {
+  const input = dom.qs('#student') as HTMLInputElement | null;
+  const query = input ? dom.valueOf(input).trim() : '';
+  lastOverriddenQuery = query;
+  store.setState({ ui_noFlyOverridden: true });
+  checkStudentNoFly();
+};
+
+/**
+ * Checks if the currently selected student is on the no-fly list and updates UI.
+ * 
+ * @returns {boolean} True if the student is on the no-fly list and not overridden.
+ */
+export const checkStudentNoFly = (): boolean => {
+  const input = dom.qs('#student') as HTMLInputElement | null;
+  const errorDiv = dom.qs('#student-nofly-error');
+  const overrideBtn = dom.qs('#student-nofly-override-btn') as HTMLElement | null;
+  if (!input || !errorDiv) return false;
+
+  const query = dom.valueOf(input).trim();
+  if (!query) {
+    errorDiv.classList.add('d-none');
+    if (overrideBtn) dom.setVisible(overrideBtn, false);
+    input.classList.remove('is-invalid');
+    store.setState({ ui_noFlyOverridden: false });
+    lastOverriddenQuery = '';
+    return false;
+  }
+
+  if (store.getState().ui_noFlyOverridden && query !== lastOverriddenQuery) {
+    store.setState({ ui_noFlyOverridden: false });
+  }
+
+  let email = '';
+  const brackets = query.indexOf(" <") > 0 ? query.split(" <") : [];
+  if (brackets.length === 2) {
+    email = brackets[1].trim().substring(0, brackets[1].length - 1);
+  } else if (query.includes('@')) {
+    email = query;
+  }
+
+  const students = (store.getState().students as Student[]) || [];
+  let studentObj: Student | undefined;
+
+  if (email) {
+    studentObj = students.find(s => s.email.toLowerCase() === email.toLowerCase());
+  } else {
+    const queryLower = query.toLowerCase();
+    studentObj = students.find(s => {
+      const fullName = `${s.lastname}, ${s.firstname}`.toLowerCase();
+      const fullNameRev = `${s.firstname} ${s.lastname}`.toLowerCase();
+      return fullName === queryLower || fullNameRev === queryLower || s.email.toLowerCase() === queryLower;
+    });
+  }
+
+  const isNoFly = !!studentObj?.noFly;
+  const state = store.getState();
+  const isStaff = state.isStaff;
+  const isOverridden = state.ui_noFlyOverridden;
+
+  if (isNoFly) {
+    errorDiv.classList.remove('d-none');
+    if (overrideBtn) {
+      dom.setVisible(overrideBtn, isStaff);
+      if (isOverridden) {
+        overrideBtn.textContent = 'Overridden';
+        overrideBtn.classList.remove('btn-outline-danger');
+        overrideBtn.classList.add('btn-success');
+      } else {
+        overrideBtn.textContent = 'Override';
+        overrideBtn.classList.remove('btn-success');
+        overrideBtn.classList.add('btn-outline-danger');
+      }
+    }
+    if (isOverridden) {
+      input.classList.remove('is-invalid');
+    } else {
+      input.classList.add('is-invalid');
+    }
+  } else {
+    errorDiv.classList.add('d-none');
+    if (overrideBtn) dom.setVisible(overrideBtn, false);
+    input.classList.remove('is-invalid');
+    store.setState({ ui_noFlyOverridden: false });
+    lastOverriddenQuery = '';
+  }
+
+  return isNoFly && !isOverridden;
 };
 
 /**
@@ -118,6 +220,7 @@ export const studentInputChangeHandler = (event: Event): void => {
     updateClearButtonState(query.length > 0, false);
     setHelperState(false);
     renderStudentDatalist([], query);
+    checkStudentNoFly();
     return;
   }
 
@@ -126,8 +229,12 @@ export const studentInputChangeHandler = (event: Event): void => {
     dom.setVisible('#student-search-spinner', false);
     updateClearButtonState(true, false);
     setHelperState(false, false, true);
+    checkStudentNoFly();
     return;
   }
+
+  // Check no-fly even while typing if exact match or email
+  checkStudentNoFly();
 
   // Show the spinner and change helper to right-justified "Searching..."
   dom.setVisible('#student-search-spinner', true);
@@ -150,6 +257,7 @@ export const studentInputChangeHandler = (event: Event): void => {
       setHelperState(false, hasNoResults);
       const formattedNames = parseStudentDataList(matchingStudents);
       renderStudentDatalist(formattedNames, query);
+      checkStudentNoFly();
       return;
     }
 
@@ -161,6 +269,7 @@ export const studentInputChangeHandler = (event: Event): void => {
           dom.setVisible('#student-search-spinner', false);
           updateClearButtonState(true, false);
           setHelperState(false, false, true);
+          checkStudentNoFly();
           return;
         }
 
@@ -170,6 +279,7 @@ export const studentInputChangeHandler = (event: Event): void => {
         setHelperState(false, hasNoResults);
         const formattedNames = parseStudentDataList(matchingStudents);
         renderStudentDatalist(formattedNames, query);
+        checkStudentNoFly();
       })
       .withFailureHandler((error: Error) => {
         dom.setVisible('#student-search-spinner', false);

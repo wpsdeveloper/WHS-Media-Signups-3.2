@@ -154,6 +154,18 @@ function getInvalidFields(data: Partial<Signup>): string[] {
   if (dom.isVisible("#student")) {
     if (!data.firstname) invalidFields.push("#student");
     if (!data.lastname) invalidFields.push("#student");
+
+    const students = (store.getState().students as Student[]) || [];
+    const email = data.emailStudent || "";
+    const studentObj = students.find(s => 
+      s.email.toLowerCase() === email.toLowerCase() || 
+      (s.lastname.toLowerCase() === (data.lastname || '').toLowerCase() && s.firstname.toLowerCase() === (data.firstname || '').toLowerCase())
+    );
+    if (studentObj?.noFly) {
+      if (!store.getState().ui_noFlyOverridden) {
+        invalidFields.push("#student");
+      }
+    }
   }
 
   try {
@@ -228,6 +240,10 @@ function updateComplete(): void {
   });
   
   dom.setValue("#student", "");
+  const errorDiv = dom.qs('#student-nofly-error');
+  if (errorDiv) errorDiv.classList.add('d-none');
+  const input = dom.qs('#student');
+  if (input) input.classList.remove('is-invalid');
   // dom.setValue("#purpose", "");
   dom.setValue("#study-teacher-input", "");
   dom.setValue("#acad-teacher", "");

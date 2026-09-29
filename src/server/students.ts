@@ -67,11 +67,13 @@ function getStudents(): Student[] {
  * @throws Error if the sheet cannot be found.
  */
 function getStudentsFromSheets(): Student[] {
+  
   const sheet = SPREADSHEET.getSheetByName(STUDENTS_SHEET_NAME);
   if (!sheet) throw STANDARD_SERVER_ERROR;
 
   const values = sheet.getDataRange().getValues();
-  
+  const noFlyList = getNoFlyList();
+
   const students: Student[] = [];
   values.forEach(row => {
     const email = row[0] ? String(row[0]).trim() : "";
@@ -79,7 +81,8 @@ function getStudentsFromSheets(): Student[] {
       students.push({
         email: email,
         lastname: row[1] ? String(row[1]).trim() : "",
-        firstname: row[2] ? String(row[2]).trim() : ""
+        firstname: row[2] ? String(row[2]).trim() : "",
+        noFly: noFlyList.includes(email),
       });
     }
   });
