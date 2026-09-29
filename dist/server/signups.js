@@ -1,0 +1,146 @@
+"use strict";
+/**
+ * @file signups.ts
+ * @description Retrieves signups within active date windows, executes student audit lookups, and handles array-to-object parsing for spreadsheet rows.
+ * @url https://github.com/wpsdeveloper/WHS-Media-Signups-3.2
+ */
+/**
+ * Retrieves signups filtered for the active two-week past/future window.
+ *
+ * @returns Array of Signup objects.
+ */
+function getSignups() {
+    const today = new Date();
+    const twoWeeksAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 14);
+    const twoWeeksForward = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
+    const values = getSignupsRows();
+    const signups = filterSignupsByDate(values, twoWeeksAgo, twoWeeksForward);
+    return signups;
+}
+/**
+ * Retrieves raw data rows from the Signups sheet.
+ *
+ * @returns Array of raw spreadsheet rows.
+ */
+function getSignupsRows() {
+    const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
+    if (!sheet)
+        throw STANDARD_SERVER_ERROR;
+    const values = sheet.getDataRange().getDisplayValues();
+    values.shift();
+    return values;
+}
+/**
+ * Filters signups by date range.
+ *
+ * @param originalSignups - Raw signup rows.
+ * @param firstDate - Start date filter.
+ * @param lastDate - End date filter.
+ * @returns Array of parsed Signup objects.
+ */
+function filterSignupsByDate(originalSignups, firstDate, lastDate) {
+    const signups = [];
+    originalSignups.forEach(row => {
+        const date = new Date(row[SIGNUPS_COL.DATE]);
+        if ((date.getTime() >= firstDate.getTime()) && (date.getTime() <= lastDate.getTime())) {
+            signups.push(parseSignupFromArray(row));
+        }
+    });
+    return signups;
+}
+/**
+ * Returns all signups for a particular student across current and archive sheets.
+ *
+ * @param submittedEmail - The student's email address to audit.
+ * @returns JSON string of matching Signup objects.
+ */
+function getStudentAudit(submittedEmail) {
+    console.log(`Sending email to ${submittedEmail}`);
+    const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
+    const archiveSheet = SPREADSHEET.getSheetByName(ARCHIVE_SHEET_NAME);
+    if (!sheet || !archiveSheet)
+        throw STANDARD_SERVER_ERROR;
+    const currentValues = sheet.getDataRange().getDisplayValues();
+    const archivedValues = archiveSheet.getDataRange().getDisplayValues();
+    currentValues.shift();
+    archivedValues.shift();
+    const values = currentValues.concat(archivedValues);
+    const filtered = values.filter(row => row[SIGNUPS_COL.STUDENT_EMAIL] == submittedEmail || row[SIGNUPS_COL.SUBMITTED_BY] == submittedEmail);
+    const signups = [];
+    filtered.forEach(row => {
+        signups.push(parseSignupFromArray(row));
+    });
+    return JSON.stringify(signups);
+}
+/**
+ * Finds a specific signup row matching the given row ID.
+ *
+ * @param signupRows - Array of raw signup rows.
+ * @param rowId - Unique row identifier.
+ * @returns Parsed Signup object or null.
+ */
+function findSignupRow(signupRows, rowId) {
+    const matched = signupRows.filter(su => su[SIGNUPS_COL.ROW_ID] === rowId);
+    if (matched.length !== 1)
+        return null;
+    const signup = parseSignupFromArray(matched[0]);
+    return signup;
+}
+/**
+ * Converts a signup spreadsheet row into a JavaScript object.
+ *
+ * @param row - Raw spreadsheet row array.
+ * @returns Hydrated Signup object.
+ */
+function parseSignupFromArray(row) {
+    return {
+        timestamp: new Date(row[SIGNUPS_COL.TIMESTAMP]),
+        email: row[SIGNUPS_COL.SUBMITTED_BY],
+        emailStudent: row[SIGNUPS_COL.STUDENT_EMAIL],
+        lastname: row[SIGNUPS_COL.LASTNAME],
+        firstname: row[SIGNUPS_COL.FIRSTNAME],
+        date: new Date(row[SIGNUPS_COL.DATE]),
+        period: row[SIGNUPS_COL.PERIOD],
+        type: row[SIGNUPS_COL.TYPE],
+        teacherStudy: row[SIGNUPS_COL.TEACHER_STUDY],
+        subject: row[SIGNUPS_COL.SUBJECT],
+        purpose: row[SIGNUPS_COL.PURPOSE],
+        teacherAcad: row[SIGNUPS_COL.TEACHER_ACAD],
+        room: row[SIGNUPS_COL.GLASS_ROOM],
+        comments: row[SIGNUPS_COL.COMMENTS],
+        rowId: row[SIGNUPS_COL.ROW_ID],
+        studyIn1: row[SIGNUPS_COL.STUDY_IN_1],
+        mediaIn: row[SIGNUPS_COL.MEDIA_IN],
+        mediaOut: row[SIGNUPS_COL.MEDIA_OUT],
+        studyIn2: row[SIGNUPS_COL.STUDY_IN_2],
+    };
+}
+/**
+ * Converts a JavaScript signup object to a spreadsheet row array.
+ *
+ * @param obj - The Signup object.
+ * @returns Spreadsheet row array.
+ */
+function makeSignupRow(obj) {
+    var row = new Array(18);
+    row[SIGNUPS_COL.TIMESTAMP] = obj.timestamp;
+    row[SIGNUPS_COL.SUBMITTED_BY] = obj.email;
+    row[SIGNUPS_COL.STUDENT_EMAIL] = obj.emailStudent;
+    row[SIGNUPS_COL.LASTNAME] = obj.lastname;
+    row[SIGNUPS_COL.FIRSTNAME] = obj.firstname;
+    row[SIGNUPS_COL.DATE] = obj.date;
+    row[SIGNUPS_COL.PERIOD] = obj.period;
+    row[SIGNUPS_COL.TYPE] = obj.type;
+    row[SIGNUPS_COL.TEACHER_STUDY] = obj.teacherStudy;
+    row[SIGNUPS_COL.SUBJECT] = obj.subject;
+    row[SIGNUPS_COL.PURPOSE] = obj.purpose;
+    row[SIGNUPS_COL.TEACHER_ACAD] = obj.teacherAcad;
+    row[SIGNUPS_COL.GLASS_ROOM] = obj.room;
+    row[SIGNUPS_COL.COMMENTS] = obj.comments;
+    row[SIGNUPS_COL.ROW_ID] = obj.rowId;
+    row[SIGNUPS_COL.STUDY_IN_1] = obj.studyIn1 || "";
+    row[SIGNUPS_COL.MEDIA_IN] = obj.mediaIn || "";
+    row[SIGNUPS_COL.MEDIA_OUT] = obj.mediaOut || "";
+    row[SIGNUPS_COL.STUDY_IN_2] = obj.studyIn2 || "";
+    return row;
+}

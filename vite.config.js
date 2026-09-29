@@ -40,7 +40,7 @@ export default defineConfig(({ command, mode }) => {
       target: 'es2015',
       cssCodeSplit: false,
       inlineDynamicImports: true,
-      minify: false,
+      minify: true,
       outDir: resolve(__dirname, 'dist'),
     },
     root: 'src/client',
