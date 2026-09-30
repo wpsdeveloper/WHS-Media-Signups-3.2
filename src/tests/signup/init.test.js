@@ -7,7 +7,7 @@ import {
 } from '../../client/signup/init.js';
 import * as dom from '../../client/common/dom.js';
 import * as messaging from '../../client/common/messaging.js';
-import { store } from '../../client/common/store.js';
+import { store } from '../../client/signup/signup-store.js';
 import * as dateSelect from '../../client/signup/date-select.js';
 
 // 1. Mock all UI and Orchestration Dependencies
@@ -18,6 +18,9 @@ vi.mock('../../client/common/dom.js', () => ({
   qsa: vi.fn(),
   addEventListener: vi.fn(),
   toggleEditorOnlyViews: vi.fn(),
+  toggleStaffOnlyViews: vi.fn(),
+  toggleAdminOnlyViews: vi.fn(),
+  setValue: vi.fn(),
 }));
 
 vi.mock('../../client/common/messaging.js', () => ({
@@ -26,47 +29,48 @@ vi.mock('../../client/common/messaging.js', () => ({
   processError: vi.fn(),
 }));
 
-vi.mock('../../client/signup/parsers.js', () => ({
-  parseStudents: vi.fn(),
-  parseMaxSignups: vi.fn(),
-  parseStudentNames: vi.fn(),
-  parseDailyBlocks: vi.fn(),
-  parseSignups: vi.fn(),
-  parseInterventionTeachers: vi.fn(),
-  parseStudyTeachers: vi.fn(),
-  parseNoFlyList: vi.fn(),
-}));
-
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store.js', () => ({
+  Store: vi.fn().mockImplementation((state) => ({
+    state,
+    getState: vi.fn().mockReturnValue(state),
+    setState: vi.fn(),
+    subscribe: vi.fn(),
+  })),
   store: { 
     setState: vi.fn(),
-    getState: vi.fn(() => ({ isEditor: true, isStaff: true, isAdmin: true })) ,
-    initialize: vi.fn(),
-  }
+    subscribe: vi.fn(),
+    getState: vi.fn(() => ({ isEditor: true, isStaff: true, isAdmin: true, updateData: null })) ,
+  },
+  registerUpdateData: vi.fn(),
 }));
 
-// Mocking one observer heavily to represent the rest for brevity
 vi.mock('../../client/signup/date-select.js', () => ({
-  setupDateSelectObserver: vi.fn(),
-  configureDateSelect: vi.fn(),
+  setupDateObserver: vi.fn(),
+  initDateInput: vi.fn(),
   dateChangeHandler: vi.fn(),
 }));
 
-// Mock the remaining observer modules with empty functions
-const mockObserver = { setupObserver: vi.fn() };
-vi.mock('../../client/signup/period-select.js', () => ({ setupPeriodOptionsObserver: vi.fn(), setupPeriodValueObserver: vi.fn(), periodChangeHandler: vi.fn() }));
-vi.mock('../../client/signup/type-input.js', () => ({ setupTypeInputObserver: vi.fn(), toggleInterventionsLink: vi.fn(), toggleTutoringLink: vi.fn(), typeChangeHandler: vi.fn() }));
+// Mock other observers
+vi.mock('../../client/signup/period-select.js', () => ({ setupPeriodObservers: vi.fn() }));
+vi.mock('../../client/signup/type-select.js', () => ({ setupTypeInputObserver: vi.fn() }));
 vi.mock('../../client/signup/panels.js', () => ({ setupPanelsObserver: vi.fn() }));
 vi.mock('../../client/signup/glass-rooms-input.js', () => ({ setupGlassRoomsObserver: vi.fn() }));
-vi.mock('../../client/signup/study-select.js', () => ({ setupStudyOptionsObserver: vi.fn(), setupStudySelectValueObserver: vi.fn(), studyTeacherChangeHandler: vi.fn() }));
-vi.mock('../../client/signup/subject-select.js', () => ({ setupSubjectOptionsObserver: vi.fn(), setupSubjectValueObserver: vi.fn(), subjectChangeHandler: vi.fn() }));
+vi.mock('../../client/signup/study-select.js', () => ({ setupStudyObservers: vi.fn() }));
+vi.mock('../../client/signup/subject-select.js', () => ({ setupSubjectObservers: vi.fn() }));
 vi.mock('../../client/signup/interventions-teacher-select.js', () => ({ setupInterventionTeacherObserver: vi.fn() }));
-vi.mock('../../client/common/student-input.js', () => ({ setupStudentInputObserver: vi.fn(), studentInputChangeHandler: vi.fn() }));
+vi.mock('../../client/common/student-input.js', () => ({ setupStudentInputObserver: vi.fn() }));
 vi.mock('../../client/signup/schedule-rules.js', () => ({ setupScheduleRulesObserver: vi.fn() }));
 vi.mock('../../client/signup/capacity-validation.js', () => ({ setupCapacityValidationObserver: vi.fn() }));
-vi.mock('../../client/signup/form-data.js', () => ({ preventFormSubmit: vi.fn(), submitForm: vi.fn(), startOver: vi.fn() }));
-vi.mock('../../client/common/dates.ts', () => ({ toDateInputValue: vi.fn(() => '2023-10-01') }));
-vi.mock('../../client/common/debug.js', () => ({ DEBUG: false }));
+vi.mock('../../client/signup/form-data.js', () => ({ submitForm: vi.fn(), startOver: vi.fn() }));
+vi.mock('../../client/common/app-config.js', () => ({ getAppConfig: vi.fn().mockResolvedValue({ email: 'test@example.com', isStaff: true, isAdmin: true, isEditor: true }), updateScriptLinks: vi.fn() }));
+vi.mock('../../client/common/debug.js', () => ({ IS_DEBUG: false, getMockData: vi.fn() }));
+vi.mock('../../client/signup/parsers.js', () => ({ 
+  parseDailyBlocks: vi.fn(() => []),
+  parseSignups: vi.fn(() => []),
+  parseSettings: vi.fn(() => []),
+  safeJsonParse: vi.fn(() => ({})),
+  parseStudentDataList: vi.fn(() => []),
+}));
 
 /**
  * Test suite for the Init Module.
@@ -102,7 +106,7 @@ describe('Init Module', () => {
   describe('initObservers', () => {
     it('should call setup observers for all modules', () => {
       initObservers();
-      expect(dateSelect.setupDateSelectObserver).toHaveBeenCalledWith('#date');
+      expect(dateSelect.setupDateObserver).toHaveBeenCalled();
     });
   });
 

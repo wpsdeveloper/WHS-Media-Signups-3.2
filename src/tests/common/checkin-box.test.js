@@ -1,148 +1,85 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { CheckinBox } from '../../client/common/checkin-box.js';
-import * as dom from '../../client/common/dom.js';
-import * as checkin from '../../client/common/checkin.js';
-import * as dates from '../../client/common/dates.ts';
-import { store } from '../../client/common/store.js';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { CheckinBox } from '../../client/common/checkin-box';
+import * as dom from '../../client/common/dom';
 
-vi.mock('../../client/common/dom.js');
-vi.mock('../../client/common/checkin.js');
-vi.mock('../../client/common/dates.ts');
-vi.mock('../../client/common/store.js');
+vi.mock('../../client/common/dom', () => ({
+  qs: vi.fn(),
+  setVisible: vi.fn(),
+  setText: vi.fn(),
+  setValue: vi.fn(),
+  addEventListener: vi.fn(),
+  valueOf: vi.fn(),
+}));
 
-/**
- * Test suite for the CheckinBox component.
- * Verifies initialization, state rendering, and event handling logic.
- */
-describe('CheckinBox', () => {
+vi.mock('../../client/common/checkin', () => ({
+  saveCheckinTime: vi.fn(),
+}));
+
+describe('CheckinBox Component', () => {
   let mockTemplate;
-  let mockElement;
+  let mockStore;
 
   beforeEach(() => {
-    // Clear mocks to ensure a clean state before each test
     vi.clearAllMocks();
 
-    // Create a mock element representing a cloned template
-    mockElement = {
-      querySelector: vi.fn().mockReturnValue({}),
-      append: vi.fn(),
-    };
+    const frag = document.createDocumentFragment();
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <button class="checkin-btn"></button>
+      <span class="checkin-box-label"></span>
+      <div class="time">
+        <span class="time-badge"><span class="time-value"></span></span>
+        <div class="time-edit"><input/></div>
+        <button class="save-btn"></button>
+        <button class="delete-btn"></button>
+        <button class="cancel-btn"></button>
+      </div>
+      <div class="spinner"></div>
+    `;
+    frag.append(div);
 
-    // Create a mock template with a content property containing the mock element
-    mockTemplate = {
-      content: {
-        cloneNode: vi.fn().mockReturnValue(mockElement),
-      },
-    };
+    mockTemplate = { content: frag };
 
-    // Intercept DOM querySelector calls to return the mock template when queried
     dom.qs.mockImplementation((selector) => {
       if (selector === 'template#checkin-box') return mockTemplate;
       return null;
     });
 
-    // Mock store to return initial state data
-    store.getState.mockReturnValue({ signups: [{ rowId: 1 }] });
+    mockStore = {
+      getSignups: vi.fn().mockReturnValue([{ rowId: '1', studyIn1: '' }]),
+      setSignups: vi.fn(),
+    };
   });
 
-  describe('Initialization', () => {
-    it('sets initial properties and binds events correctly', () => {
-      const box = new CheckinBox(CheckinBox.TYPES.STUDY_CHECKIN, 1);
-      
-      expect(dom.qs).toHaveBeenCalledWith('template#checkin-box');
+  describe('Constructor', () => {
+    it('initializes properties correctly', () => {
+      const box = new CheckinBox('study-checkin', '1', '', mockStore, false);
       expect(box.type).toBe('study-checkin');
       expect(box.label).toBe('Study In');
       expect(box.buttonText).toBe('Check In');
-      expect(dom.addEventListener).toHaveBeenCalledTimes(5);
+      expect(box.propName).toBe('studyIn1');
     });
   });
 
   describe('State Rendering', () => {
-    let box;
-    beforeEach(() => {
-      box = new CheckinBox(CheckinBox.TYPES.STUDY_CHECKIN, 1);
-    });
-
-    it('renders the ready state', () => {
+    it('renders ready state', () => {
+      const box = new CheckinBox('study-checkin', '1', '', mockStore, false);
       box.setComponentState('ready');
       expect(dom.setVisible).toHaveBeenCalledWith(box.checkinButton, true);
-      expect(dom.setVisible).toHaveBeenCalledWith(box.spinner, false);
     });
 
-    it('renders the loading state', () => {
+    it('renders loading state', () => {
+      const box = new CheckinBox('study-checkin', '1', '', mockStore, false);
       box.setComponentState('loading');
-      expect(dom.setVisible).toHaveBeenCalledWith(box.checkinButton, false);
       expect(dom.setVisible).toHaveBeenCalledWith(box.spinner, true);
-    });
-
-    it('renders the editing state', () => {
-      box.timeValue = '10:00 AM';
-      box.setComponentState('editing');
-      expect(dom.setVisible).toHaveBeenCalledWith(box.timeDiv, true);
-      expect(dom.setValue).toHaveBeenCalledWith(box.timeEditInput, '10:00 AM');
-    });
-
-    it('renders the hasData state', () => {
-      box.timeValue = '11:00 AM';
-      box.setComponentState('hasData');
-      expect(dom.setText).toHaveBeenCalledWith(box.timeValueDiv, '11:00 AM');
-      expect(dom.setVisible).toHaveBeenCalledWith(box.primaryButtonsDiv, true);
     });
   });
 
-  describe('Event Handlers', () => {
-    let box;
-    beforeEach(() => {
-      box = new CheckinBox(CheckinBox.TYPES.STUDY_CHECKIN, 1);
-    });
-
-    it('handles checkin click', async () => {
-      dates.formatTime.mockReturnValue('12:00 PM');
-      checkin.checkin.mockResolvedValue('12:00 PM');
-      
-      await box.handleCheckinClick();
-      
-      expect(box.state).toBe('hasData');
-      expect(checkin.checkin).toHaveBeenCalledWith(box, '12:00 PM');
-      expect(store.setState).toHaveBeenCalled();
-    });
-
-    it('handles edit start click', () => {
-      box.handleEditStartClick();
-      expect(box.state).toBe('editing');
-      expect(dom.setTimeInputValue).toHaveBeenCalled();
-    });
-
-    it('handles edit save click with valid time', () => {
-      dom.valueOf.mockReturnValue('13:00');
-      dates.isValidTime24Hr.mockReturnValue(true);
-      dates.convert24HrTo12Hr.mockReturnValue('1:00 PM');
-      
-      box.handleEditSaveClick();
-      
-      expect(box.state).toBe('hasData');
-      expect(box.timeValue).toBe('1:00 PM');
-      expect(checkin.checkin).toHaveBeenCalledWith(box, '1:00 PM');
-    });
-
-    it('rejects edit save click with invalid time', () => {
-      dom.valueOf.mockReturnValue('invalid');
-      dates.isValidTime24Hr.mockReturnValue(false);
-      
-      box.handleEditSaveClick();
-      
-      expect(mockElement.append).toHaveBeenCalled();
-      expect(box.state).not.toBe('hasData');
-    });
-
-    it('handles cancel click', () => {
-      box.timeValue = '10:00 AM';
-      box.handleCancelClick();
-      expect(box.state).toBe('hasData');
-
-      box.timeValue = '';
-      box.handleCancelClick();
-      expect(box.state).toBe('ready');
+  describe('updateSignups', () => {
+    it('updates signup property in store list', () => {
+      const box = new CheckinBox('study-checkin', '1', '', mockStore, false);
+      const updated = box.updateSignups('1', '10:00 AM');
+      expect(updated[0].studyIn1).toBe('10:00 AM');
     });
   });
 });

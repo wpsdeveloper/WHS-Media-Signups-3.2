@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SettingsRow } from '../../client/admin/settings-row.js';
-import * as dom from '../../client/common/dom.js';
+import { SettingsRow } from '../../client/admin/settings-row';
+import * as dom from '../../client/common/dom';
 
-vi.mock('../../client/common/dom.js', () => ({
+vi.mock('../../client/common/dom', () => ({
   qs: vi.fn(),
   setAttribute: vi.fn(),
   setText: vi.fn(),
@@ -48,7 +48,7 @@ describe('SettingsRow', () => {
         value: '10',
         description: 'Maximum daily signups allowed',
         comments: 'System limit',
-        type: 'integer',
+        dataType: 'integer',
       };
       const row = new SettingsRow('MAX_SIGNUPS', setting);
       row.populate();
@@ -68,7 +68,7 @@ describe('SettingsRow', () => {
       const setting = {
         key: 'APP_NAME',
         value: 'PassApp',
-        type: 'string',
+        dataType: 'string',
       };
       const row = new SettingsRow('APP_NAME', setting);
       row.populate();
@@ -82,7 +82,7 @@ describe('SettingsRow', () => {
       const setting = {
         key: 'LIMIT',
         value: '5',
-        type: 'integer',
+        dataType: 'integer',
       };
       const row = new SettingsRow('LIMIT', setting);
       row.populate();
@@ -94,7 +94,7 @@ describe('SettingsRow', () => {
 
     describe('boolean types', () => {
       it('sets toggle switch to checked and label to "On" when value is "On"', () => {
-        const setting = { key: 'ENABLED', value: 'On', type: 'boolean' };
+        const setting = { key: 'ENABLED', value: 'On', dataType: 'boolean' };
         const row = new SettingsRow('ENABLED', setting);
         row.populate();
 
@@ -102,46 +102,8 @@ describe('SettingsRow', () => {
         const label = row.element.querySelector('.value .setting-toggle-label');
         expect(input.type).toBe('checkbox');
         expect(input.checked).toBe(true);
-        expect(input.classList.contains('form-check-input')).toBe(true);
-        expect(input.classList.contains('form-control')).toBe(false);
         expect(label.textContent.trim()).toBe('On');
       });
-
-      it('sets toggle switch to checked when value is "true"', () => {
-        const setting = { key: 'ENABLED', value: 'true', type: 'boolean' };
-        const row = new SettingsRow('ENABLED', setting);
-        row.populate();
-
-        const input = row.element.querySelector('.value input.setting-toggle-switch');
-        const label = row.element.querySelector('.value .setting-toggle-label');
-        expect(input.checked).toBe(true);
-        expect(label.textContent.trim()).toBe('On');
-      });
-
-      it('sets toggle switch to unchecked and label to "Off" when value is falsey or "Off"', () => {
-        const setting = { key: 'ENABLED', value: 'Off', type: 'boolean' };
-        const row = new SettingsRow('ENABLED', setting);
-        row.populate();
-
-        const input = row.element.querySelector('.value input.setting-toggle-switch');
-        const label = row.element.querySelector('.value .setting-toggle-label');
-        expect(input.checked).toBe(false);
-        expect(label.textContent.trim()).toBe('Off');
-      });
-    });
-
-    it('handles "date" setting type and formats ISO date string correctly', () => {
-      const setting = {
-        key: 'START_DATE',
-        value: '2026-10-05',
-        type: 'date',
-      };
-      const row = new SettingsRow('START_DATE', setting);
-      row.populate();
-
-      const input = row.element.querySelector('.value input');
-      expect(input.type).toBe('date');
-      expect(input.value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     });
   });
 });

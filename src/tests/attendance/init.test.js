@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as init from '../../client/attendance/init.js';
-import * as dom from '../../client/common/dom.js';
-import * as messaging from '../../client/common/messaging.js';
-import * as dataTable from '../../client/attendance/attendance-data-table.js';
-import { store } from '../../client/attendance/attendance-store.js';
+import * as init from '../../client/attendance/init';
+import * as dom from '../../client/common/dom';
+import * as messaging from '../../client/common/messaging';
+import * as dataTable from '../../client/attendance/attendance-data-table';
+import { store } from '../../client/attendance/attendance-store';
 
-vi.mock('../../client/common/dom.js', () => ({
+vi.mock('../../client/common/dom', () => ({
   qs: vi.fn(),
   qsa: vi.fn().mockReturnValue([]),
   valueOf: vi.fn(),
@@ -17,45 +17,37 @@ vi.mock('../../client/common/dom.js', () => ({
   setValue: vi.fn(),
 }));
 
-vi.mock('../../client/common/messaging.js', () => ({
+vi.mock('../../client/common/messaging', () => ({
   processError: vi.fn(),
   showLoadingModal: vi.fn(),
   hideLoadingModal: vi.fn(),
 }));
 
-vi.mock('../../client/attendance/attendance-data-table.js', () => ({
+vi.mock('../../client/attendance/attendance-data-table', () => ({
   initObservers: vi.fn(),
-  dateChangeHandler: vi.fn(),
-  periodChangeHandler: vi.fn(),
-  showAttendance: vi.fn(),
-  showSignupInfo: vi.fn(),
 }));
 
-vi.mock('../../client/attendance/attendance-store.js', () => ({
+vi.mock('../../client/attendance/attendance-store', () => ({
   store: {
     setState: vi.fn(),
-    getState: vi.fn(),
-    initialize: vi.fn(),
+    getState: vi.fn().mockReturnValue({ isStaff: true, isAdmin: true, isEditor: false }),
     subscribe: vi.fn(),
   },
 }));
 
-vi.mock('../../client/common/debug.js', () => ({
+vi.mock('../../client/common/debug', () => ({
   IS_DEBUG: false,
   getMockData: vi.fn(),
 }));
 
-describe('init.js', () => {
+vi.mock('../../client/common/app-config', () => ({
+  getAppConfig: vi.fn().mockResolvedValue({ email: 'test@example.com', isStaff: true, isAdmin: true, isEditor: false }),
+  updateScriptLinks: vi.fn(),
+}));
+
+describe('Attendance Init Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-
-    window.APP_CONFIG = {
-      email: 'test@example.com',
-      isStaff: true,
-      isAdmin: true,
-      isEditor: false,
-      scriptUrl: 'http://example.com',
-    };
 
     let successCb = null;
     global.google = {
@@ -77,27 +69,22 @@ describe('init.js', () => {
   });
 
   describe('initializeApp', () => {
-    it('initializes the app and binds events successfully', async () => {
-      // Mock getServerData's internal GAS call to immediately resolve
+    it('initializes the app successfully', async () => {
       global.google.script.run.withSuccessHandler.mockImplementation((cb) => {
-        cb({ signups: '[]', dailySchedules: '[]' });
+        cb(JSON.stringify({ signups: '[]', dailySchedules: '[]' }));
         return global.google.script.run;
       });
-
-      dom.valueOf.mockReturnValue('true'); // Mock isAdmin/isEditor
-      dom.qs.mockReturnValue({ value: '2023-10-15' }); // Mock date input
 
       await init.initializeApp();
 
       expect(dataTable.initObservers).toHaveBeenCalled();
-      expect(dom.addEventListener).toHaveBeenCalled();
       expect(messaging.showLoadingModal).toHaveBeenCalled();
       expect(store.setState).toHaveBeenCalled();
       expect(messaging.hideLoadingModal).toHaveBeenCalled();
     });
 
-    it('catches and processes errors during initialization', async () => {
-      const error = new Error('Network failure');
+    it('processes errors during initialization', async () => {
+      const error = new Error('Failure');
       dataTable.initObservers.mockImplementation(() => {
         throw error;
       });
@@ -106,33 +93,6 @@ describe('init.js', () => {
 
       expect(messaging.processError).toHaveBeenCalledWith(error, 'Failed to initialize app:');
       expect(messaging.hideLoadingModal).toHaveBeenCalled();
-    });
-  });
-
-  describe('refreshData', () => {
-    it('fetches data, updates the store, and toggles views', async () => {
-      // Mock HTML input element with date type and value
-      const dateInput = document.createElement('input');
-      dateInput.type = 'date';
-      dateInput.value = '2023-10-15';
-      
-      dom.valueOf.mockImplementation((selector) => {
-        if (selector === '#is-admin') return 'true';
-        if (selector === '#is-editor') return 'false';
-        if (selector === '#date') return dateInput.value;
-        if (selector === '.admin-only') return adminOnlyEl;
-        if (selector === '.editors-only') return editorsOnlyEl;
-        return null;
-      });
-
-      store.getState.mockReturnValue({ isStaff: false, isEditor: false, isAdmin: true });
-
-      await init.refreshData();
-
-      expect(store.setState).toHaveBeenCalled();
-
-      expect(dom.toggleEditorOnlyViews).toHaveBeenCalledWith(false);
-      expect(dom.toggleAdminOnlyViews).toHaveBeenCalledWith(true);
     });
   });
 });

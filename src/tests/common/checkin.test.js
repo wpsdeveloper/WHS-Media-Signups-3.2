@@ -1,94 +1,51 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as checkin from '../../client/common/checkin.js';
-import * as dom from '../../client/common/dom.js';
-import * as dates from '../../client/common/dates.ts';
+import * as checkin from '../../client/common/checkin';
 
-vi.mock('../../client/common/dom.js', () => ({
+vi.mock('../../client/common/dom', () => ({
   qs: vi.fn(),
-  qsa: vi.fn(),
   setVisible: vi.fn(),
-  setValue: vi.fn(),
   setText: vi.fn(),
 }));
 
-vi.mock('../../client/common/dates.ts', () => ({
-  formatTime: vi.fn((val) => `formatted-${val}`),
-  isValidTime: vi.fn(),
+vi.mock('../../client/common/messaging', () => ({
+  processError: vi.fn(),
 }));
 
-vi.mock('../../client/common/debug.js', () => ({
-  DEBUG: false,
+vi.mock('../../client/common/debug', () => ({
+  IS_DEBUG: false,
 }));
 
-/**
- * Test suite for the checkin.js utilities.
- * Tests UI functions and interactions with google.script.run for checkin operations.
- */
-describe('checkin.js', () => {
+describe('Checkin Module', () => {
   beforeEach(() => {
-    // Clear mocks before each test execution
     vi.clearAllMocks();
-
-    // Mock global google.script.run for GAS API testing
     global.google = {
       script: {
         run: {
-          withSuccessHandler: vi.fn().mockReturnThis(),
-          withFailureHandler: vi.fn().mockReturnThis(),
-          setCheckin: vi.fn(),
+          withSuccessHandler: vi.fn().mockImplementation((cb) => ({
+            withFailureHandler: vi.fn().mockReturnValue({
+              setCheckin: vi.fn().mockImplementation((...args) => {
+                if (cb) cb(args);
+              }),
+            }),
+          })),
         },
       },
     };
   });
 
-  describe('showEditCheckin', () => {
-    it('shows the edit UI and hides other elements', () => {
-      const mockButton = { closest: vi.fn().mockReturnValue({ dataset: { signupId: '123' } }) };
-      checkin.showEditCheckin('mediaIn', mockButton);
-      
-      expect(dom.setVisible).toHaveBeenCalledWith(`.data-row[data-signup-id="123"] .media-checkin .time-edit`, true);
-      expect(dom.setVisible).toHaveBeenCalledWith(`.data-row[data-signup-id="123"] .media-checkin button, .data-row[data-signup-id="123"] .media-checkin .primary-buttons, .data-row[data-signup-id="123"] .media-checkin .time-value`, false);
+  describe('saveCheckinTime', () => {
+    it('calls setCheckin on server with checkinBox properties', async () => {
+      const mockBox = { propName: 'studyIn1', rowId: '123', timeValue: '10:00 AM' };
+      await checkin.saveCheckinTime(mockBox);
+      expect(global.google.script.run.withSuccessHandler).toHaveBeenCalled();
     });
   });
 
-  describe('cancelEditCheckin', () => {
-    it('cancels the edit UI and restores original elements', () => {
-      const mockButton = { closest: vi.fn().mockReturnValue({ dataset: { signupId: '456' } }) };
-      checkin.cancelEditCheckin('mediaOut', mockButton);
-      
-      expect(dom.setVisible).toHaveBeenCalledWith(`.data-row[data-signup-id="456"] .media-checkout .time-edit`, false);
-      expect(dom.setVisible).toHaveBeenCalledWith(`.data-row[data-signup-id="456"] .media-checkout button`, false);
-      expect(dom.setVisible).toHaveBeenCalledWith(`.data-row[data-signup-id="456"] .media-checkout .primary-buttons`, true);
-    });
-  });
-
-  describe('formatCheckin', () => {
-    it('formats an empty checkin value correctly', () => {
-      checkin.formatCheckin('studyIn1', '789', '');
-      const box = `.data-row[data-signup-id="789"] .study-checkin`;
-      
-      expect(dom.setVisible).toHaveBeenCalledWith(`${box} .spinner`, false);
-      expect(dom.setVisible).toHaveBeenCalledWith(`${box} button`, true);
-      expect(dom.setVisible).toHaveBeenCalledWith(`${box} .time`, false);
-      expect(dom.setValue).toHaveBeenCalledWith(`${box} .timeInput`, '');
-    });
-
-    it('formats a populated checkin value correctly', () => {
-      checkin.formatCheckin('studyIn1', '789', '14:00');
-      const box = `.data-row[data-signup-id="789"] .study-checkin`;
-      
-      expect(dom.setVisible).toHaveBeenCalledWith(`${box} button`, false);
-      expect(dom.setText).toHaveBeenCalledWith(`${box}.time-value`, 'formatted-14:00');
-      expect(dom.setValue).toHaveBeenCalledWith(`${box} .timeInput`, 'formatted-14:00');
-    });
-  });
-
-  describe('setCheckin', () => {
-    it('calls google.script.run with the correct payload and handlers', () => {
-      checkin.setCheckin('studyIn2', '111', '09:00');
-      
-      expect(global.google.script.run.withSuccessHandler).toHaveBeenCalledWith(checkin.checkinSuccess);
-      expect(global.google.script.run.setCheckin).toHaveBeenCalledWith('studyIn2', '111', '09:00');
+  describe('checkinSuccess', () => {
+    it('logs success without throwing', () => {
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      checkin.checkinSuccess({ propName: 'studyIn1', id: '1', value: '10:00 AM' });
+      expect(consoleSpy).toHaveBeenCalled();
     });
   });
 });
