@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { studentInputChangeHandler, renderStudentDatalist, setupStudentInputObserver } from '../../client/common/student-input.js';
+import { studentInputChangeHandler, renderStudentDatalist, setupStudentInputObserver } from '../../client/signup/student-input.js';
 import * as dom from '../../client/common/dom.js';
 import { store } from '../../client/common/store.js';
 

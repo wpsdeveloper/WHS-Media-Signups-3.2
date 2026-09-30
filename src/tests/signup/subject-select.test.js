@@ -1,46 +1,29 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { 
-  subjectChangeHandler, 
+  getAvailableInterventionTeachers,
+  subjectChangeHandler,
+  updateSubjectUi,
   updateSubjectOptions, 
-  setupSubjectOptionsObserver, 
-  setupSubjectValueObserver 
-} from '../../client/signup/subject-select.js';
-import * as dom from '../../client/common/dom.js';
-import * as dates from '../../client/common/dates.ts';
-import { store } from '../../client/common/store.js';
+  setupSubjectObservers 
+} from '../../client/signup/subject-select';
+import * as dom from '../../client/common/dom';
+import { store } from '../../client/signup/signup-store';
 
-// Mock dependencies
 /**
  * Mocks DOM manipulation utilities.
  */
-vi.mock('../../client/common/dom.js', () => ({
+vi.mock('../../client/common/dom', () => ({
   clearOptions: vi.fn(),
   appendOption: vi.fn(),
   qs: vi.fn(),
   setValue: vi.fn(),
-}));
-
-/**
- * Mocks date utilities for predictable parsing and comparison.
- */
-vi.mock('../../client/common/dates.ts', () => ({
-  /**
-   * @param {string} d - The date to parse
-   * @returns {Date} Parsed Date object
-   */
-  parseDateInput: vi.fn(d => new Date(d)),
-  /**
-   * @param {Date} d1 - First date
-   * @param {Date} d2 - Second date
-   * @returns {boolean} True if dates share the same calendar day
-   */
-  isSameDate: vi.fn((d1, d2) => d1.toDateString() === d2.toDateString()),
+  valueOf: vi.fn(),
 }));
 
 /**
  * Mocks the central state store to track state updates and subscriptions.
  */
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store', () => ({
   store: { 
     setState: vi.fn(),
     subscribe: vi.fn() 
@@ -50,144 +33,139 @@ vi.mock('../../client/common/store.js', () => ({
 describe('Subject Select Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
-    // Anchor the system time so 'new Date()' behaves predictably in tests
-    vi.setSystemTime(new Date('2023-10-01T12:00:00Z'));
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  /**
+   * Tests for the pure calculation function.
+   */
+  describe('getAvailableInterventionTeachers', () => {
+    it('should return an empty array if currentScheduleBlock is null', () => {
+      expect(getAvailableInterventionTeachers(null)).toEqual([]);
+    });
+
+    it('should return intervention teachers from the schedule block', () => {
+      const block = { interventionTeachers: ['Mr. Math', 'Ms. Science'] };
+      expect(getAvailableInterventionTeachers(block)).toEqual(['Mr. Math', 'Ms. Science']);
+    });
+
+    it('should append currentSubject if it is not already in the teachers list', () => {
+      const block = { interventionTeachers: ['Mr. Math'] };
+      expect(getAvailableInterventionTeachers(block, 'Ms. Art')).toEqual(['Mr. Math', 'Ms. Art']);
+    });
+
+    it('should not duplicate currentSubject if it is already in the teachers list', () => {
+      const block = { interventionTeachers: ['Mr. Math', 'Ms. Science'] };
+      expect(getAvailableInterventionTeachers(block, 'Ms. Science')).toEqual(['Mr. Math', 'Ms. Science']);
+    });
   });
 
   /**
    * Tests for the subject selection change handler.
    */
   describe('subjectChangeHandler', () => {
-    it('should update store state with the selected subject', () => {
-      // Simulate user changing the subject in the dropdown
+    it('should update store state with the selected subject from event target', () => {
       const mockEvent = { target: { value: 'Math' } };
       subjectChangeHandler(mockEvent);
-      expect(store.setState).toHaveBeenCalledWith({ currentSubject: 'Math' });
+      expect(store.setState).toHaveBeenCalledWith({ ui_currentSubject: 'Math' });
+    });
+
+    it('should fall back to DOM value methods if event or target value is missing', () => {
+      // Mock dom.valueOf to simulate finding a value in the #subject-int-input field
+      dom.valueOf.mockImplementation((selector) => {
+        if (selector === '#subject-int-input') return 'History';
+        return null;
+      });
+
+      subjectChangeHandler();
+      expect(store.setState).toHaveBeenCalledWith({ ui_currentSubject: 'History' });
     });
   });
 
   /**
-   * Tests for updating the available subject options in the select dropdown based on the active semester and schedules.
+   * Tests for the UI view update logic.
    */
-  describe('updateSubjectOptions', () => {
-    it('should clear options and return early if required arguments are missing', () => {
-      // Verifies early returns for invalid or incomplete data
-      updateSubjectOptions(null, '1', {}, []);
-      expect(dom.clearOptions).toHaveBeenCalledWith('#subject-int-select');
-      expect(dom.appendOption).not.toHaveBeenCalled();
-
-      dom.clearOptions.mockClear();
-      updateSubjectOptions('2023-10-01', null, {}, []);
-      expect(dom.clearOptions).toHaveBeenCalledWith('#subject-int-select');
+  describe('updateSubjectUi', () => {
+    it('should clear options and append new teachers', () => {
+      updateSubjectUi(['Mr. Math', 'Ms. Science'], null);
       
-      dom.clearOptions.mockClear();
-      updateSubjectOptions('2023-10-01', '1', null, []);
       expect(dom.clearOptions).toHaveBeenCalledWith('#subject-int-select');
-    });
-
-    it('should use S1 schedules and append options if today is before s2Date', () => {
-      dates.isSameDate.mockReturnValue(true);
-
-      const interventionTeachers = {
-        s2Date: '2024-01-01', // Future date relative to mocked today (2023-10-01)
-        s1: { 'A': { '1': ['Mr. Math', 'Ms. Science'] } },
-        s2: { 'A': { '1': ['Mr. History'] } }
-      };
-      
-      const schedules = [{ date: '2023-10-01', day: 'A' }];
-
-      updateSubjectOptions('2023-10-01', '1', interventionTeachers, schedules);
-
       expect(dom.appendOption).toHaveBeenCalledWith('#subject-int-select', 'Mr. Math', 'Mr. Math');
       expect(dom.appendOption).toHaveBeenCalledWith('#subject-int-select', 'Ms. Science', 'Ms. Science');
-      expect(dom.appendOption).not.toHaveBeenCalledWith('#subject-int-select', 'Mr. History', 'Mr. History');
+      expect(dom.setValue).not.toHaveBeenCalled();
     });
 
-    it('should use S2 schedules and append options if today is after s2Date', () => {
-      dates.isSameDate.mockReturnValue(true);
-
-      const interventionTeachers = {
-        s2Date: '2023-01-01', // Past date relative to mocked today (2023-10-01)
-        s1: { 'A': { '1': ['Mr. Math'] } },
-        s2: { 'A': { '1': ['Mr. History'] } }
-      };
+    it('should set the selected value if currentSubject is provided and element exists', () => {
+      dom.qs.mockReturnValue(true); // Simulate element exists
+      updateSubjectUi(['Mr. Math'], 'Mr. Math');
       
-      const schedules = [{ date: '2023-10-01', day: 'A' }];
-
-      updateSubjectOptions('2023-10-01', '1', interventionTeachers, schedules);
-
-      expect(dom.appendOption).toHaveBeenCalledWith('#subject-int-select', 'Mr. History', 'Mr. History');
-      expect(dom.appendOption).not.toHaveBeenCalledWith('#subject-int-select', 'Mr. Math', 'Mr. Math');
-    });
-
-    it('should safely return and not append if schedules or days are undefined', () => {
-      dates.isSameDate.mockReturnValue(true);
-
-      // Incomplete data structure for testing robustness
-      const interventionTeachers = {
-        s2Date: '2024-01-01',
-        s1: {} // Missing day 'A'
-      };
-      
-      const schedules = [{ date: '2023-10-01', day: 'A' }];
-
-      updateSubjectOptions('2023-10-01', '1', interventionTeachers, schedules);
-
-      expect(dom.appendOption).not.toHaveBeenCalled();
+      expect(dom.setValue).toHaveBeenCalledWith('#subject-int-select', 'Mr. Math');
     });
   });
 
   /**
-   * Tests for setting up the store observer for subject options.
+   * Tests for the orchestration function.
    */
-  describe('setupSubjectOptionsObserver', () => {
-    it('should subscribe to the store and trigger option updates on state change', () => {
-      setupSubjectOptionsObserver();
-      expect(store.subscribe).toHaveBeenCalledWith(
-        expect.any(Function), 
-        ['ui_currentDate', 'ui_currentPeriod', 'interventionTeachers', 'dailySchedules']
-      );
-
-      const subscriberCallback = store.subscribe.mock.calls[0][0];
+  describe('updateSubjectOptions', () => {
+    it('should orchestrate calculating available teachers and updating the UI', () => {
+      dom.qs.mockReturnValue(true);
+      const block = { interventionTeachers: ['Mr. Math'] };
       
-      subscriberCallback({
-        currentDate: '2023-10-01',
-        currentPeriod: '1',
-        interventionTeachers: null,
-        dailySchedules: []
+      updateSubjectOptions(block, 'Ms. History');
+
+      // It should clear, append both the intervention teacher and the current subject, then set value
+      expect(dom.clearOptions).toHaveBeenCalledWith('#subject-int-select');
+      expect(dom.appendOption).toHaveBeenCalledWith('#subject-int-select', 'Mr. Math', 'Mr. Math');
+      expect(dom.appendOption).toHaveBeenCalledWith('#subject-int-select', 'Ms. History', 'Ms. History');
+      expect(dom.setValue).toHaveBeenCalledWith('#subject-int-select', 'Ms. History');
+    });
+  });
+
+  /**
+   * Tests for setting up the store observers.
+   */
+  describe('setupSubjectObservers', () => {
+    it('should register two subscriptions on the store', () => {
+      setupSubjectObservers();
+      expect(store.subscribe).toHaveBeenCalledTimes(2);
+      expect(store.subscribe).toHaveBeenCalledWith(expect.any(Function), ['ui_currentScheduleBlock']);
+      expect(store.subscribe).toHaveBeenCalledWith(expect.any(Function), ['ui_currentSubject']);
+    });
+
+    it('should trigger updateSubjectOptions on ui_currentScheduleBlock state change', () => {
+      setupSubjectObservers();
+      const scheduleBlockCallback = store.subscribe.mock.calls.find(call => call[1].includes('ui_currentScheduleBlock'))[0];
+      
+      scheduleBlockCallback({
+        ui_currentScheduleBlock: { interventionTeachers: ['Mr. Math'] },
+        ui_currentSubject: 'Mr. Math'
       });
 
       expect(dom.clearOptions).toHaveBeenCalledWith('#subject-int-select');
+      expect(dom.appendOption).toHaveBeenCalledWith('#subject-int-select', 'Mr. Math', 'Mr. Math');
     });
-  });
 
-  /**
-   * Tests for synchronizing the subject dropdown value with store state.
-   */
-  describe('setupSubjectValueObserver', () => {
-    it('should synchronize DOM element selection when state.currentSubject changes', () => {
-      setupSubjectValueObserver();
-      const subscriberCallback = store.subscribe.mock.calls[0][0];
+    it('should synchronize DOM elements when state.ui_currentSubject changes', () => {
+      setupSubjectObservers();
+      const subjectCallback = store.subscribe.mock.calls.find(call => call[1].includes('ui_currentSubject'))[0];
 
-      // Simulate the UI initially having a different value
-      dom.qs.mockReturnValue({ value: 'Old Subject' });
-      subscriberCallback({ currentSubject: 'New Subject' });
+      // Simulate the UI inputs having an outdated value
+      dom.qs.mockImplementation(() => ({ value: 'Old Subject' }));
+      
+      subjectCallback({ ui_currentSubject: 'New Subject' });
 
       expect(dom.setValue).toHaveBeenCalledWith('#subject-int-select', 'New Subject');
+      expect(dom.setValue).toHaveBeenCalledWith('#subject-int-input', 'New Subject');
+      expect(dom.setValue).toHaveBeenCalledWith('#subject-non-int', 'New Subject');
     });
 
-    it('should not update DOM if the select element value already matches state', () => {
-      setupSubjectValueObserver();
-      const subscriberCallback = store.subscribe.mock.calls[0][0];
+    it('should not update DOM if the DOM elements already match the state', () => {
+      setupSubjectObservers();
+      const subjectCallback = store.subscribe.mock.calls.find(call => call[1].includes('ui_currentSubject'))[0];
 
-      // If the UI is already in sync with state, we shouldn't attempt to rewrite the DOM
-      dom.qs.mockReturnValue({ value: 'Same Subject' });
-      subscriberCallback({ currentSubject: 'Same Subject' });
+      // Simulate the UI already being in sync
+      dom.qs.mockImplementation(() => ({ value: 'Same Subject' }));
+      
+      subjectCallback({ ui_currentSubject: 'Same Subject' });
 
       expect(dom.setValue).not.toHaveBeenCalled();
     });

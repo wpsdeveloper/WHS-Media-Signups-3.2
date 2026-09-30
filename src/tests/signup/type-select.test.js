@@ -2,36 +2,36 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { 
   typeChangeHandler, 
   resetAllTypes, 
-  disableInterventions, 
-  disableAssessmentMakeups, 
-  disableAltSetting, 
-  disableTutoring, 
-  disableWednesdayInterventions, 
-  disableNonInterventions,
+  toggleInterventions, 
+  toggleAssessmentMakeups, 
+  toggleAltSetting, 
+  toggleTutoring, 
+  toggleNonInterventions,
   toggleInterventionsLink,
   toggleTutoringLink,
   setupTypeInputObserver 
-} from '../../client/signup/type-input.js';
-import * as dom from '../../client/common/dom.js';
-import { store } from '../../client/common/store.js';
+} from '../../client/signup/type-select';
+import * as dom from '../../client/common/dom';
+import { store } from '../../client/signup/signup-store';
 
 // Mock dependencies
 /**
  * Mocks DOM elements and manipulations.
  */
-vi.mock('../../client/common/dom.js', () => ({
+vi.mock('../../client/common/dom', () => ({
   setDisabled: vi.fn(),
   setVisible: vi.fn(),
   setChecked: vi.fn(),
   setText: vi.fn(),
   getAttribute: vi.fn(),
+  setValue: vi.fn(),
   qs: vi.fn(),
 }));
 
 /**
  * Mocks the central state management store.
  */
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store', () => ({
   store: { 
     setState: vi.fn(),
     subscribe: vi.fn() 
@@ -51,7 +51,7 @@ describe('Type Input Module', () => {
       // Simulates user clicking a different signup type radio button
       const mockEvent = { target: { value: 'Tutoring' } };
       typeChangeHandler(mockEvent);
-      expect(store.setState).toHaveBeenCalledWith({ currentType: 'Tutoring' });
+      expect(store.setState).toHaveBeenCalledWith({ ui_currentType: 'Tutoring' });
     });
   });
 
@@ -59,40 +59,31 @@ describe('Type Input Module', () => {
    * Tests for UI reset and dynamic disabling utilities for signup types.
    */
   describe('UI Reset and Disable Utilities', () => {
-    it('resetAllTypes should re-enable inputs and hide warnings', () => {
-      resetAllTypes();
-      expect(dom.setDisabled).toHaveBeenCalledWith("input[name='signup-type'], input[name='purpose']", false);
-      expect(dom.setVisible).toHaveBeenCalledWith('span.type-warning', false);
+    it('toggleInterventions should disable Interventions option', () => {
+      toggleInterventions(false);
+      expect(dom.setDisabled).toHaveBeenCalledWith('#type-select option[value="Intervention"]', true);
     });
 
-    it('disableInterventions should disable input, uncheck, and show warning', () => {
-      disableInterventions();
-      expect(dom.setDisabled).toHaveBeenCalledWith('input#intervention', true);
-      expect(dom.setChecked).toHaveBeenCalledWith('input#intervention', false);
-      expect(dom.setVisible).toHaveBeenCalledWith("label[for='intervention'] span.type-warning", true);
-      expect(dom.setText).toHaveBeenCalledWith("label[for='intervention'] span.type-warning", 'Not available');
-    });
-
-    it('disableNonInterventions should disable multiple inputs and show warnings', () => {
-      disableNonInterventions();
-      expect(dom.setDisabled).toHaveBeenCalledWith('input#non-intervention', true);
-      expect(dom.setDisabled).toHaveBeenCalledWith("input[name='purpose']", true);
-      expect(dom.setVisible).toHaveBeenCalledWith("label[for='purpose'] span.type-warning", true);
+    it('toggleInterventions should enable Interventions option', () => {
+      toggleInterventions(true);
+      expect(dom.setDisabled).toHaveBeenCalledWith('#type-select option[value="Intervention"]', false);
     });
 
     // Validating the remaining single-input disablers follow the same pattern
-    const disableFunctions = [
-      { func: disableAssessmentMakeups, selector: 'assessment' },
-      { func: disableAltSetting, selector: 'alt-setting' },
-      { func: disableTutoring, selector: 'tutoring' },
-      { func: disableWednesdayInterventions, selector: 'non-intervention' }
+    const toggleFunctions = [
+      { func: toggleInterventions, selectorVal: 'Intervention' },
+      { func: toggleAssessmentMakeups, selectorVal: 'Assessment' },
+      { func: toggleAltSetting, selectorVal: 'Alt setting' },
+      { func: toggleTutoring, selectorVal: 'Tutoring' },
+      { func: toggleNonInterventions, selectorVal: 'Non-intervention' },
     ];
 
-    disableFunctions.forEach(({ func, selector }) => {
-      it(`${func.name} should disable ${selector} correctly`, () => {
-        func();
-        expect(dom.setDisabled).toHaveBeenCalledWith(`input#${selector}`, true);
-        expect(dom.setChecked).toHaveBeenCalledWith(`input#${selector}`, false);
+    toggleFunctions.forEach(({ func, selectorVal }) => {
+      it(`${func.name} should toggle ${selectorVal} correctly`, () => {
+        func(true);
+        expect(dom.setDisabled).toHaveBeenCalledWith(`#type-select option[value="${selectorVal}"]`, false);
+        func(false);
+        expect(dom.setDisabled).toHaveBeenCalledWith(`#type-select option[value="${selectorVal}"]`, true);
       });
     });
   });
@@ -137,10 +128,10 @@ describe('Type Input Module', () => {
       const mockRadio = {};
       dom.qs.mockReturnValue(mockRadio);
       
-      subscriberCallback({ currentType: 'Assessment' });
+      subscriberCallback({ ui_currentType: 'Assessment' });
       
-      expect(dom.qs).toHaveBeenCalledWith("input[name='signup-type'][value='Assessment']");
-      expect(dom.setChecked).toHaveBeenCalledWith(mockRadio, true);
+      expect(dom.qs).toHaveBeenCalledWith("#type-select");
+      expect(dom.setValue).toHaveBeenCalledWith("#type-select", 'Assessment');
     });
 
     it('should not throw if currentType is null or radio is missing', () => {
