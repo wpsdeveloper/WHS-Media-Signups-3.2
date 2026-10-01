@@ -90,9 +90,9 @@ export interface SignupState {
   /** UI State: The currently selected intervention teacher. */
   ui_currentInterventionTeacher: string | null,
   /** UI State: The currently selected subject. */
-  ui_currentSubject: string,
+  ui_currentSubject: string | null,
   /** UI State: The currently selected student name. */
-  ui_currentStudentName: string,
+  ui_currentStudentName: string | null,
   /** UI State: The current maximum allowed signups. */
   ui_currentMax: number,
   /** UI State: The currently entered email address. */

@@ -212,6 +212,7 @@
               <div class="mb-4 student-types">
                 <label class="mb-2 main-label">Signup Type</label>
                 <select class="form-select required" id="type-select">
+                  <option disabled selected>Choose a signup type</option>
                   <option value="Intervention">Intervention</option>
                   <option value="Assessment">Assessment make-up</option>
                   <option value="Tutoring">NHS tutoring</option>
@@ -230,6 +231,7 @@
                 name="purpose"
                 id="purpose-select"
               >
+                <option disabled selected value="">Choose a purpose</option>
                 <option value="Research">
                   Individual research/use of library resources
                 </option>
@@ -249,7 +251,8 @@
               <label for="subject" class="form-label main-label">
                 Subject
               </label>
-              <select id="subject-non-int" class="form-select">
+              <select id="subject-non-int" class="form-select">\
+                <option value="" selected disabled>Select a subject</option>
                 <option value="Business">Business</option>
                 <option value="English">English</option>
                 <option value="Mathematics">Mathematics</option>

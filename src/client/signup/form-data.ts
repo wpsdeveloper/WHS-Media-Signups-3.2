@@ -109,7 +109,7 @@ function collectData(): Partial<Signup> {
     data.subject = dom.valueOf("#subject-non-int");
   }
 
-  data.purpose = dom.isVisible("#purpose") ? dom.valueOf("#purpose select") : "";
+  data.purpose = dom.isVisible("#purpose-select") ? dom.valueOf("#purpose-select") : "";
   data.room = dom.isVisible("#glass-room") ? dom.valueOf("#glass-room input[type='radio']:checked") as Signup['room'] : null;
   data.teacherStudy = dom.valueOf(".study-teacher");
   data.teacherAcad = dom.valueOf("#acad-teacher");
@@ -186,10 +186,23 @@ function getInvalidFields(data: Partial<Signup>): string[] {
 
   // requires type is selected
   if (!data.type) {
-    invalidFields.push("#type");
-  } else if (["Non-intervention", "Assessment", "Alt setting"].includes(data.type) && !data.teacherAcad) {
-    invalidFields.push("#acad-teacher");
-  }
+    invalidFields.push("#type-select");
+  } else{
+    if (["Non-intervention", "Assessment", "Alt setting"].includes(data.type) && !data.teacherAcad) {
+      invalidFields.push("#acad-teacher");
+    }
+    if (["Non-intervention"].includes(data.type) && !data.purpose) {
+      invalidFields.push("#purpose-select");
+    }
+    if (["Intervention", "Assessment", "Tutoring", "Alt setting"].includes(data.type) && !data.subject) {
+      invalidFields.push("#subject-int-select");
+      invalidFields.push("#subject-non-int");
+    }
+    if (!["Staff reservation"].includes(data.type) && !data.teacherStudy) {
+      invalidFields.push("#study-teacher");
+      invalidFields.push("#study-teacher-select");
+    }
+  } 
 
   // sends invalid class names back
   return invalidFields;

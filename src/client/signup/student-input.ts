@@ -98,7 +98,7 @@ export const clearStudentInput = (): void => {
   const errorDiv = dom.qs('#student-nofly-error');
   if (errorDiv) errorDiv.classList.add('d-none');
   const overrideBtn = dom.qs('#student-nofly-override-btn');
-  if (overrideBtn) dom.setVisible(overrideBtn, false);
+  if (overrideBtn) dom.setVisible(overrideBtn as HTMLElement, false);
   store.setState({ ui_noFlyOverridden: false });
   lastOverriddenQuery = '';
   setHelperState(false);

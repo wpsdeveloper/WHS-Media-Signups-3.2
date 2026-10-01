@@ -91,7 +91,7 @@ function wednesdayInterventions(date: Date): boolean {
   const dateIsWednesday = (weekday === wednesday);
   
   const wedIntActive = store.getState().appConfig?.wedInt;
-  return dateIsWednesday && wedIntActive;
+  return (dateIsWednesday && wedIntActive) as boolean;
 }
  
  

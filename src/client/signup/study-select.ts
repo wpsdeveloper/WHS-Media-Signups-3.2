@@ -15,25 +15,27 @@ export function getAvailableStudyTeachers(
   currentType: SignupType | null,
   currentStudyTeacher: string | null = null
 ): string[] {
-  if (!currentScheduleBlock || !currentType) {
+  if (!currentScheduleBlock) {
     return [];
   }
 
   // Clone list so we don't mutate store dailySchedules
   const teachers: string[] = [...(currentScheduleBlock.studyTeachers || [])];
+  
+  if (currentType) {
+    if (currentType === "Alt setting" && !teachers.includes("Directly from class")) {
+      teachers.push("Directly from class");
+    }
 
-  if (currentType === "Alt setting" && !teachers.includes("Directly from class")) {
-    teachers.push("Directly from class");
+    if (
+      currentScheduleBlock.period !== "Wed. PM" &&
+      !["Non-intervention", "Intervention"].includes(currentType) &&
+      !teachers.includes("Coming from class")
+    ) {
+      teachers.push("Coming from class");
+    }
   }
-
-  if (
-    currentScheduleBlock.period !== "Wed. PM" &&
-    !["Non-intervention", "Intervention"].includes(currentType) &&
-    !teachers.includes("Coming from class")
-  ) {
-    teachers.push("Coming from class");
-  }
-
+  
   if (currentStudyTeacher && !teachers.includes(currentStudyTeacher)) {
     teachers.push(currentStudyTeacher);
   }
@@ -51,7 +53,8 @@ export function getAvailableStudyTeachers(
 export function updateStudyUi(
   currentScheduleBlock: DailyBlock | null,
   teachersAvailable: string[],
-  currentSelectedTeacher: string | null
+  currentSelectedTeacher: string | null,
+  currentType: SignupType | null
 ) {
   dom.clearOptions("#study-teacher-select");
 
@@ -59,16 +62,18 @@ export function updateStudyUi(
     toggleStudyInputVisibility(false);
     return;
   }
+  dom.appendOption("#study-teacher-select", "", "Select a study hall", true);
 
   // Toggle outer section visibility for Wed. PM
-  dom.setVisible("#study-div", currentScheduleBlock.period !== "Wed. PM");
+  const showStudy = (currentScheduleBlock.period !== "Wed. PM" && currentType) as boolean;
+  dom.setVisible("#study-div", showStudy);
 
   teachersAvailable.forEach((teacher) => {
     dom.appendOption("#study-teacher-select", teacher, teacher, false);
   });
 
   // Toggle dropdown vs. text input based on whether options exist
-  const hasOptions = teachersAvailable.length > 0;
+  const hasOptions = teachersAvailable.length > 0; 
   toggleStudyInputVisibility(hasOptions);
 
   // Restore/maintain selection value in select element if present
@@ -111,7 +116,7 @@ export const updateStudyOptions = (
   currentStudyTeacher: string | null
 ) => {
   const teachers = getAvailableStudyTeachers(currentScheduleBlock, currentType, currentStudyTeacher);
-  updateStudyUi(currentScheduleBlock, teachers, currentStudyTeacher);
+  updateStudyUi(currentScheduleBlock, teachers, currentStudyTeacher, currentType);
 };
 
 /**

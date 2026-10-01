@@ -54,6 +54,8 @@ export const updateSubjectUi = (
 ) => {
   dom.clearOptions("#subject-int-select");
 
+  dom.appendOption("#subject-int-select", "", "Select a subject", true);
+
   teachersAvailable.forEach((teacher) => {
     dom.appendOption("#subject-int-select", teacher, teacher);
   });
