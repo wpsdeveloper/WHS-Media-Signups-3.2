@@ -7,7 +7,7 @@ import {
 } from '../../client/signup/init.js';
 import * as dom from '../../client/common/dom.js';
 import * as messaging from '../../client/common/messaging.js';
-import { store } from '../../client/signup/signup-store.js';
+import { store, registerUpdateData } from '../../client/signup/signup-store.js';
 import * as dateSelect from '../../client/signup/date-select.js';
 
 // 1. Mock all UI and Orchestration Dependencies
@@ -16,6 +16,7 @@ vi.mock('../../client/common/dom.js', () => ({
   setDisabled: vi.fn(),
   valueOf: vi.fn(),
   qsa: vi.fn(),
+  qs: vi.fn(),
   addEventListener: vi.fn(),
   toggleEditorOnlyViews: vi.fn(),
   toggleStaffOnlyViews: vi.fn(),

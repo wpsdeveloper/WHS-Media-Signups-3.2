@@ -10,11 +10,12 @@ vi.mock('../../client/common/dom.js', () => ({
   setDisabled: vi.fn(),
   setText: vi.fn(),
   setChecked: vi.fn(),
+  isChecked: vi.fn(() => false),
 }));
 
 vi.mock('../../client/common/dates.ts', () => ({
   parseDateInput: vi.fn(d => new Date(d)),
-  isSameDate: vi.fn((d1, d2) => d1.toDateString() === d2.toDateString()),
+  isSameDate: vi.fn((d1, d2) => new Date(d1).toDateString() === new Date(d2).toDateString()),
 }));
 
 vi.mock('../../client/signup/signup-store.js', () => ({
@@ -50,27 +51,24 @@ describe('Glass Rooms Input Module', () => {
       // Mock existing signups
       const signups = [{ date: '2023-11-01', period: "1", room: "1" }];
       
-      // Call with missing date
-      updateGlassRooms(null, "1", signups);
-      // Call with missing period
-      updateGlassRooms('2023-11-01', null, signups);
+      // Update now takes block, not date/period
+      updateGlassRooms(null, signups);
       
       // Ensure no further DOM manipulation occurred after default reset
       expect(dom.setChecked).not.toHaveBeenCalled();
     });
 
     it('should mark a room as unavailable if there is a matching signup', () => {
-      // Note: testing this requires bypassing a source code bug (period vs currentPeriod).
-      // Assuming it's fixed so the logic evaluates correctly.
+      const block = { date: new Date('2023-11-01'), period: "1" };
       
       // Mock signups mapping to specific rooms
       const signups = [
-        { date: '2023-11-01', period: "1", room: "1" },
-        { date: '2023-11-01', period: "1", room: "3" } // Invalid room number
+        { date: new Date('2023-11-01'), period: "1", room: "1", firstname: 'John', lastname: 'Doe' },
+        { date: new Date('2023-11-01'), period: "1", room: "3", firstname: 'Jane', lastname: 'Smith' } // Invalid room number
       ];
 
       // Update rooms for the matching date and period
-      updateGlassRooms('2023-11-01', "1", signups);
+      updateGlassRooms(block, signups);
 
       // Room 1 should be disabled as it corresponds to a signup
       expect(dom.setDisabled).toHaveBeenCalledWith('#glass-room-1', true);
@@ -84,15 +82,14 @@ describe('Glass Rooms Input Module', () => {
 
   /**
    * Tests for `setupGlassRoomsObserver`.
-   * Confirms the store subscription is configured with the correct dependencies.
    */
   describe('setupGlassRoomsObserver', () => {
     it('should subscribe to the store with the correct dependency array', () => {
       setupGlassRoomsObserver();
-      // Verifies that updates to date, period, or signups trigger a re-evaluation
+      // Verifies that updates to block or signups trigger a re-evaluation
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['ui_currentDate', 'ui_currentPeriod', 'signups']
+        ['ui_currentScheduleBlock', 'signups']
       );
     });
   });

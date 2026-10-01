@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { 
   periodChangeHandler, 
   updatePeriodOptions, 
-  setupPeriodOptionsObserver, 
-  setupPeriodValueObserver 
+  setupPeriodObservers
 } from '../../client/signup/period-select.js';
 import * as dom from '../../client/common/dom.js';
 import * as dates from '../../client/common/dates.ts';
@@ -20,15 +19,17 @@ vi.mock('../../client/common/dom.js', () => ({
 
 vi.mock('../../client/common/dates.ts', () => ({
   parseDateInput: vi.fn(d => new Date(d)),
-  isSameDate: vi.fn((d1, d2) => d1.toDateString() === d2.toDateString()),
+  isSameDate: vi.fn((d1, d2) => new Date(d1).toDateString() === new Date(d2).toDateString()),
 }));
 
-vi.mock('../../client/signup/signup-store.js', () => ({
-  store: { 
+vi.mock('../../client/signup/signup-store.js', () => {
+  const store = { 
     setState: vi.fn(),
-    subscribe: vi.fn() 
-  }
-}));
+    subscribe: vi.fn(),
+    getState: vi.fn(() => ({ ui_currentPeriod: '1' }))
+  };
+  return { store };
+});
 
 /**
  * Test suite for the Period Select Module.
@@ -55,7 +56,7 @@ describe('Period Select Module', () => {
       
       periodChangeHandler(event);
       
-      expect(store.setState).toHaveBeenCalledWith({ currentPeriod: '2' });
+      expect(store.setState).toHaveBeenCalledWith({ ui_currentPeriod: '2' });
     });
   });
 
@@ -74,15 +75,18 @@ describe('Period Select Module', () => {
       dom.qs.mockReturnValue({ options: [{ value: '1' }, { value: '2' }] });
       
       const schedules = [{
-        date: '2023-10-02', // Monday
-        periods: ['1', '2']
+        date: new Date('2023-10-02'), // Monday
+        period: '1'
+      }, {
+        date: new Date('2023-10-02'), // Monday
+        period: '2'
       }];
 
-      updatePeriodOptions('2023-10-02', schedules);
+      updatePeriodOptions(new Date('2023-10-02'), schedules);
 
       expect(dom.clearOptions).toHaveBeenCalledWith('#period');
-      expect(dom.appendOption).toHaveBeenCalledWith('#period', '1', '1');
-      expect(dom.appendOption).toHaveBeenCalledWith('#period', '2', '2');
+      expect(dom.appendOption).toHaveBeenCalledWith('#period', '1', 'Period 1');
+      expect(dom.appendOption).toHaveBeenCalledWith('#period', '2', 'Period 2');
       expect(dom.setValue).toHaveBeenCalledWith('#period', '1'); // '99' wasn't in options
     });
 
@@ -92,7 +96,7 @@ describe('Period Select Module', () => {
       dom.valueOf.mockImplementation(selector => selector === '#wed-int-active' ? 'true' : null);
       dom.qs.mockReturnValue({ options: [{ value: 'Wed. PM' }] });
 
-      updatePeriodOptions('2023-10-04', []);
+      updatePeriodOptions(new Date('2023-10-04'), []);
 
       expect(dom.appendOption).toHaveBeenCalledWith('#period', 'Wed. PM', 'Wed. PM');
     });
@@ -101,51 +105,49 @@ describe('Period Select Module', () => {
       dom.valueOf.mockImplementation(selector => selector === '#period' ? '3' : 'false');
       dom.qs.mockReturnValue({ options: [{ value: '1' }, { value: '3' }] });
       
-      updatePeriodOptions('2023-10-02', []);
+      updatePeriodOptions(new Date('2023-10-02'), []);
 
       expect(dom.setValue).toHaveBeenCalledWith('#period', '3');
     });
   });
 
   /**
-   * Tests for the setupPeriodOptionsObserver function.
-   * Ensures the observer is properly registered to track date and schedule changes.
+   * Tests for the setupPeriodObservers function.
+   * Ensures the observer is properly registered to track date, schedule, and period changes.
    */
-  describe('setupPeriodOptionsObserver', () => {
-    it('should subscribe to currentDate and dailySchedules', () => {
-      setupPeriodOptionsObserver();
+  describe('setupPeriodObservers', () => {
+    it('should subscribe to currentDate, dailySchedules, and ui_currentPeriod', () => {
+      setupPeriodObservers();
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
         ['ui_currentDate', 'dailySchedules']
       );
+      expect(store.subscribe).toHaveBeenCalledWith(
+        expect.any(Function), 
+        ['ui_currentPeriod']
+      );
     });
-  });
 
-  /**
-   * Tests for the setupPeriodValueObserver function.
-   * Verifies that store changes to currentPeriod update the DOM appropriately.
-   */
-  describe('setupPeriodValueObserver', () => {
-    it('should subscribe to currentPeriod and update DOM if values differ', () => {
-      setupPeriodValueObserver();
-      const subscriberCallback = store.subscribe.mock.calls[0][0];
+    it('should update DOM if ui_currentPeriod values differ', () => {
+      setupPeriodObservers();
+      const subscriberCallback = store.subscribe.mock.calls[1][0];
 
       dom.qs.mockReturnValue({ value: '1' });
       
       // Simulate state update
-      subscriberCallback({ currentPeriod: '2' });
+      subscriberCallback({ ui_currentPeriod: '2' });
 
       expect(dom.setValue).toHaveBeenCalledWith('#period', '2');
     });
 
     it('should not update DOM if the select element value already matches state', () => {
-      setupPeriodValueObserver();
-      const subscriberCallback = store.subscribe.mock.calls[0][0];
+      setupPeriodObservers();
+      const subscriberCallback = store.subscribe.mock.calls[1][0];
 
       dom.qs.mockReturnValue({ value: '3' });
       
       // Simulate state update
-      subscriberCallback({ currentPeriod: '3' });
+      subscriberCallback({ ui_currentPeriod: '3' });
 
       expect(dom.setValue).not.toHaveBeenCalled();
     });

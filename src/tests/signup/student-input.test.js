@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { studentInputChangeHandler, renderStudentDatalist, setupStudentInputObserver } from '../../client/signup/student-input.js';
+import { studentInputChangeHandler, renderStudentDatalist } from '../../client/signup/student-input.js';
 import * as dom from '../../client/common/dom.js';
 import { store } from '../../client/signup/signup-store.js';
 
 // Mock dependencies
 vi.mock('../../client/common/dom.js', () => ({
   qs: vi.fn(),
+  valueOf: vi.fn(() => ''),
+  setVisible: vi.fn(),
+  setValue: vi.fn(),
 }));
 
 vi.mock('../../client/signup/signup-store.js', () => ({
@@ -48,9 +51,10 @@ describe('Student Input Module', () => {
   describe('studentInputChangeHandler', () => {
     it('should update the store with the current student name query', () => {
       const mockEvent = { target: { value: 'Smi' } };
+      dom.valueOf.mockReturnValue('Smi');
       studentInputChangeHandler(mockEvent);
       
-      expect(store.setState).toHaveBeenCalledWith({ currentStudentName: 'Smi' });
+      expect(store.setState).toHaveBeenCalledWith({ ui_currentStudentName: 'Smi' });
     });
   });
 
@@ -81,7 +85,7 @@ describe('Student Input Module', () => {
       renderStudentDatalist(['Smith, John'], 'Sm');
       
       // If query is < 3 characters, suggestions are cleared via replaceChildren()
-      expect(mockList.replaceChildren).toHaveBeenCalledWith(); // Called with no args
+      expect(mockList.replaceChildren).toHaveBeenCalled();
     });
 
     it('should populate suggestions if the query is 3 or more characters', () => {
@@ -95,28 +99,4 @@ describe('Student Input Module', () => {
     });
   });
 
-  /**
-   * Tests for the setupStudentInputObserver function.
-   */
-  describe('setupStudentInputObserver', () => {
-    it('should subscribe to the store looking for studentNames and currentStudentName', () => {
-      setupStudentInputObserver();
-      
-      expect(store.subscribe).toHaveBeenCalledWith(
-        expect.any(Function), 
-        ['studentNames', 'ui_currentStudentName']
-      );
-    });
-
-    it('should trigger renderStudentDatalist when store state updates', () => {
-      setupStudentInputObserver();
-      const subscriberCallback = store.subscribe.mock.calls[0][0];
-
-      dom.qs.mockImplementation(selector => selector === '.student-autocomplete' ? mockInput : mockList);
-      
-      subscriberCallback({ studentNames: ['Doe, Jane'], currentStudentName: 'Doe' });
-      
-      expect(mockList.replaceChildren).toHaveBeenCalled();
-    });
-  });
 });

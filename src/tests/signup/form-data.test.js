@@ -13,6 +13,7 @@ vi.mock('../../client/common/dom.js', () => ({
   valueOf: vi.fn(),
   isVisible: vi.fn(),
   setInvalid: vi.fn(),
+  qs: vi.fn(),
 }));
 
 vi.mock('../../client/common/messaging.js', () => ({
@@ -29,7 +30,8 @@ vi.mock('../../client/signup/signup-store.js', () => ({
 }));
 
 vi.mock('../../client/common/debug.js', () => ({
-  DEBUG: false
+  DEBUG: false,
+  IS_DEBUG: false,
 }));
 
 /**
@@ -71,9 +73,20 @@ describe('Form Data Module', () => {
 
     it('should submit new form data when valid and no updateRowId exists', async () => {
       // Mock valid form data from DOM
-      dom.valueOf.mockImplementation(selector => selector === '#date' ? '2023-11-01' : 'test');
-      dom.isVisible.mockReturnValue(false); // Simplifies validation by hiding conditional fields
-      store.getState.mockReturnValue({ updateRowId: null, currentDate: '2023-11-01', currentPeriod: '1', currentType: 'Tutoring' });
+      dom.valueOf.mockImplementation(selector => {
+        if (selector === '#date') return '2023-11-01';
+        if (selector === '#type-select') return 'Tutoring';
+        if (selector === '#subject-int-select') return 'Math';
+        if (selector === '.subject-int') return 'Math';
+        return 'test';
+      });
+      dom.isVisible.mockImplementation(selector => selector === '.subject-int');
+      store.getState.mockReturnValue({ 
+        updateRowId: null, 
+        ui_currentDate: '2023-11-01', 
+        ui_currentPeriod: '1', 
+        ui_currentType: 'Tutoring' 
+      });
       
       // Setup successful GAS callback execution by immediately invoking the success handler
       global.google.script.run.withSuccessHandler.mockImplementation(function (cb) {
@@ -104,10 +117,10 @@ describe('Form Data Module', () => {
       
       // Verify state is wiped clean
       expect(store.setState).toHaveBeenCalledWith({
-        currentType: null,
-        currentStudyTeacher: null,
-        currentSubject: null,
-        currentStudentName: '',
+        ui_currentType: null,
+        ui_currentStudyTeacher: null,
+        ui_currentSubject: '',
+        ui_currentStudentName: '',
       });
       
       // Verify UI is reset to the initial form view

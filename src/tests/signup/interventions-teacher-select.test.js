@@ -28,31 +28,15 @@ describe('Interventions Teacher Select Module', () => {
    * for intervention teachers based on the current period and available teachers.
    */
   describe('toggleIntTeacherAltInput', () => {
-    it('should show text input and hide select when period is "Wed. PM"', () => {
-      toggleIntTeacherAltInput(['Teacher A'], 'Wed. PM');
+    it('should show text input and hide select when showAltInput is true', () => {
+      toggleIntTeacherAltInput(true);
       
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-select', false);
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-input', true);
     });
 
-    it('should show text input when interventionTeachers is null or undefined', () => {
-      // Simulate missing teacher data
-      toggleIntTeacherAltInput(null, '1');
-      
-      expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-select', false);
-      expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-input', true);
-    });
-
-    it('should show text input when interventionTeachers array is empty', () => {
-      // Simulate empty teacher data
-      toggleIntTeacherAltInput([], '2');
-      
-      expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-select', false);
-      expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-input', true);
-    });
-
-    it('should show select dropdown when teachers are available and period is not Wed. PM', () => {
-      toggleIntTeacherAltInput(['Teacher A', 'Teacher B'], '3');
+    it('should show select dropdown and hide text input when showAltInput is false', () => {
+      toggleIntTeacherAltInput(false);
       
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-select', true);
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-input', false);
@@ -70,7 +54,7 @@ describe('Interventions Teacher Select Module', () => {
       
       expect(store.subscribe).toHaveBeenCalledWith(
         expect.any(Function), 
-        ['interventionTeachers', 'ui_currentPeriod']
+        ['ui_currentScheduleBlock', 'ui_currentPeriod']
       );
     });
 
@@ -81,7 +65,8 @@ describe('Interventions Teacher Select Module', () => {
       const subscriberCallback = store.subscribe.mock.calls[0][0];
       
       // Fire the callback to ensure it interacts with the DOM properly
-      subscriberCallback({ interventionTeachers: [], currentPeriod: '1' });
+      // Wed. PM period triggers alt input
+      subscriberCallback({ ui_currentScheduleBlock: { period: 'Wed. PM' }, ui_currentPeriod: 'Wed. PM' });
       
       expect(dom.setVisible).toHaveBeenCalledWith('#subject-int-input', true);
     });

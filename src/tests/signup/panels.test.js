@@ -87,7 +87,7 @@ describe('Panels Module', () => {
       const subscriberCallback = store.subscribe.mock.calls[0][0];
       
       // Simulate state update
-      subscriberCallback({ currentType: 'Assessment' });
+      subscriberCallback({ ui_currentType: 'Assessment' });
       
       expect(dom.setVisible).toHaveBeenCalledWith('.assessment-only', true);
     });
