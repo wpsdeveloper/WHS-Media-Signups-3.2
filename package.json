@@ -7,6 +7,7 @@
     "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "vite build && tsc -p tsconfig.server.json",
     "push": "npm run build && clasp push",
+    "deploy": "clasp deploy -i AKfycbzSzGnlr5FKsn27tSl_RI7RUnyryYKiT419edyROCwpEwiLjKZXTHjviyPUZ0o-61Nt -d \"Updated version\"",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "test": "vitest run",
     "test:watch": "vitest",
