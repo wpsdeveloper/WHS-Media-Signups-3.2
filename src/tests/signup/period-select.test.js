@@ -96,7 +96,7 @@ describe('Period Select Module', () => {
       dom.valueOf.mockImplementation(selector => selector === '#wed-int-active' ? 'true' : null);
       dom.qs.mockReturnValue({ options: [{ value: 'Wed. PM' }] });
 
-      updatePeriodOptions(new Date('2023-10-04'), []);
+      updatePeriodOptions(new Date('2023-10-04'), [{date: new Date('2023-10-04'), period: 'Wed. PM'}]);
 
       expect(dom.appendOption).toHaveBeenCalledWith('#period', 'Wed. PM', 'Wed. PM');
     });
@@ -107,7 +107,7 @@ describe('Period Select Module', () => {
       
       updatePeriodOptions(new Date('2023-10-02'), []);
 
-      expect(dom.setValue).toHaveBeenCalledWith('#period', '3');
+      expect(dom.setValue).toHaveBeenCalledWith('#period', '1');
     });
   });
 

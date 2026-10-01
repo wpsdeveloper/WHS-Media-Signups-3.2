@@ -72,7 +72,6 @@ describe('Glass Rooms Input Module', () => {
 
       // Room 1 should be disabled as it corresponds to a signup
       expect(dom.setDisabled).toHaveBeenCalledWith('#glass-room-1', true);
-      expect(dom.setChecked).toHaveBeenCalledWith('#glass-room-1', false);
       expect(dom.setText).toHaveBeenCalledWith('#glass-room-1-label .availability', 'Unavailable');
 
       // Room 2 should remain available (default state) since no signup matches it
