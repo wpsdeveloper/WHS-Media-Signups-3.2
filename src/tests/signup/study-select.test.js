@@ -41,9 +41,10 @@ describe('Study Select Module', () => {
    * Tests for pure calculation of available study teachers.
    */
   describe('getAvailableStudyTeachers', () => {
-    it('should return an empty array if currentScheduleBlock or currentType is missing', () => {
+    it('should return an empty array if currentScheduleBlock is missing, and default teachers otherwise', () => {
       expect(getAvailableStudyTeachers(null, 'Intervention')).toEqual([]);
-      expect(getAvailableStudyTeachers({ studyTeachers: ['Mr. A'] }, null)).toEqual([]);
+      // Should return the teachers from the block even if type is null
+      expect(getAvailableStudyTeachers({ studyTeachers: ['Mr. A'] }, null)).toEqual(['Mr. A']);
     });
 
     it('should return existing teachers from the schedule block', () => {
@@ -108,13 +109,13 @@ describe('Study Select Module', () => {
 
     it('should hide study div if period is Wed. PM', () => {
       const block = { period: 'Wed. PM' };
-      updateStudyUi(block, ['Mr. Smith'], null);
+      updateStudyUi(block, ['Mr. Smith'], null, 'Intervention');
       expect(dom.setVisible).toHaveBeenCalledWith('#study-div', false);
     });
 
-    it('should show study div for non-Wed. PM periods', () => {
+    it('should show study div for non-Wed. PM periods with type', () => {
       const block = { period: '1' };
-      updateStudyUi(block, ['Mr. Smith'], null);
+      updateStudyUi(block, ['Mr. Smith'], null, 'Intervention');
       expect(dom.setVisible).toHaveBeenCalledWith('#study-div', true);
     });
 
@@ -122,7 +123,7 @@ describe('Study Select Module', () => {
       const block = { period: '1' };
       const teachers = ['Mr. Smith', 'Ms. Jones'];
       
-      updateStudyUi(block, teachers, null);
+      updateStudyUi(block, teachers, null, 'Intervention');
       
       expect(dom.appendOption).toHaveBeenCalledWith('#study-teacher-select', 'Mr. Smith', 'Mr. Smith', false);
       expect(dom.appendOption).toHaveBeenCalledWith('#study-teacher-select', 'Ms. Jones', 'Ms. Jones', false);
@@ -131,7 +132,7 @@ describe('Study Select Module', () => {
 
     it('should restore current selected teacher in the UI if provided', () => {
       const block = { period: '1' };
-      updateStudyUi(block, ['Mr. Smith'], 'Mr. Smith');
+      updateStudyUi(block, ['Mr. Smith'], 'Mr. Smith', 'Intervention');
       expect(dom.setValue).toHaveBeenCalledWith('#study-teacher-select', 'Mr. Smith');
     });
   });

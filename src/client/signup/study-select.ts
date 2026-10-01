@@ -65,7 +65,7 @@ export function updateStudyUi(
   dom.appendOption("#study-teacher-select", "", "Select a study hall", true);
 
   // Toggle outer section visibility for Wed. PM
-  const showStudy = (currentScheduleBlock.period !== "Wed. PM" && currentType) as boolean;
+  const showStudy = !!(currentScheduleBlock.period !== "Wed. PM" && currentType);
   dom.setVisible("#study-div", showStudy);
 
   teachersAvailable.forEach((teacher) => {

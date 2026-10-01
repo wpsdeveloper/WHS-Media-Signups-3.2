@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitForm, startOver } from '../../client/signup/form-data.js';
 import * as dom from '../../client/common/dom.js';
 import * as messaging from '../../client/common/messaging.js';
-import { store } from '../../client/common/store.js';
+import { store } from '../../client/signup/signup-store.js';
 import { DEBUG } from '../../client/common/debug.js';
 
 // Mock dependencies
@@ -21,7 +21,7 @@ vi.mock('../../client/common/messaging.js', () => ({
   showSuccessToast: vi.fn(),
 }));
 
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store.js', () => ({
   store: { 
     setState: vi.fn(),
     getState: vi.fn(() => ({ updateRowId: null })) 

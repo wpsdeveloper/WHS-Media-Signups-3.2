@@ -7,7 +7,7 @@ import {
 } from '../../client/signup/period-select.js';
 import * as dom from '../../client/common/dom.js';
 import * as dates from '../../client/common/dates.ts';
-import { store } from '../../client/common/store.js';
+import { store } from '../../client/signup/signup-store.js';
 
 // Mock dependencies
 vi.mock('../../client/common/dom.js', () => ({
@@ -23,7 +23,7 @@ vi.mock('../../client/common/dates.ts', () => ({
   isSameDate: vi.fn((d1, d2) => d1.toDateString() === d2.toDateString()),
 }));
 
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store.js', () => ({
   store: { 
     setState: vi.fn(),
     subscribe: vi.fn() 

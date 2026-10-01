@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { studentInputChangeHandler, renderStudentDatalist, setupStudentInputObserver } from '../../client/signup/student-input.js';
 import * as dom from '../../client/common/dom.js';
-import { store } from '../../client/common/store.js';
+import { store } from '../../client/signup/signup-store.js';
 
 // Mock dependencies
 vi.mock('../../client/common/dom.js', () => ({
   qs: vi.fn(),
 }));
 
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store.js', () => ({
   store: { 
     setState: vi.fn(), 
     subscribe: vi.fn() 

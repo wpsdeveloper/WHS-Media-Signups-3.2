@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toggleIntTeacherAltInput, setupInterventionTeacherObserver } from '../../client/signup/interventions-teacher-select.js';
 import * as dom from '../../client/common/dom.js';
-import { store } from '../../client/common/store.js';
+import { store } from '../../client/signup/signup-store.js';
 
 // Mock dependencies
 vi.mock('../../client/common/dom.js', () => ({
   setVisible: vi.fn(),
 }));
 
-vi.mock('../../client/common/store.js', () => ({
+vi.mock('../../client/signup/signup-store.js', () => ({
   store: { subscribe: vi.fn() }
 }));
 

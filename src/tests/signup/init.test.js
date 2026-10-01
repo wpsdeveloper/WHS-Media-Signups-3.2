@@ -137,24 +137,19 @@ describe('Init Module', () => {
    */
   describe('setUpdateStatus', () => {
     it('should abort if user is not an editor', async () => {
-      store.getState.mockReturnValueOnce({ isEditor: false });
+      store.getState.mockReturnValueOnce({ isEditor: false, updateData: null });
       await setUpdateStatus();
-      expect(dom.valueOf).toHaveBeenCalledWith('#update-row-id');
-      expect(store.setState).not.toHaveBeenCalled();
+      expect(registerUpdateData).not.toHaveBeenCalled();
     });
 
     it('should configure UI for updates if valid rowId exists and user is editor', async () => {
-      dom.valueOf.mockReturnValue('row123');
+      const updateData = { id: 'row123', email: 'test@example.com' };
+      store.getState.mockReturnValueOnce({ isEditor: true, updateData: updateData });
       
-      global.google.script.run.withSuccessHandler.mockImplementation(cb => {
-        cb({ id: 'row123' }); 
-        return global.google.script.run;
-      });
-
       await setUpdateStatus();
 
-      expect(store.setState).toHaveBeenCalledWith({ updateRowId: 'row123' });
-      expect(dom.setDisabled).toHaveBeenCalledWith('#email', false); // isEditor is true
+      expect(registerUpdateData).toHaveBeenCalledWith(updateData);
+      expect(dom.setDisabled).toHaveBeenCalledWith('#email', false);
       expect(dom.setVisible).toHaveBeenCalledWith('#btn-submit', false);
       expect(dom.setVisible).toHaveBeenCalledWith('#btn-update', true);
     });
