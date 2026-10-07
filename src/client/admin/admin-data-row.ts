@@ -84,10 +84,11 @@ export class AdminDataRow {
       }
 
       // Add delete button for admins
+      // const deleteBtnDiv = editIcons.querySelector("#delete-row-btn-div") as HTMLElement | null;
       if (vm.userIsAdmin) {
         const deleteBtn = document.createElement('button');
-        deleteBtn.innerText = 'Delete';
-        deleteBtn.className = 'btn btn-danger btn-sm ml-2';
+        deleteBtn.innerHTML = '<i class="fa-regular fa-regular fa-trash-can"></i>';
+        deleteBtn.className = 'btn btn-link btn-sm ms-2 py-2';
         deleteBtn.onclick = () => {
           if (confirm('Are you sure you want to delete this signup?')) {
             // @ts-ignore - google.script.run is provided by the environment

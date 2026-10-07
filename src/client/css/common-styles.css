@@ -1179,14 +1179,12 @@ span.twitter-typeahead {
   user-select: none;
 }
 
-.edit-icons .edit-link {
+.admin .edit-icons .edit-link {
   color: var(--wps-blue-primary);
-  border-color: var(--wps-border);
-  background-color: var(--wps-bg);
   transition: all 0.15s ease;
 }
 
-.edit-icons .edit-link:hover {
+.admin .edit-icons .edit-link:hover {
   background-color: var(--wps-blue-primary);
   color: #ffffff;
   border-color: var(--wps-blue-primary);
