@@ -71,6 +71,9 @@ export class AdminDataRow {
     const editIcons = element.querySelector('.edit-icons') as HTMLElement | null;
     if (editIcons) {
       dom.setVisible(editIcons, vm.userIsEditor || vm.userIsAdmin);
+      
+      // Ensure vertical alignment for icons/buttons
+      editIcons.classList.add('d-flex', 'align-items-center');
 
       if (vm.userIsEditor) {
         const editLink = editIcons.querySelector('a.edit-link') as HTMLAnchorElement | null;
@@ -263,4 +266,4 @@ function getSignupTypeDetails(signup: Signup): string {
     default:
       return '';
   }
-}
+};
