@@ -177,7 +177,7 @@ export const makeDataRowViewModel = (
 
   const rowIsStaff = type === 'Staff reservation';
   const userIsEditor = state.isEditor;
-  const userIsAdmin = state.isAdmin;
+  const userIsAdmin = state.appConfig?.isAdmin || false;
   const scriptUrl = state.appConfig?.scriptUrl || '';
   const separator = scriptUrl.includes('?') ? '&' : '?';
   const editUrl = scriptUrl
