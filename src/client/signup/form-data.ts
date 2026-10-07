@@ -22,8 +22,7 @@ export const submitForm = async (): Promise<void> => {
   
   messaging.showLoadingModal("Submitting");
   const updateRowId = store.getState().updateRowId;
-  debugger;
-
+  
   try {
     if (IS_DEBUG) {
       await mockSubmit(formData);
@@ -103,11 +102,10 @@ function collectData(): Partial<Signup> {
   if (state.ui_currentType) data.type = state.ui_currentType;
   
   // gets subject from whichever is visible
-  if (dom.isVisible(".subject-int")) {
-    data.subject = dom.valueOf(".subject-int");
-  } else if (dom.isVisible("#subject-non-int")) {
-    data.subject = dom.valueOf("#subject-non-int");
-  }
+  data.subject = dom.valueOf("#subject-int-select")
+  || dom.valueOf("#subject-int-input")
+  || dom.valueOf("#subject-non-int")
+
 
   data.purpose = dom.isVisible("#purpose-select") ? dom.valueOf("#purpose-select") : "";
   data.room = dom.isVisible("#glass-room") ? dom.valueOf("#glass-room input[type='radio']:checked") as Signup['room'] : null;
