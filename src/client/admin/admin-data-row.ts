@@ -25,6 +25,7 @@ export interface AdminDataRowViewModel {
   roomLabel: string;
   rowIsStaff: boolean;
   userIsEditor: boolean;
+  userIsAdmin: boolean;
   editUrl: string;
   studyIn1: string;
   studyIn2: string;
@@ -69,7 +70,7 @@ export class AdminDataRow {
 
     const editIcons = element.querySelector('.edit-icons') as HTMLElement | null;
     if (editIcons) {
-      dom.setVisible(editIcons, vm.userIsEditor);
+      dom.setVisible(editIcons, vm.userIsEditor || vm.userIsAdmin);
 
       if (vm.userIsEditor) {
         const editLink = editIcons.querySelector('a.edit-link') as HTMLAnchorElement | null;
@@ -77,6 +78,24 @@ export class AdminDataRow {
           dom.setAttribute(editLink, 'href', vm.editUrl);
           dom.setAttribute(editLink, 'target', '_blank');
         }
+      }
+
+      // Add delete button for admins
+      if (vm.userIsAdmin) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerText = 'Delete';
+        deleteBtn.className = 'btn btn-danger btn-sm ml-2';
+        deleteBtn.onclick = () => {
+          if (confirm('Are you sure you want to delete this signup?')) {
+            // @ts-ignore - google.script.run is provided by the environment
+            google.script.run
+              .withSuccessHandler(() => {
+                element.remove();
+              })
+              .deleteSignup(vm.rowId);
+          }
+        };
+        editIcons.appendChild(deleteBtn);
       }
     }
 
@@ -158,6 +177,7 @@ export const makeDataRowViewModel = (
 
   const rowIsStaff = type === 'Staff reservation';
   const userIsEditor = state.isEditor;
+  const userIsAdmin = state.isAdmin;
   const scriptUrl = state.appConfig?.scriptUrl || '';
   const separator = scriptUrl.includes('?') ? '&' : '?';
   const editUrl = scriptUrl
@@ -189,6 +209,7 @@ export const makeDataRowViewModel = (
     typeDetails,
     rowIsStaff,
     userIsEditor,
+    userIsAdmin,
     editUrl,
     typeAndDetailsLabel,
     roomLabel,

@@ -20,6 +20,7 @@ export interface AdminState {
   settings: Setting[],
 
   isEditor: boolean,
+  isAdmin: boolean,
   
   ui_currentSortField: "date" | "period",
   ui_currentSortOrder: "asc" | "desc",
@@ -42,6 +43,7 @@ const initialState: AdminState = {
   settings: [],
 
   isEditor: false,
+  isAdmin: false,
   currentEmail: "",
   
   ui_currentSortField: "date",

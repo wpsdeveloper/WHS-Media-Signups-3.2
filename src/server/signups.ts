@@ -35,7 +35,7 @@ function getSignupsRows(): SSRow[] {
 }
 
 /**
- * Filters signups by date range.
+ * Filters signups by date range and excludes deleted rows.
  * 
  * @param originalSignups - Raw signup rows.
  * @param firstDate - Start date filter.
@@ -45,6 +45,9 @@ function getSignupsRows(): SSRow[] {
 function filterSignupsByDate(originalSignups: SSRow[], firstDate: Date , lastDate: Date) {
   const signups: Signup[] = [];
   originalSignups.forEach(row => {
+    // Filter out deleted rows
+    if (row[SIGNUPS_COL.STATUS] === 'DELETED') return;
+
     const date = new Date(row[SIGNUPS_COL.DATE]);
     if ((date.getTime() >= firstDate.getTime()) && (date.getTime() <= lastDate.getTime())) {
       signups.push(parseSignupFromArray(row));
@@ -71,7 +74,10 @@ function getStudentAudit(submittedEmail: string) {
   archivedValues.shift();
   const values = currentValues.concat(archivedValues);
   
-  const filtered = values.filter(row => row[SIGNUPS_COL.STUDENT_EMAIL] == submittedEmail || row[SIGNUPS_COL.SUBMITTED_BY] == submittedEmail);
+  const filtered = values.filter(row => 
+    (row[SIGNUPS_COL.STUDENT_EMAIL] == submittedEmail || row[SIGNUPS_COL.SUBMITTED_BY] == submittedEmail) &&
+    row[SIGNUPS_COL.STATUS] !== 'DELETED'
+  );
 
   const signups: Signup[] = [];
   filtered.forEach(row => {
@@ -79,6 +85,25 @@ function getStudentAudit(submittedEmail: string) {
   });
 
   return JSON.stringify(signups);
+}
+
+/**
+ * Marks a signup row as DELETED.
+ * 
+ * @param rowId - Unique row identifier.
+ */
+function deleteSignup(rowId: string) {
+  const sheet = SPREADSHEET.getSheetByName(SIGNUPS_SHEET_NAME);
+  if (!sheet) throw STANDARD_SERVER_ERROR;
+
+  const data = sheet.getDataRange().getDisplayValues();
+  // Find the row index (skipping header)
+  const rowIndex = data.findIndex(row => row[SIGNUPS_COL.ROW_ID] === rowId);
+  
+  if (rowIndex > 0) {
+    // +1 because sheet rows are 1-indexed, +1 because we skipped header
+    sheet.getRange(rowIndex + 1, SIGNUPS_COL.STATUS + 1).setValue('DELETED');
+  }
 }
 
 /**
