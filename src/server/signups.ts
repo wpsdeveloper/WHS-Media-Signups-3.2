@@ -178,7 +178,7 @@ function makeSignupRow(obj: Signup): SSRow {
   row[SIGNUPS_COL.ROW_ID] = obj.rowId;
   row[SIGNUPS_COL.STUDY_IN_1] = obj.studyIn1 || "";
   row[SIGNUPS_COL.MEDIA_IN] = obj.mediaIn || "";
-  row[SIGNUPS_COL.MEDIA_OUT] = obj.mediaOut || "";
+  row[SIGNUPS_COL.MEDIA_OUT] = obj.mediaIn || "";
   row[SIGNUPS_COL.STUDY_IN_2] = obj.studyIn2 || "";
 
   return row;
