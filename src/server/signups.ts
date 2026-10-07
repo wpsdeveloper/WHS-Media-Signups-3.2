@@ -46,7 +46,7 @@ function filterSignupsByDate(originalSignups: SSRow[], firstDate: Date , lastDat
   const signups: Signup[] = [];
   originalSignups.forEach(row => {
     // Filter out deleted rows
-    if (row[(SIGNUPS_COL as any).STATUS] === 'DELETED') return;
+    if (row[(SIGNUPS_COL as any)['STATUS']] === 'DELETED') return;
 
     const date = new Date(row[SIGNUPS_COL.DATE]);
     if ((date.getTime() >= firstDate.getTime()) && (date.getTime() <= lastDate.getTime())) {
@@ -76,7 +76,7 @@ function getStudentAudit(submittedEmail: string) {
   
   const filtered = values.filter(row => 
     (row[SIGNUPS_COL.STUDENT_EMAIL] == submittedEmail || row[SIGNUPS_COL.SUBMITTED_BY] == submittedEmail) &&
-    row[(SIGNUPS_COL as any).STATUS] !== 'DELETED'
+    row[(SIGNUPS_COL as any)['STATUS']] !== 'DELETED'
   );
 
   const signups: Signup[] = [];
@@ -102,7 +102,7 @@ function deleteSignup(rowId: string) {
   
   if (rowIndex > 0) {
     // +1 because sheet rows are 1-indexed, +1 because we skipped header
-    sheet.getRange(rowIndex + 1, (SIGNUPS_COL as any).STATUS + 1).setValue('DELETED');
+    sheet.getRange(rowIndex + 1, (SIGNUPS_COL as any)['STATUS'] + 1).setValue('DELETED');
   }
 }
 
